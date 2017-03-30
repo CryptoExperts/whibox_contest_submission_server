@@ -1,0 +1,33 @@
+{% macro input(form_field, placeholder, autofocus=false) -%}
+  {% if form_field.errors %}
+    <div class="form-group has-error has-feedback">
+      {% for error in form_field.errors %}
+	<label class="control-label" for="{{ form_field.name }}">{{ error }}</label>
+      {% endfor %}
+      <span class="glyphicon glyphicon-remove form-control-feedback" aria-hidden="true"></span>
+      {{ form_field(class_='form-control form-control-warning', placeholder=placeholder) }}
+    </div>
+  {% else %}
+    <div class="form-group">
+      {{ form_field(class_='form-control', placeholder=placeholder, autofocus=autofocus) }}
+    </div>
+  {% endif %}
+{%- endmacro %}
+
+{% macro recaptcha(form_recaptcha_field, testing) -%}
+  {% if form_recaptcha_field.errors %}
+    <div class="form-group has-error has-feedback">
+      {% for error in form_recaptcha_field.errors %}
+	<label class="control-label" for="{{ form_recaptcha_field.name }}">{{ error }}</label>
+      {% endfor %}
+      {{ form_recaptcha_field(class_='form-control form-control-warning') }}
+    </div>
+  {% else %}
+    <div class="form-group" style="min-height: 80px;">
+      {{ form_recaptcha_field(class_='form-control') }}
+    </div>
+  {% endif %}
+  {% if testing == true %}
+    <p class="text-warning">Application in testing mode - reCAPTCHA deactivated!</p>
+  {% endif %}
+{%- endmacro %}

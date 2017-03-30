@@ -1,0 +1,30 @@
+<div class="table-responsive">
+  <table class="table table-striped table-bordered data-table table-hover">
+    <thead>
+      <tr>
+	<th class='column-to-sort-first'>Submission Date</th>
+	<th>id</th>
+	<th>Status</th>
+	<th>Log</th>
+	<th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for program in programs_rejected %}
+	<tr>
+	  <th scope="row">{{ program.datetime_submitted }}</th>
+	  <td class="text-center">{{ program._id }}</td>
+	  <td>{{ program.status }}</td>
+	  <td>
+	    {% if program.error_message %}
+	      <pre style="margin-top: 10px;">{{ program.error_message }}</pre>
+	    {% endif %}
+	  </td>
+	  <td>
+	    <a href='/show/candidate/{{ program._id }}' class="btn btn-primary btn-sm">Download</a>
+	  </td>
+	</tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>

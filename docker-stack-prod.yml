@@ -1,0 +1,93 @@
+version: "3"
+
+services:
+
+    web:
+        image: crx/web-prod
+        networks:
+            - front_network
+        ports:
+            - 5000:5000
+        volumes:
+            - /volumes/whitebox_program_uploads:/uploads
+        environment:
+            - RECAPTCHA_PUBLIC_KEY=6Le3QBoUAAAAANKiIexuJsV5XE_HjgqICK2kHGCb
+            - RECAPTCHA_PRIVATE_KEY=6Le3QBoUAAAAALLIh0LrUMsIT8F1lV5fr3eqzj4x
+            - SECRET_KEY=da39a3ee5e6b4b0d3255bfef95601890afd80709
+            - MYSQL_DATABASE=db_wb
+            - MYSQL_USER=user_wb
+            - MYSQL_PASSWORD=a_not_so_random_user_password
+            - MYSQL_HOST=mysql
+            - MYSQL_PORT=3306
+            - UPLOAD_FOLDER=/uploads
+            - URL_COMPILE_AND_TEST=http://launcher:5000/compile_and_test
+            - STARTING_DATE=1493596800 # In seconds since EPOCH. Must be identical in the launcher service. 1/5/2017 00:00 UTC is 1493596800
+            - POSTING_DEADLINE=1504223940 # In seconds since EPOCH. Must be identical in the launcher service. 31/8/2017 23:59 UTC is 1504223940
+            - FINAL_DEADLINE=1506254400 # In seconds since EPOCH. Must be identical in the launcher service. 24/9/2017 12:00 UTC is 1506254400
+            - CHALLENGE_MAX_SOURCE_SIZE_IN_MB=50 # In MB. Must be identical in the launcher service. Must be 50 in production.
+            - CHALLENGE_MAX_MEM_COMPILATION_IN_MB=500 # In MB. Must be identical in the launcher service. Must be 500 in production.
+            - CHALLENGE_MAX_TIME_COMPILATION_IN_SECS=100 # In seconds. Must be identical in the launcher service. Must be 100 in production.
+            - CHALLENGE_MAX_BINARY_SIZE_IN_MB=20 # In MB. Must be identical in the launcher service. Must be 20 in production.
+            - CHALLENGE_MAX_MEM_EXECUTION_IN_MB=20 # In MB. Must be identical in the launcher service. Must be 20 in production.
+            - CHALLENGE_MAX_TIME_EXECUTION_IN_SECS=1 # In seconds. Must be identical in the launcher service. Must be 1 in production.
+            - CHALLENGE_NUMBER_OF_TEST_VECTORS=1000 # Must be identical in the launcher service. Must be at least 1000 in production.
+        deploy:
+            placement:
+                constraints: [node.labels.vm == node-manager]
+
+
+
+    launcher:
+        image: crx/launcher-prod
+        networks:
+            - front_network
+            - back_network
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock
+            - /volumes/whitebox_program_uploads:/uploads:ro
+        environment:
+            - MYSQL_DATABASE=db_wb
+            - MYSQL_USER=user_wb
+            - MYSQL_PASSWORD=a_not_so_random_user_password
+            - MYSQL_HOST=mysql
+            - MYSQL_PORT=3306
+            - SOCK=unix:///var/run/docker.sock
+            - NAME_OF_COMPILE_AND_TEST_SERVICE=prod_compile_and_test
+            - COMPILE_AND_TEST_SERVICE_NETWORK=prod_back_network
+            - STARTING_DATE=1493596800 # In seconds since EPOCH. Must be identical in the web service. 1/5/2017 00:00 UTC is 1493596800
+            - POSTING_DEADLINE=1504223940 # In seconds since EPOCH. Must be identical in the web service. 31/8/2017 23:59 UTC is 1504223940
+            - FINAL_DEADLINE=1506254400 # In seconds since EPOCH. Must be identical in the web service. 24/9/2017 12:00 UTC is 1506254400
+            - CHALLENGE_MAX_SOURCE_SIZE_IN_MB=50 # In MB. Must be identical in the web service. Must be 50 in production.
+            - CHALLENGE_MAX_MEM_COMPILATION_IN_MB=500 # In MB. Must be identical in the web service. Must be 500 in production.
+            - CHALLENGE_MAX_TIME_COMPILATION_IN_SECS=100 # In seconds. Must be identical in the web service. Must be 100 in production.
+            - CHALLENGE_MAX_BINARY_SIZE_IN_MB=20 # In MB. Must be identical in the web service. Must be 20 in production.
+            - CHALLENGE_MAX_MEM_EXECUTION_IN_MB=20 # In MB. Must be identical in the web service. Must be 20 in production.
+            - CHALLENGE_MAX_TIME_EXECUTION_IN_SECS=1 # In seconds. Must be identical in the web service. Must be 1 in production.
+            - CHALLENGE_NUMBER_OF_TEST_VECTORS=1000 # Must be identical in the web service. Must be at least 1000 in production.
+
+        deploy:
+            placement:
+                constraints: [node.labels.vm == node-manager]
+
+
+
+    mysql:
+        image: crx/mysql
+        networks:
+            - front_network
+        volumes:
+            - /volumes/database:/var/lib/mysql
+        environment:
+            - MYSQL_ROOT_PASSWORD=a_not_so_random_root_password
+            - MYSQL_DATABASE=db_wb # specify the name of a database to be created on image startup (does nothing if the db already exists).
+            - MYSQL_USER=user_wb # This user will be granted superuser permissions for the database specified by the MYSQL_DATABASE variable.
+            - MYSQL_PASSWORD=a_not_so_random_user_password
+            - MYSQL_ALLOW_EMPTY_PASSWORD=no
+        deploy:
+            placement:
+                constraints: [node.labels.vm == node-manager]
+
+
+networks:
+    front_network:
+    back_network:

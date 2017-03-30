@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}Your Dashboard{% endblock %}
+
+{% block content %}
+
+  {% include 'homepage_boxes.html' %}
+
+  <hr>
+
+  <div class="row">
+    <div class="col-xs-12">
+      <h2>Strawberries Competition</h2>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-lg-12">
+
+      {% if current_user.programs|length == 0 %}
+	<p class="lead">You haven't <strong>submitted</strong> any challenge yet! You can do so by clicking on the <mark>Submit a Challenge</mark> link in the menu bar.</p>
+      {% endif %}
+
+      {% if programs_queued %}
+	<h3>Your Challenges Waiting to be Compiled and Tested</h3>
+	{% include 'table_challenges_to_compile.html' %}
+      {% endif %}
+
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-lg-12">
+
+      {% if programs %}
+	<h3>Your Competing Challenges</h3>
+	{% include 'table_challenges.html' %}
+      {% endif %}
+
+      {% if programs_rejected %}
+	<h3>You Rejected Programs</h3>
+	{% include 'table_rejected_challenges.html' %}
+      {% endif %}
+
+    </div>
+  </div>
+
+  <hr>
+
+  <div class="row">
+    <div class="col-xs-12">
+      <h2>Bananas Competition</h2>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-lg-12">
+      {% if wb_breaks %}
+	<h3>Your Challenge Breaks</h3>
+	{% include 'table_breaks.html' %}
+      {% else %}
+	<p class="lead">You haven't <strong>broken</strong> any challenge yet! You can try to do so by clicking on the <mark>Break</mark> button of any of the challenges listed on the main Dashboard.</p>
+      {% endif %}
+    </div>
+  </div>
+
+
+{% endblock %}

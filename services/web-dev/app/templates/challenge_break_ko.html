@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}You did not brake challenge {{ identifier }}...{% endblock %}
+
+{% block content %}
+
+  <div class="row">
+    <div class="col-xs-12">
+      <p class="lead">The key you submitted for challenge {{ identifier }} is incorrect.</p>
+      <p class="lead">The correct key would encrypt the plaintext <code>{{ plaintext }}</code> as <code>{{ ciphertext }}</code>.</p>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-6 col-md-offset-4 col-xs-10 col-xs-offset-2">
+      <img src="/static/images/sadbanana.gif" class="img-responsive" alt="Responsive image">
+    </div>
+  </div>
+
+{% endblock %}

@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+
+  {% include 'index_boxes.html' %}
+
+  <hr>
+
+  <div class="row">
+    <div class="col-xs-12">
+      <h2>Strawberries Competition</h2>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-xs-12">
+
+      {% if programs %}
+	<h3 id="challenges">Strawberry Rankings and Challenges</h3>
+	{% include 'table_challenges.html' %}
+      {% else %}
+	<p class="lead">There isn't any challenge submitted yet. Make sure to be the first to submit one by clicking on the <mark>Submit a Challenge</mark> link in the menu bar.</p>
+      {% endif %}
+    </div>
+  </div><!-- row -->
+
+  {% if data_flot %}
+    <div class="row">
+      <div class="col-xs-12">
+	<h3>Strawberries race over time</h3>
+	<div class="flot-plot flot-chart" data-flot="{{ data_flot }}" style="height: 500px;"></div>
+      </div>
+    </div>
+  {% endif %}
+
+  <hr>
+
+  {% if users %}
+
+    <div class="row">
+      <div class="col-xs-12">
+	<h2>Bananas Competition</h2>
+      </div>
+    </div>
+
+    <div class="row">
+
+      <div class="col-xs-12 col-lg-5">
+	<h3 id="bananas">Banana Rankings</h3>
+	{% include 'table_bananas_ranking.html' %}
+      </div>
+
+      <div class="col-xs-12  col-lg-7">
+	{% if programs %}
+	  {% if wb_breaks %}
+	    <h3 id="breaks">All Challenge breaks</h3>
+	    {% include 'table_breaks.html' %}
+	  {% else %}
+	    <h2>No Challenge break Yet!</h2>
+	  {% endif %}
+	{% endif %}
+      </div>
+
+    </div><!-- row -->
+
+  {% endif %}
+
+{% endblock %}

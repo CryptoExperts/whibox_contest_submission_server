@@ -1,0 +1,87 @@
+body {
+  counter-reset: section;                    /* Set the section counter to 0 */
+}
+
+.with-counter h2::before {
+  display: inline;
+  counter-increment: section;
+  content: counter(section) ". ";
+  color: #337ab7;
+}
+
+.badge {
+  background-color: #d9534f;
+}
+
+tbody td, tbody th {
+  vertical-align: middle !important;
+}
+
+tbody td.ellipsable {
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+tbody td.nowrap {
+  white-space: nowrap;
+}
+
+.table-responsive .row, .table-responsive .col-sm-12 {
+  margin: 0px;
+  padding: 0px;
+}
+
+.panel-big {
+  font-size: 120%;
+}
+
+
+.alerts-container {
+  position: absolute;
+  top: 60px;
+  right: 30px;
+  z-index: 2000;
+  pointer-events: none;
+}
+
+@media (max-width: 768px) {
+  .alerts-container {
+    top: 105px;
+    left: 15px;
+    right: 15px;
+  }
+}
+
+/* Custom notifications */
+/* Inspired by https://tympanus.net/codrops/2012/06/25/timed-notifications-with-css-animations */
+
+.alert {
+  width: 400px;
+  position: relative;
+  display: none;
+  padding-top: 25px;
+  padding-bottom: 25px;
+  font-size: 120%;
+}
+
+@media (max-width: 768px) {
+  .alert {
+    width: 100%;
+  }
+}
+
+.alert-active {
+  display: block;
+  animation: fadeInThenOut 4s ease-in-out forwards;
+}
+
+@keyframes fadeInThenOut {
+  0% { opacity: 0; }
+  1% { opacity: 0; transform: translateY(-30px);}
+  10% { opacity: 0.95; transform: translateY(0px);}
+  90% { opacity: 0.95; transform: translateY(0px);}
+  99% { opacity: 0; transform: translateY(-30px);}
+  100% { opacity: 0; }
+}
