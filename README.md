@@ -1,2 +1,3 @@
-# wb_contest_submission_server
+# Whitebox Contest Submission Server
+
 Source code of the Whitebox Contest Submission Server
