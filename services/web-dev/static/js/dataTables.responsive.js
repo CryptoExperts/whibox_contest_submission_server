@@ -1,1 +1,1 @@
-../startbootstrap-sb-admin-2-gh-pages/vendor/datatables-responsive/dataTables.responsive.js
+../../../../vendors/datatables-responsive/dataTables.responsive.js

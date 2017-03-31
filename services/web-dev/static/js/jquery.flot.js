@@ -1,1 +1,1 @@
-../startbootstrap-sb-admin-2-gh-pages/vendor/flot/jquery.flot.js
+../../../../vendors/flot/jquery.flot.js
