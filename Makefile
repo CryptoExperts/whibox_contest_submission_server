@@ -95,11 +95,11 @@ clean-prod:
 	-rm -rf services/launcher-prod/app
 
 copy-files-from-dev-to-prod: clean clean-prod
-	cp -R services/web-dev/app services/web-prod/
+	cp -r services/web-dev/app services/web-prod/
 	find services/web-prod/app -type f -exec chmod 444 {} +
-	cp -R services/web-dev/static services/web-prod/
+	cp -r services/web-dev/static services/web-prod/
 	find services/web-prod/static -type f -exec chmod 444 {} +
-	cp -R services/launcher-dev/app services/launcher-prod/
+	cp -r services/launcher-dev/app services/launcher-prod/
 	find services/launcher-prod/app -type f -exec chmod 444 {} +
 
 build-prod: copy-common-app-dev-files copy-files-from-dev-to-prod
@@ -109,7 +109,7 @@ build-prod: copy-common-app-dev-files copy-files-from-dev-to-prod
 	docker build -t crx/launcher-prod services/launcher-prod/
 	/bin/bash scripts/on_node-sandbox.sh docker build -t crx/compile_and_test services/compile_and_test/
 
-build-prod-no-cache:
+build-prod-no-cache: copy-common-app-dev-files copy-files-from-dev-to-prod
 	docker build --no-cache -t crx/mysql services/mysql/
 	docker build --no-cache -t crx/nginx services/nginx/
 	docker build --no-cache -t crx/web-prod services/web-prod/
