@@ -16,7 +16,8 @@ machines-start:
 	/bin/bash scripts/start_machines.sh
 
 machines-stop:
-	docker stack rm dev 1>/dev/null 2>&1
+	-docker stack rm dev 1>/dev/null 2>&1
+	-docker stack rm prod 1>/dev/null 2>&1
 	docker-machine stop node-manager
 	docker-machine stop node-sandbox
 
@@ -57,20 +58,18 @@ copy-common-app-dev-files:
 	chmod 400 services/launcher-dev/app/funny_name_generator.py
 
 build-dev: copy-common-app-dev-files
-	docker build -t crx/mysql services/mysql
-	docker build -t crx/nginx services/nginx
-	docker build -t crx/web-dev services/web-dev/dockerfile
-	docker build -t crx/launcher-dev services/launcher-dev/dockerfile
-	docker build -t crx/compile_and_test services/compile_and_test
-	docker pull manomarks/visualizer
+	docker build -t crx/mysql services/mysql/
+	docker build -t crx/nginx services/nginx/
+	docker build -t crx/web-dev services/web-dev/dockerfile/
+	docker build -t crx/launcher-dev services/launcher-dev/dockerfile/
+	/bin/bash scripts/on_node-sandbox.sh docker build -t crx/compile_and_test services/compile_and_test/
 
 build-dev-no-cache: copy-common-app-dev-files
-	docker build --no-cache -t crx/mysql services/mysql
-	docker build --no-cache -t crx/nginx services/nginx
-	docker build --no-cache -t crx/web-dev services/web-dev/dockerfile
-	docker build --no-cache -t crx/launcher-dev services/launcher-dev/dockerfile
-	docker build --no-cache -t crx/compile_and_test services/compile_and_test
-	docker pull manomarks/visualizer
+	docker build --no-cache -t crx/mysql services/mysql/
+	docker build --no-cache -t crx/nginx services/nginx/
+	docker build --no-cache -t crx/web-dev services/web-dev/dockerfile/
+	docker build --no-cache -t crx/launcher-dev services/launcher-dev/dockerfile/
+	/bin/bash scripts/on_node-sandbox.sh docker build --no-cache -t crx/compile_and_test services/compile_and_test/
 
 stack-deploy-dev: copy-common-app-dev-files
 	docker stack deploy -c docker-stack-dev.yml dev
@@ -104,19 +103,18 @@ copy-files-from-dev-to-prod: clean clean-prod
 	find services/launcher-prod/app -type f -exec chmod 444 {} +
 
 build-prod: copy-common-app-dev-files copy-files-from-dev-to-prod
-	docker build -t crx/mysql services/mysql
-	docker build -t crx/nginx services/nginx
+	docker build -t crx/mysql services/mysql/
+	docker build -t crx/nginx services/nginx/
 	docker build -t crx/web-prod services/web-prod/
 	docker build -t crx/launcher-prod services/launcher-prod/
-	docker build -t crx/compile_and_test services/compile_and_test
+	/bin/bash scripts/on_node-sandbox.sh docker build -t crx/compile_and_test services/compile_and_test/
 
 build-prod-no-cache:
-	docker build --no-cache -t crx/mysql services/mysql
-	docker build --no-cache -t crx/nginx services/nginx
+	docker build --no-cache -t crx/mysql services/mysql/
+	docker build --no-cache -t crx/nginx services/nginx/
 	docker build --no-cache -t crx/web-prod services/web-prod/
 	docker build --no-cache -t crx/launcher-prod services/launcher-prod/
-	docker build --no-cache -t crx/compile_and_test services/compile_and_test
-	docker build --no-cache -t crx/launcher-dev services/launcher-dev/dockerfile
+	/bin/bash scripts/on_node-sandbox.sh docker build --no-cache -t crx/compile_and_test services/compile_and_test/
 
 stack-deploy-prod:
 	docker stack deploy -c docker-stack-prod.yml prod
