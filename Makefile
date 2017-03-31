@@ -80,12 +80,12 @@ stack-rm-dev:
 
 stack-reload-dev: copy-common-app-dev-files
 	-docker stack rm dev
-	bash scripts/wait_for_empty_docker_ps.sh
+	/bin/bash scripts/wait_for_empty_docker_ps.sh
 	docker stack deploy -c docker-stack-dev.yml dev
 
-#############
-# Dev targets
-#############
+##############
+# Prod targets
+##############
 
 clean-prod:
 	-find services/web-prod/app -type f -exec chmod 777 {} +
@@ -126,5 +126,5 @@ stack-rm-prod:
 
 stack-reload-prod:
 	-docker stack rm prod
-	bash scripts/wait_for_empty_docker_ps.sh
+	/bin/bash scripts/wait_for_empty_docker_ps.sh
 	docker stack deploy -c docker-stack-prod.yml prod
