@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}Submit a Challenge{% endblock %}
+
+{% block content %}
+
+  {% import 'form_element.html' as formidable %}
+
+  <div class="row">
+    <div class="col-md-6 col-md-offset-3">
+      <div class="panel panel-default">
+        <div class="panel-body">
+
+	  <form id="form" class="form-signin" method="post" enctype="multipart/form-data">
+	    {{ form.hidden_tag() }}
+	    <fieldset>
+
+	      <div class="form-group{% if form.key.errors %} has-error has-feedback{% endif %}" id="file-form-group">
+		{% for error in form.program.errors %}
+		  <label class="control-label" for="program">{{ error }}</label>
+		{% endfor %}
+		<div class="input-group">
+                  <label class="input-group-btn">
+                    <span class="btn btn-primary">
+                      Browse&hellip; <input type="file" id="file" class="custom-file-input" name="program" onchange="window.crx_wb.fileSelected(this, {{ config.MAX_CONTENT_LENGTH }})" style="display: none;">
+                    </span>
+                  </label>
+                  <input type="text" class="form-control" id="filename" readonly>
+		</div>
+		<div>Maximum file size is {{ config.CHALLENGE_MAX_SOURCE_SIZE_IN_MB }} MB</div>
+		<div id="fileSize-ok"></div>
+		<div id="fileSize-ko" class="text-danger"> </div>
+	      </div>
+
+	      <div class="form-group{% if form.key.errors %} has-error has-feedback{% endif %}" id="key-form-group">
+		<label class="control-label" id="key-ko"> </label>
+		{% for error in form.key.errors %}
+		  <label class="control-label" for="key">{{ error }}</label>
+		{% endfor %}
+		<input type="text" name="key" id="key" class="form-control{% if form.key.errors %} form-control-warning{% endif %}" placeholder="Key" value="{% if form.key.data %}{{ form.key.data }}{% endif %}" oninput="window.crx_wb.keyChanged(this)" autocomplete="off" style="transition: border-color, 0.4s;">
+	      </div>
+
+	      {{ formidable.recaptcha(form.recaptcha, testing) }}
+
+	      <button class="btn btn-lg btn-primary btn-block" id="submitButton">Submit your Challenge!</button>
+
+	    </fieldset>
+	  </form>
+
+	  <div id="progress-bar-div" style="margin-top: 30px; visibility: hidden;">
+            <p>
+              <strong>Uploading</strong>
+              <span id="progress-bar-span" class="pull-right text-muted">0% Complete</span>
+            </p>
+            <div class="progress progress-striped active">
+              <div id="progress-bar" class="progress-bar progress-bar-info" role="progressbar" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100" style="width: 20%">
+                <span class="sr-only">20% Complete</span>
+              </div>
+            </div>
+          </div>
+
+	</div><!-- .panel-body -->
+      </div><!-- .login-panel .panel .panel-default -->
+    </div>
+  </div><!-- .row -->
+
+{% endblock %}
+
+{% block javascript %}
+  <script src="/static/js/file-validator.js"></script>
+  <script src="/static/js/file-progress.js"></script>
+{% endblock %}

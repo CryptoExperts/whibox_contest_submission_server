@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}Sign in{% endblock %}
+
+{% block content %}
+
+  {% import 'form_element.html' as formidable %}
+
+  <div class="row">
+    <div class="col-lg-6 col-lg-offset-3">
+      <div class="panel panel-default">
+        <div class="panel-body">
+          <form role="form-signin" method="post">
+	    {{ form.hidden_tag() }}
+            <fieldset>
+
+	      {{ formidable.input(form.username, 'Username', autofocus=true) }}
+	      {{ formidable.input(form.password, 'Password') }}
+
+	      {{ formidable.recaptcha(form.recaptcha, testing) }}
+
+	      <button class="btn btn-lg btn-success btn-block" type="submit">Sign in</button>
+
+            </fieldset>
+          </form>
+        </div><!-- .panel-body -->
+      </div><!-- .login-panel .panel .panel-default -->
+    </div><!-- .col-md-4 .col-md-offset-4 -->
+  </div><!-- .row -->
+
+  <div class="row">
+    <div class="col-md-4 col-md-offset-4">
+      Don't have an account yet? You can <a href="/user/create">create one.</a>
+    </div><!-- .col-md-4 .col-md-offset-4 -->
+  </div>
+
+{% endblock %}

@@ -1,0 +1,26 @@
+<div class="table-responsive">
+  <table class="table table-striped table-bordered data-table table-hover">
+    <thead>
+      <tr>
+	<th class='column-to-sort-first'>Submission Date</th>
+	<th>id</th>
+	<th>Status</th>
+	<th>Key</th>
+	<th>Position in the compile queue</th>
+	<th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for program in programs_queued %}
+	<tr>
+	  <th scope="row">{{ program.datetime_submitted }}</th>
+	  <td class="text-center">{{ program._id }}</td>
+	  <td>{{ program.status }}</td>
+	  <td>{{ program.key }}</td>
+	  <td>{{ program.position_in_the_compilation_queue }}</td>
+	  <td><a href='/show/candidate/{{ program._id }}' class="btn btn-info btn-sm">source</a></td>
+	</tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>

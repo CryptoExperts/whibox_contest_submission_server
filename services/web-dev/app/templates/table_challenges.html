@@ -1,0 +1,57 @@
+<div class="table-responsive">
+  <table class="table table-striped table-bordered data-table table-hover">
+    <thead>
+      <tr>
+	<th class='column-to-sort-first asc'>Rank</th>
+	<th>id</th>
+	<th>Name</th>
+	<th data-type="fruit">Strawberries Peak</th>
+	<th>User</th>
+	<th>Status</th>
+	<th>Publication Date</th>
+	<th>Date of First Break</th>
+	<th data-type="fruit">Current Strawberries</th>
+	<th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for program in programs %}
+	<tr>
+	  <th class="text-center" scope="row">#{{ program.strawberries_ranking }}</th>
+	  <td class="text-center">{{ program._id }}</td>
+	  <td>{{ program.funny_name }}</td>
+	  <td class="text-right">{{ program.strawberries_peak }} 🍓</td>
+	  <td class="ellipsable">
+	    {% if current_user.is_authenticated and current_user == program.user %}
+	      <span class="badge badge-info">You!</span>
+	    {% else %}
+	      {{ program.user.username }}
+	    {% endif %}
+	  </td>
+	  <td>
+	    {% if program.is_broken %}
+	      <span class="text-danger">Broken!</span>
+	    {% else %}
+	      <span class="text-success">Unbroken</span>
+	    {% endif %}
+	  </td>
+	  <td>{{ program.datetime_published }}</td>
+	  <td>{{ program.datetime_first_break or '-' }}</td>
+	  <td class="text-right">{{ program.strawberries_last }} 🍓</td>
+	  <td class="nowrap">
+	    <a href='/show/candidate/{{ program._id }}' class="btn btn-primary btn-sm">Download</a>
+	    {% if current_user.is_authenticated %}
+	      {% if program.user == current_user %}
+		<span class="badge badge-info">Yours!</span>
+	      {% elif program in programs_broken_by_current_user %}
+		<span class="badge badge-pimp">Broken by you!</span>
+	      {% else %}
+		<a href="/break/candidate/{{ program._id }}" class="btn btn-warning btn-sm">Break</a>
+	      {% endif %}
+	    {% endif %}
+	  </td>
+	</tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>

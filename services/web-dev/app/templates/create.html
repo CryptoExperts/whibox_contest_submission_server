@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}Create an Account{% endblock %}
+
+{% block content %}
+
+  {% import 'form_element.html' as formidable %}
+
+  <div class="row">
+    <div class="col-lg-6 col-lg-offset-3">
+      <div class="panel panel-default">
+        <div class="panel-body">
+          <form role="form-signin" method="post">
+	    {{ form.hidden_tag() }}
+            <fieldset>
+
+	      {{ formidable.input(form.username, 'Username', autofocus=true) }}
+
+	      <p>An email address is required in case the organizing committee needs to contact you. This email address will <strong>not</strong> be shown to other participants. Please note that you will <strong>not</strong> be able to modify it and that the existence of this address will <strong>not</strong> be checked.</p>
+
+	      {{ formidable.input(form.email1, 'Email address') }}
+	      {{ formidable.input(form.email2, 'Re-type email address') }}
+
+	      <p>Please choose your password carefully as you will <strong>not</strong> be able to modify it. If you forget it, you will lose access to your account and will <strong>not</strong> be able to claim your prize/glory!</p>
+
+	      {{ formidable.input(form.password1, 'Password') }}
+	      {{ formidable.input(form.password2, 'Re-type password') }}
+
+
+	      {{ formidable.recaptcha(form.recaptcha, testing) }}
+
+	      <button class="btn btn-lg btn-success btn-block" type="submit">Create your Account</button>
+
+            </fieldset>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-4 col-md-offset-4">
+      Already have an account? You can <a href="/user/signin">sign in.</a>
+    </div><!-- .col-md-4 .col-md-offset-4 -->
+  </div>
+
+{% endblock %}

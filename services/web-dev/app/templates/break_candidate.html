@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}
+  Trying to Break Challenge {{ identifier }}
+{% endblock %}
+
+
+{% block content %}
+
+  {% import 'form_element.html' as formidable %}
+
+  <div class="row">
+    <div class="col-lg-6 col-lg-offset-3">
+      <div class="panel panel-default">
+        <div class="panel-body">
+
+	  <p class="lead">This challenge is worth {{ strawberries }} strawberries until {{ datetime_strawberries_next_update }}!</p>
+
+	  <form id="form" class="form-signin" method="post">
+	    {{ form.hidden_tag() }}
+	    <fieldset>
+
+	      <div class="form-group{% if form.key.errors %} has-error has-feedback{% endif %}" id="key-form-group">
+		<label class="control-label" id="key-ko"> </label>
+		{% for error in form.key.errors %}
+		  <label class="control-label" for="key">{{ error }}</label>
+		  <span class="glyphicon glyphicon-remove form-control-feedback" aria-hidden="true"></span>
+		{% endfor %}
+		<label for="key" class="sr-only">Key</label>
+		<input type="text" name="key" id="key" class="form-control{% if form.key.errors %} form-control-warning{% endif %}" placeholder="Key" value="{% if form.key.data %}{{ form.key.data }}{% endif %}" oninput="window.crx_wb.keyChanged(this)" autocomplete="off" style="transition: border-color, 0.4s;" autofocus="">
+	      </div>
+
+	      {{ formidable.recaptcha(form.recaptcha, testing) }}
+
+	      <button class="btn btn-lg btn-primary btn-block" id="submitButton">Submit your key candidate</button>
+
+	    </fieldset>
+	  </form>
+
+	</div>
+      </div>
+    </div>
+  </div>
+
+{% endblock %}
+
+
+{% block javascript %}
+  <script src="/static/js/key-validator.js"></script>
+{% endblock %}
