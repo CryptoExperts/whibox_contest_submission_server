@@ -37,7 +37,7 @@ In order to run this server, you need to install the following softwares first:
 * [VirtualBox][virtualbox] (tested on version 5.1.18)
 * Docker Engine (tested on Docker version 17.03.1)
 * Docker Machine (tested on version 0.10.0)
-* Make (tested on version 3.81 and 4.2.1 😉)
+* Make (tested on versions 3.81 and 4.2.1 😉)
 
 For Mac users, note that Docker Machine is included by default when installing [Docker for Mac][docker_for_mac].
 
@@ -59,7 +59,7 @@ In a terminal, change the current directory to the root of this git repository a
 ~~~bash
 > make machines-and-swarm
 /bin/bash scripts/create_machines_and_swarm.sh
-Configuring the node-manager VM 
+Configuring the node-manager VM
 Running pre-create checks...
 Creating machine...
 (node-manager) Copying /.../.docker/machine/cache/boot2docker.iso to /.../.docker/machine/machines/node-manager/boot2docker.iso...
@@ -74,7 +74,7 @@ Waiting for VM "node-manager" to power on...
 VM "node-manager" has been successfully started.
 Waiting for VM to startup...
 ..VM is up
-Configuring the node-sandbox VM 
+Configuring the node-sandbox VM
 Running pre-create checks...
 Creating machine...
 (node-sandbox) Copying /.../.docker/machine/cache/boot2docker.iso to /.../.docker/machine/machines/node-sandbox/boot2docker.iso...
@@ -86,7 +86,7 @@ Creating machine...
 Waiting for machine to be running, this may take a few minutes...
 [...]
 VM is up
-Creating the swarm 
+Creating the swarm
 Swarm initialized: current node (x6vn6qv2v46ujobt8051dyvsq) is now a manager.
 
 To add a worker to this swarm, run the following command:
@@ -98,7 +98,7 @@ To add a worker to this swarm, run the following command:
 To add a manager to this swarm, run 'docker swarm join-token manager' and follow the instructions.
 
 node-manager
-Joining the swarm 
+Joining the swarm
 This node joined a swarm as a worker.
 node-sandbox
 
@@ -109,8 +109,8 @@ This will create 2 VirtualBox VMs, called `node-manager` and `node-sandbox`, and
 ~~~bash
 > docker-machine ls
 NAME           ACTIVE   DRIVER       STATE     URL                         SWARM   DOCKER        ERRORS
-node-manager   -        virtualbox   Running   tcp://192.168.99.100:2376           v17.03.1-ce   
-node-sandbox   -        virtualbox   Running   tcp://192.168.99.101:2376           v17.03.1-ce   
+node-manager   -        virtualbox   Running   tcp://192.168.99.100:2376           v17.03.1-ce
+node-sandbox   -        virtualbox   Running   tcp://192.168.99.101:2376           v17.03.1-ce
 ~~~
 
 To stop both VMs:
@@ -129,7 +129,7 @@ Stopping "node-sandbox"...
 Machine "node-sandbox" was stopped.
 > docker-machine ls
 NAME           ACTIVE   DRIVER       STATE     URL   SWARM   DOCKER    ERRORS
-node-manager   -        virtualbox   Stopped                 Unknown   
+node-manager   -        virtualbox   Stopped                 Unknown
 node-sandbox   -        virtualbox   Stopped                 Unknown
 ~~~
 
@@ -200,7 +200,7 @@ services:
             - MYSQL_PORT=3306
             - UPLOAD_FOLDER=/uploads
             - URL_COMPILE_AND_TEST=http://launcher:5000/compile_and_test
-            - STARTING_DATE=1493596800 # In seconds since EPOCH. Must be identical in the launcher service. 1/5/2017 00:00 UTC is 1493596800
+            - STARTING_DATE=1494806400 # In seconds since EPOCH. Must be identical in the launcher service. 15/5/2017 00:00 UTC is 1494806400
             - POSTING_DEADLINE=1504223940 # In seconds since EPOCH. Must be identical in the launcher service. 31/8/2017 23:59 UTC is 1504223940
             - FINAL_DEADLINE=1506254400 # In seconds since EPOCH. Must be identical in the launcher service. 24/9/2017 12:00 UTC is 1506254400
             - CHALLENGE_MAX_SOURCE_SIZE_IN_MB=50 # In MB. Must be identical in the launcher service. Must be 50 in production.
@@ -233,7 +233,7 @@ services:
             - SOCK=unix:///var/run/docker.sock
             - NAME_OF_COMPILE_AND_TEST_SERVICE=prod_compile_and_test
             - COMPILE_AND_TEST_SERVICE_NETWORK=prod_back_network
-            - STARTING_DATE=1493596800 # In seconds since EPOCH. Must be identical in the web service. 1/5/2017 00:00 UTC is 1493596800
+            - STARTING_DATE=1494806400 # In seconds since EPOCH. Must be identical in the web service. 15/5/2017 00:00 UTC is 1494806400
             - POSTING_DEADLINE=1504223940 # In seconds since EPOCH. Must be identical in the web service. 31/8/2017 23:59 UTC is 1504223940
             - FINAL_DEADLINE=1506254400 # In seconds since EPOCH. Must be identical in the web service. 24/9/2017 12:00 UTC is 1506254400
             - CHALLENGE_MAX_SOURCE_SIZE_IN_MB=50 # In MB. Must be identical in the web service. Must be 50 in production.
@@ -305,7 +305,7 @@ Note that **no** service runs on the `node-sandbox`:
 
 ~~~bash
 > docker-machine ssh node-sandbox docker ps
-CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS               NAMES 
+CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS               NAMES
 ~~~
 
 The `compile_and_test` service runs on-demand, once per challenge to compile.
@@ -350,7 +350,7 @@ detected number of CPU cores: 1
 current working directory: /
 detected binary path: /usr/sbin/uwsgi
 uWSGI running as root, you can use --uid/--gid/--chroot options
-*** WARNING: you are running uWSGI as root !!! (use the --uid flag) *** 
+*** WARNING: you are running uWSGI as root !!! (use the --uid flag) ***
 chdir() to /etc/..
 your processes number limit is 1048576
 your memory page size is 4096 bytes
@@ -423,10 +423,33 @@ docker-machine stop node-sandbox
 Stopping "node-sandbox"...
 Machine "node-sandbox" was stopped.
 > docker-machine ls
-node-manager   -        virtualbox   Stopped                 Unknown   
+node-manager   -        virtualbox   Stopped                 Unknown
 node-sandbox   -        virtualbox   Stopped                 Unknown
 ~~~
 
+### Running the server in Production mode (TLDR version)
+
+~~~bash
+> make machines-and-swarm
+> eval $(docker-machine env node-manager)
+> make build-prod
+> # Edit the docker-stack-prod.yml file
+> make stack-deploy-prod
+> # Wait for the web service (using docker logs -f)
+> # Connect to http://192.168.99.100:5000
+~~~
+
+### Running the server in Developement mode (TLDR version)
+
+~~~bash
+> make machines-and-swarm
+> eval $(docker-machine env node-manager)
+> make build-dev
+> # Edit the docker-stack-dev.yml file
+> make stack-deploy-dev
+> # Wait for the web service (using docker logs -f)
+> # Connect to http://192.168.99.100:5000
+~~~
 
 
 [crx]: https://www.cryptoexperts.com/  "CryptoExperts website"

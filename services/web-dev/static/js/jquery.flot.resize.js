@@ -1,1 +1,0 @@
-../../../../vendors/flot/jquery.flot.resize.js

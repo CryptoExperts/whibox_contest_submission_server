@@ -1,1 +1,0 @@
-../../../../vendors/datatables-responsive/dataTables.responsive.js
