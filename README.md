@@ -427,6 +427,29 @@ node-manager   -        virtualbox   Stopped                 Unknown
 node-sandbox   -        virtualbox   Stopped                 Unknown
 ~~~
 
+### Running the server in Production mode (TLDR version)
+
+~~~bash
+> make machines-and-swarm
+> eval $(docker-machine env node-manager)
+> make build-prod
+> # Edit the docker-stack-prod.yml file
+> make stack-deploy-prod
+> # Wait for the web service (using docker logs -f)
+> # Connect to http://192.168.99.100:5000
+~~~
+
+### Running the server in Developement mode (TLDR version)
+
+~~~bash
+> make machines-and-swarm
+> eval $(docker-machine env node-manager)
+> make build-dev
+> # Edit the docker-stack-dev.yml file
+> make stack-deploy-dev
+> # Wait for the web service (using docker logs -f)
+> # Connect to http://192.168.99.100:5000
+~~~
 
 
 [crx]: https://www.cryptoexperts.com/  "CryptoExperts website"
