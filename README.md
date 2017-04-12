@@ -200,7 +200,7 @@ services:
             - MYSQL_PORT=3306
             - UPLOAD_FOLDER=/uploads
             - URL_COMPILE_AND_TEST=http://launcher:5000/compile_and_test
-            - STARTING_DATE=1493596800 # In seconds since EPOCH. Must be identical in the launcher service. 1/5/2017 00:00 UTC is 1493596800
+            - STARTING_DATE=1494806400 # In seconds since EPOCH. Must be identical in the launcher service. 15/5/2017 00:00 UTC is 1494806400
             - POSTING_DEADLINE=1504223940 # In seconds since EPOCH. Must be identical in the launcher service. 31/8/2017 23:59 UTC is 1504223940
             - FINAL_DEADLINE=1506254400 # In seconds since EPOCH. Must be identical in the launcher service. 24/9/2017 12:00 UTC is 1506254400
             - CHALLENGE_MAX_SOURCE_SIZE_IN_MB=50 # In MB. Must be identical in the launcher service. Must be 50 in production.
@@ -233,7 +233,7 @@ services:
             - SOCK=unix:///var/run/docker.sock
             - NAME_OF_COMPILE_AND_TEST_SERVICE=prod_compile_and_test
             - COMPILE_AND_TEST_SERVICE_NETWORK=prod_back_network
-            - STARTING_DATE=1493596800 # In seconds since EPOCH. Must be identical in the web service. 1/5/2017 00:00 UTC is 1493596800
+            - STARTING_DATE=1494806400 # In seconds since EPOCH. Must be identical in the web service. 15/5/2017 00:00 UTC is 1494806400
             - POSTING_DEADLINE=1504223940 # In seconds since EPOCH. Must be identical in the web service. 31/8/2017 23:59 UTC is 1504223940
             - FINAL_DEADLINE=1506254400 # In seconds since EPOCH. Must be identical in the web service. 24/9/2017 12:00 UTC is 1506254400
             - CHALLENGE_MAX_SOURCE_SIZE_IN_MB=50 # In MB. Must be identical in the web service. Must be 50 in production.
