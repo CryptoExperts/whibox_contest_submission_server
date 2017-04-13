@@ -387,7 +387,7 @@ Note that connecting to the IP address of the `node-sandbox` would also work (th
 
 #### Step 7: Forward the host port
 
-At this point, the service is only accessible from the host, not to computers on the same network. We can make the service available to the outside world through the [port forwarding feature of VirtualBox](virtualbox_port_forwarding). Note that configuring port forwarding as described bellow requires to stop the VMs. Here is how to do it:
+At this point, the service is only accessible from the host, not to computers on the same network. We can make the service available to the outside world through the [port forwarding feature of VirtualBox][virtualbox_port_forwarding]. Note that configuring port forwarding as described bellow requires to stop the VMs. Here is how to do it:
 
 ~~~bash
 > make machines-stop
