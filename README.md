@@ -385,7 +385,20 @@ Note that connecting to the IP address of the `node-sandbox` would also work (th
 
 ![Server index page screenshot](images/index_screenshot.png)
 
-#### Step 7: Shutdown the swarm and the VMs
+#### Step 7: Forward the host port
+
+At this point, the service is only accessible from the host, not to computers on the same network. We can make the service available to the outside world through the [port forwarding feature of VirtualBox](virtualbox_port_forwarding). Note that configuring port forwarding as described bellow requires to stop the VMs. Here is how to do it:
+
+~~~bash
+> make machines-stop
+> VBoxManage modifyvm "node-manager" --natpf1 "tcp-port5000,tcp,,5000,,5000";
+> make machines-start
+> make stack-deploy-prod
+~~~
+
+After a few seconds, the service should be accessible from the outside world on port `5000` of the host running VirtualBox.
+
+#### Step 8: Shutdown the swarm and the VMs
 
 To properly shutdown the services:
 
@@ -460,6 +473,7 @@ node-sandbox   -        virtualbox   Stopped                 Unknown
 [docker]: https://www.docker.com "Docker website"
 [docker_swarm]: https://docs.docker.com/engine/swarm/ "Docker Swarm mode overview"
 [virtualbox]: https://www.virtualbox.org "VirtualBox website"
+[virtualbox_port_forwarding]: https://www.virtualbox.org/manual/ch06.html#natforward "VirtualBox documentation on port forwarding"
 [docker_machine]: https://docs.docker.com/machine/overview/ "Docker Machine Overview"
 [gentoo]: https://www.gentoo.org "Gentoo Linux website"
 [sierra]: http://www.apple.com/lae/macos/sierra/ "macOS Sierra"
