@@ -43,7 +43,7 @@ def plot_data_for_program(program, now):
     strawberries = program.strawberries(now)
     if len(strawberries) > 0:
         for key, val in sorted(strawberries.items()):
-            data_flot += '[%d, %d], '%(key, val)
+            data_flot += '[%d, %d], '%(key*1000, val)
         data_flot = data_flot[:-2]
     data_flot += ']'
 
