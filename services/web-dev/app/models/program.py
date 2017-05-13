@@ -260,7 +260,7 @@ class Program(db.Model):
             for running_timestamp in range(self._timestamp_first_break, min(now, app.config['FINAL_DEADLINE'])+1, app.config['NBR_SECONDS_PER_DAY']):
                 strawberries[running_timestamp] = running_val
                 running_val_diff = max(running_val_diff - 1, 0)
-                running_val -= running_val_diff
+                running_val = max(running_val - running_val_diff, 0)
 
         return strawberries
 
