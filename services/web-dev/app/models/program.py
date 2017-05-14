@@ -256,10 +256,11 @@ class Program(db.Model):
                 running_val += running_val_diff
                 running_val_diff += 1
                 strawberries[running_timestamp] = running_val
+            running_val = max(running_val - 1, 0)
             for running_timestamp in range(self._timestamp_first_break, min(now, app.config['FINAL_DEADLINE'])+1, app.config['NBR_SECONDS_PER_DAY']):
                 strawberries[running_timestamp] = running_val
                 running_val_diff = max(running_val_diff - 1, 0)
-                running_val -= running_val_diff
+                running_val = max(running_val - running_val_diff, 0)
 
         return strawberries
 
@@ -305,7 +306,7 @@ class Program(db.Model):
             self._status = Program.Status.broken.value
             if self._timestamp_first_break is None:
                 self._timestamp_first_break = now
-                self._timestamp_strawberries_next_update = now + app.config['NBR_SECONDS_PER_DAY']
+                self._timestamp_strawberries_next_update = now# + app.config['NBR_SECONDS_PER_DAY']
             whitebox_break = WhiteboxBreak.create(user, self, now, self._strawberries_last)
             db.session.add(whitebox_break)
         else:

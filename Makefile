@@ -107,6 +107,9 @@ copy-vendors-files-dev:
 	-chmod 644 services/web-dev/static/js/jquery.flot.resize.js
 	cp vendors/flot/jquery.flot.resize.js services/web-dev/static/js/jquery.flot.resize.js
 	chmod 444 services/web-dev/static/js/jquery.flot.resize.js
+	-chmod 644 services/web-dev/static/js/jquery.flot.time.js
+	cp vendors/flot/jquery.flot.time.js services/web-dev/static/js/jquery.flot.time.js
+	chmod 444 services/web-dev/static/js/jquery.flot.time.js
 	-chmod 644 services/web-dev/static/js/jquery.min.js
 	cp vendors/jquery/jquery.min.js services/web-dev/static/js/jquery.min.js
 	chmod 444 services/web-dev/static/js/jquery.min.js

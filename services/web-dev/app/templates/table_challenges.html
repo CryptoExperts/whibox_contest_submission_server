@@ -4,6 +4,7 @@
       <tr>
 	<th class='column-to-sort-first asc'>Rank</th>
 	<th>id</th>
+	<th></th>
 	<th>Name</th>
 	<th data-type="fruit">Strawberries Peak</th>
 	<th>User</th>
@@ -19,6 +20,7 @@
 	<tr>
 	  <th class="text-center" scope="row">#{{ program.strawberries_ranking }}</th>
 	  <td class="text-center">{{ program._id }}</td>
+	  <td><div style="width: 1em; height: 1em; background-color: {{ program.hsl_color }}"></div></td>
 	  <td>{{ program.funny_name }}</td>
 	  <td class="text-right">{{ program.strawberries_peak }} 🍓</td>
 	  <td class="ellipsable">

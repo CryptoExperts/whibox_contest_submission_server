@@ -27,7 +27,7 @@ services:
             - STARTING_DATE=0 # In seconds since EPOCH. Must be identical in the launcher service. 1/5/2017 00:00 UTC is 1493596800
             - POSTING_DEADLINE=1504223940 # In seconds since EPOCH. Must be identical in the launcher service. 31/8/2017 23:59 UTC is 1504223940
             - FINAL_DEADLINE=1506254400 # In seconds since EPOCH. Must be identical in the launcher service. 24/9/2017 12:00 UTC is 1506254400
-            - NBR_SECONDS_PER_DAY=10 # In seconds. Must be 86400 in production TODO: should only be used in DEBUG mode
+            - NBR_SECONDS_PER_DAY=60 # In seconds. Must be 86400 in production TODO: should only be used in DEBUG mode
             - CHALLENGE_MAX_SOURCE_SIZE_IN_MB=50 # In MB. Must be identical in the launcher service. Must be 50 in production.
             - CHALLENGE_MAX_MEM_COMPILATION_IN_MB=500 # In MB. Must be identical in the launcher service. Must be 500 in production.
             - CHALLENGE_MAX_TIME_COMPILATION_IN_SECS=100 # In seconds. Must be identical in the launcher service. Must be 100 in production.
