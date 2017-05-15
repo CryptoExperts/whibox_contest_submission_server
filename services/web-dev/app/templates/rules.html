@@ -15,10 +15,10 @@
       <h2>User accounts</h2>
       <div class="panel panel-default">
 	<div class="panel-body">
-	  <p>Anyone can create an account and post one or several challenges and/or break one or more challenges on the Whibox competition website.</p>
+	  <p>Anyone can create an account and post one or several challenges and/or break one or more challenges on the WhibOx competition website.</p>
 	  <p>The account owner may remain completely anonymous when creating an account. In addition to creating a login/password, an email address must be entered (in case the ORGANIZING COMMITTEE needs to contact the owner directly). However, the email address is not verified except for basic syntax. Users may e.g. enter their primary email address or, if they are willing to remain anonymous, may use a free service such as <a href="https://www.mailinator.com">Mailinator</a> to create an untraceable email address.</p>
 	  <p>Therefore, the same person may create several accounts. User accounts are password-protected but passwords CANNOT BE CHANGED and are NOT RECOVERABLE in case of loss. It is the users' responsibility to choose a strong enough password and to keep it in a safe place. Non-anonymous winners will be asked to log in publicly during the prize ceremony.</p>
-	  <p>Every newly registered user, referred to as a participant, is assigned a BANANA score and a STRAWBERRY score both initialized to 0.</p>
+	  <p>Every newly registered user, referred to as a participant, is assigned a BANANA score initialized to 0.</p>
 	  <p>The website is public in the sense that anyone can freely browse it (including downloading challenges) but logging in is required to post or break challenges.</p>
 	  <p>The competition website is referred to as the SYSTEM.</p>
 	</div>
@@ -29,14 +29,18 @@
       <h2>What is a challenge?</h2>
       <div class="panel panel-default">
 	<div class="panel-body">
-	  <p>A challenge is a C source program that contains a single function which prototype is imposed to be</p>
-	  <pre>void AES_128_encrypt(unsigned char *ciphertext, unsigned char *plaintext);</pre>
+	  <p>A challenge is a C source program that contains a function with prototype</p>
+	  <pre>void AES_128_encrypt(unsigned char ciphertext[16], unsigned char plaintext[16]);</pre>
 	  <p>The program must fulfill the following requirements:</p>
 	  <ul>
 	    <li>It implements an AES-128 encryption under some 128-bit key embedded into the code.</li>
+	    <li>The function <code>AES_128_encrypt(ciphertext, plaintext)</code> takes a 128-bit plaintext block as input (as a pointer on an array of 16 bytes) and writes the corresponding 128-bit ciphertext (as an array of 16 bytes) at the given address.</li>
 	    <li><strong>Requirements on the source:</strong></li>
 	    <ul>
-	      <li>No <code>#include</code> or <code>extern</code> is allowed in the source code, and more generally linking to external libraries (even the standard C libraries) is forbidden. This is intended to prevent the inclusion of malware in submitted challenges.</li>
+	      <li>The C language is the one accepted by GCC 6.2.3 with NO language dialect options. This is equivalent to the option <code>-std=gnu90</code>, meaning it is C90 with GNU extensions.</li>
+	      <li>No <code>#include</code> or <code>extern</code> is allowed in the source code, and more generally linking to external libraries (even the standard C libraries) is forbidden. This is intended to prevent the inclusion of malware in submitted challenges. Any attempt to maliciously attack the SYSTEM or the computer system of attackers will lead to DISQUALIFICATION. In case evidence of malicious code is found in a challenge, contestants are invited to contact the ORGANIZING COMMITTEE directly (whibox.organizing.committee@gmail.com). If contestants are suspicious that some challenge program may contain malware, they may run GCC in docker or a virtual machine, exactly like the server does (using VirtualBox). Documentation on how the server runs is found on <a href="https://github.com/CryptoExperts/wb_contest_submission_server">GitHub</a>. Contestants are invited to download and install their own instance of the server if they want to ensure that their challenge will be accepted when submitted.</li>
+	      <li>The type <code>unsigned long</code> is imposed to represent 32-bit integers, meaning that the target architecture is 32 bit oriented (as opposed to 64).</li>
+	      <li>The source code must be completely portable and re-compilable towards ANY 32-bit target architecture. In other words, it must be made only of generic C which in particular, excludes the use of inline assembly.</li>
 	      <li>The source code must be no bigger than <strong>{{ challenge_max_source_size_in_mb }}MB</strong>.</li>
 	      <li>The REFERENCE COMPILER must use at most <strong>{{ challenge_max_mem_for_compilation_in_mb }}MB</strong> of RAM to complete compilation.</li>
 	      <li>The compilation must not exceed <strong>{{ challenge_max_time_for_compilation_in_secs }} seconds</strong>.</li>
@@ -44,12 +48,13 @@
 	    <li><strong>Requirements on the executable:</strong> once compiled by the REFERENCE COMPILER, the executable program must:</li>
 	    <ul>
 	      <li>be <strong>{{ challenge_max_binary_size_in_mb }}MB</strong> in size or less,</li>
-	      <li>use <strong>{{ challenge_max_mem_execution_in_mb }}MB</strong> of RAM or less and</li>
-	      <li>run, on average, in <strong>{{ challenge_max_time_execution_in_secs }} second</strong> or less on the REFERENCE PROCESSOR.</li>
+	      <li>use <strong>{{ challenge_max_mem_execution_in_mb }}MB</strong> of RAM or less (this includes the stack and all global variables, at the exclusion of the code itself),</li>
+	      <li>run, on average, in <strong>{{ challenge_max_time_execution_in_secs }} second</strong> or less per function call. This is not absolute time but CPU time, measured within a VirtualBox VM by the SYSTEM. Contestants may check that their challenges comply with this limitation by using the utility <code>ulimit</code> with the <code>-t</code> option.</li>
 	    </ul>
 	  </ul>
 	  <p>The SYSTEM will reject a program that does not comply with these requirements.</p>
-	  <p>Compliance with the requirements can be tested by downloading and running the Docker image found <a href="https://github.com/CryptoExperts/wb_contest_submission_server">here</a>.</p>
+	  <p>Compliance with the requirements can be tested by downloading and running a local instance of the submission server found <a href="https://github.com/CryptoExperts/wb_contest_submission_server">here</a>.</p>
+	  <p><strong>IPR and copyright disclaimer:</strong> contestants may indicate (typically in a header in their source) which license applies to their challenge program, if any.</p>
 	</div>
       </div>
     </div>
@@ -148,7 +153,7 @@
 	  <ul>
 	    <li>posting a challenge program that does not implement AES-128,</li>
 	    <li>posting a challenge program that contains malware,</li>
-	    <li>attempting to attack/hack the SYSTEM in any manner.</li>
+	    <li>attempting to attack/hack the SYSTEM or the computer system of attackers in any manner.</li>
 	  </ul>
 	  <p>The user account of a DISQUALIFIED participant is disabled and challenges that the participant has posted may be withdrawn from the competition on a case-by-case basis.</p>
 	</div>
@@ -174,7 +179,7 @@
 	<table class="table table-striped table-bordered">
 	  <tbody>
 	    <tr><td>SYSTEM</td><td>Server comprising the competition website and tools for compiling and testing challenge programs</td></tr>
-	    <tr><td>REFERENCE COMPILER</td><td><code>gcc</code> with option <code>-nostdinc</code>.</td></tr>
+	    <tr><td>REFERENCE COMPILER</td><td><code>gcc</code> with option <code>-nostdinc</code> (this is version 6.2.3 of <code>gcc</code>)</td></tr>
 	    <tr><td>REFERENCE IMPLEMENTATION</td><td><code>aes.c</code> file available from <a href="https://github.com/CryptoExperts/wb_contest_submission_server">this GitHub repository</a>.</td></tr>
 	    <tr><td>BROKEN (challenge)</td><td> At least one participant has been able to provide the SYSTEM with an AES-128 key that passes the key verification procedure.</td></tr>
 	    <tr><td>UNBROKEN (challenge)</td><td>A challenge that is not BROKEN.</td></tr>

@@ -10,7 +10,7 @@
 
   <div class="row">
     <div class="col-xs-12">
-      <h2>Strawberries Competition</h2>
+      <h2>Strawberry Scores</h2>
     </div>
   </div>
 
@@ -18,7 +18,7 @@
     <div class="col-xs-12">
 
       {% if programs %}
-	<h3 id="challenges">Strawberry Rankings and Challenges</h3>
+	<h3 id="challenges">Strawberry Ranking and Challenges</h3>
 	{% include 'table_challenges.html' %}
       {% else %}
 	<p class="lead">There isn't any challenge submitted yet. Make sure to be the first to submit one by clicking on the <mark>Submit a Challenge</mark> link in the menu bar.</p>
@@ -29,7 +29,7 @@
   {% if data_flot %}
     <div class="row">
       <div class="col-xs-12">
-	<h3>Strawberries race over time</h3>
+	<h3>Strawberry scores over time</h3>
 	<div class="flot-plot flot-chart" data-flot="{{ data_flot }}" style="height: 500px;"></div>
       </div>
     </div>
@@ -41,14 +41,14 @@
 
     <div class="row">
       <div class="col-xs-12">
-	<h2>Bananas Competition</h2>
+	<h2>Banana Scores</h2>
       </div>
     </div>
 
     <div class="row">
 
       <div class="col-xs-12 col-lg-5">
-	<h3 id="bananas">Banana Rankings</h3>
+	<h3 id="bananas">Banana Ranking</h3>
 	{% include 'table_bananas_ranking.html' %}
       </div>
 
