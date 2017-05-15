@@ -1,3 +1,8 @@
+/* 	
+	NOTE: This is just a correct implementation of AES-128, 
+	not an example of a challenge program.
+*/
+
 struct aes_key_struct {
         unsigned long rd_key[60];
         int rounds;
