@@ -22,6 +22,9 @@ COPY config/nginx_vhost.conf /etc/nginx/conf.d/default.conf
 COPY app /app
 COPY static /static
 
+COPY ssl/*.crt /etc/ssl/
+COPY ssl/*.key /etc/ssl/
+
 COPY config/launcher.sh /usr/local/bin/
 RUN chmod 755 /usr/local/bin/launcher.sh
 
