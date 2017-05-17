@@ -147,7 +147,32 @@ Instead of ssh-ing to the `node-manager` VM, it is more convenient to set a few 
 > eval $(docker-machine env node-manager)
 ~~~
 
-#### Step 3: Build the service images
+#### Step 3: Create SSL certificates and configure nginx
+
+Generate a private key and a signed SSL certificate (e.g., using [Let's Encrypt][letsencrypt]) and put both files in `services/web-prod/ssl/`. Assuming that the files are named `foobar.key` and `foobar.crt` and that your hostname is `yourhostname.net`, edit the nginx configuration file as follows:
+
+~~~bash
+> cat services/web-prod/config/nginx_vhost.conf
+server {
+    listen	            5000 ssl;            # Port must be 5000, this will be fixed in the future
+    server_name         yourhostname.net;    # Update this
+    ssl_certificate     /etc/ssl/foobar.crt; # Update this
+    ssl_certificate_key /etc/ssl/foobar.key; # Update this
+
+    client_max_body_size 50M;
+
+    location /static {
+      alias /static;
+    }
+
+    location / {
+             uwsgi_pass unix:///tmp/uwsgi.sock;
+	     include uwsgi_params;
+    }
+}
+~~~
+
+#### Step 4: Build the service images
 
 To build the service images, run:
 
@@ -172,7 +197,7 @@ crx/compile_and_test   latest              60a2c138871f        7 minutes ago    
 alpine                 3.5                 4a415e366388        3 weeks ago         3.99 MB
 ~~~
 
-#### Step 4: Configure the services
+#### Step 5: Configure the services
 
 A few parameters **must** be changed in the `docker-stack-prod.yml` file before the server can be run. These parameters are indicated by a `>` sign:
 
@@ -272,7 +297,7 @@ networks:
     back_network:
 ~~~
 
-#### Step 5: Launch the services on the swarm
+#### Step 6: Launch the services on the swarm
 
 To launch the services:
 
@@ -310,7 +335,7 @@ CONTAINER ID        IMAGE               COMMAND             CREATED             
 
 The `compile_and_test` service runs on-demand, once per challenge to compile.
 
-#### Step 6: Connecting the web service
+#### Step 7: Connecting the web service
 
 The first time the services are launched, the `mysql` service creates a database and initializes it. This takes a few seconds. In the meantime, the `web` service waits. This can be checked:
 
@@ -374,7 +399,7 @@ spawned uWSGI worker 3 (pid: 60, cores: 1)
 spawned uWSGI worker 4 (pid: 61, cores: 1)
 ~~~
 
-Once the `web` service has started, it is possible to fire up a browser and connect to `http://192.168.99.100:5000`. You can run the following command to get exact IP address of the `node-manager`:
+Once the `web` service has started, it is possible to fire up a browser and connect to `https://192.168.99.100:5000`. You can run the following command to get exact IP address of the `node-manager`:
 
 ~~~bash
 > docker-machine env node-manager | grep HOST
@@ -385,7 +410,7 @@ Note that connecting to the IP address of the `node-sandbox` would also work (th
 
 ![Server index page screenshot](images/index_screenshot.png)
 
-#### Step 7: Forward the host port
+#### Step 8: Forward the host port
 
 At this point, the service is only accessible from the host, not to computers on the same network. We can make the service available to the outside world through the [port forwarding feature of VirtualBox][virtualbox_port_forwarding]. Note that configuring port forwarding as described bellow requires to stop the VMs. Here is how to do it:
 
@@ -398,7 +423,7 @@ At this point, the service is only accessible from the host, not to computers on
 
 After a few seconds, the service should be accessible from the outside world on port `5000` of the host running VirtualBox.
 
-#### Step 8: Shutdown the swarm and the VMs
+#### Step 9: Shutdown the swarm and the VMs
 
 To properly shutdown the services:
 
@@ -449,7 +474,7 @@ node-sandbox   -        virtualbox   Stopped                 Unknown
 > # Edit the docker-stack-prod.yml file
 > make stack-deploy-prod
 > # Wait for the web service (using docker logs -f)
-> # Connect to http://192.168.99.100:5000
+> # Connect to https://192.168.99.100:5000
 ~~~
 
 ### Running the server in Developement mode (TLDR version)
@@ -461,9 +486,10 @@ node-sandbox   -        virtualbox   Stopped                 Unknown
 > # Edit the docker-stack-dev.yml file
 > make stack-deploy-dev
 > # Wait for the web service (using docker logs -f)
-> # Connect to http://192.168.99.100:5000
+> # Connect to https://192.168.99.100:5000
 ~~~
 
+Note: in developement mode, the server runs under https with a self-signed certificate. The private key being included in this git repo, you must **not** use the developement mode in production.
 
 [crx]: https://www.cryptoexperts.com/  "CryptoExperts website"
 [whibox]: https://www.cryptoexperts.com/whibox2016/ "WhibOx 2016 website"
@@ -478,3 +504,4 @@ node-sandbox   -        virtualbox   Stopped                 Unknown
 [gentoo]: https://www.gentoo.org "Gentoo Linux website"
 [sierra]: http://www.apple.com/lae/macos/sierra/ "macOS Sierra"
 [docker_for_mac]: https://docs.docker.com/docker-for-mac/ "Docker for Mac"
+[letsencrypt]: https://letsencrypt.org
