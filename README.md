@@ -479,6 +479,7 @@ node-sandbox   -        virtualbox   Stopped                 Unknown
 > make stack-deploy-prod
 > # Wait for the web service and check that it started properly (using docker logs -f)
 > # Connect to http://<your host name>:5000 or https://<your host name>:5443
+> # If this does not work, try the section on port forwarding
 ~~~
 
 ### Running the server in Developement mode (TLDR version)
