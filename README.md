@@ -154,10 +154,11 @@ Generate a private key and a signed SSL certificate (e.g., using [Let's Encrypt]
 ~~~bash
 > cat services/web-prod/config/nginx_vhost.conf
 server {
-    listen	            5000 ssl;            # Port must be 5000, this will be fixed in the future
-    server_name         yourhostname.net;    # Update this
-    ssl_certificate     /etc/ssl/foobar.crt; # Update this
-    ssl_certificate_key /etc/ssl/foobar.key; # Update this
+    listen              5000;
+    listen              5443 ssl;            # Do not change this. Instead, update docker-stack-prod.yml
+    server_name         localhost;           # Update this
+    ssl_certificate     /etc/ssl/foobar.crt; # Update this (do not change the /etc/ssl/ part, just change the file name)
+    ssl_certificate_key /etc/ssl/foobar.key; # Update this (do not change the /etc/ssl/ part, just change the file name)
 
     client_max_body_size 50M;
 
@@ -211,7 +212,8 @@ services:
         networks:
             - front_network
         ports:
->           - 5000:5000 # The first number is the external port and can be changed, e.g., to 80:5000 (the second number must not be changed)
+>           - 5000:5000 # The first number is the http external port and can be changed, e.g., to 80:5000 (the second number must not be changed)
+>           - 5443:5443 # The first number is the https external port and can be changed, e.g., to 443:5443 (the second number must not be changed)
         volumes:
             - /volumes/whitebox_program_uploads:/uploads
         environment:
@@ -417,11 +419,12 @@ At this point, the service is only accessible from the host, not to computers on
 ~~~bash
 > make machines-stop
 > VBoxManage modifyvm "node-manager" --natpf1 "tcp-port5000,tcp,,5000,,5000";
+> VBoxManage modifyvm "node-manager" --natpf1 "tcp-port5443,tcp,,5443,,5443";
 > make machines-start
 > make stack-deploy-prod
 ~~~
 
-After a few seconds, the service should be accessible from the outside world on port `5000` of the host running VirtualBox.
+After a few seconds, the service should be accessible from the outside world on both ports `5000` (in `http`) and `5443` (in `https`) of the host running VirtualBox.
 
 #### Step 9: Shutdown the swarm and the VMs
 
@@ -470,11 +473,12 @@ node-sandbox   -        virtualbox   Stopped                 Unknown
 ~~~bash
 > make machines-and-swarm
 > eval $(docker-machine env node-manager)
+> # Create SSL certificates and configure nginx
 > make build-prod
 > # Edit the docker-stack-prod.yml file
 > make stack-deploy-prod
-> # Wait for the web service (using docker logs -f)
-> # Connect to https://192.168.99.100:5000
+> # Wait for the web service and check that it started properly (using docker logs -f)
+> # Connect to http://<your host name>:5000 or https://<your host name>:5443
 ~~~
 
 ### Running the server in Developement mode (TLDR version)
@@ -485,7 +489,7 @@ node-sandbox   -        virtualbox   Stopped                 Unknown
 > make build-dev
 > # Edit the docker-stack-dev.yml file
 > make stack-deploy-dev
-> # Wait for the web service (using docker logs -f)
+> # Wait for the web service and check that it started properly (using docker logs -f)
 > # Connect to https://192.168.99.100:5000
 ~~~
 
