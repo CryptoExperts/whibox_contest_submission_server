@@ -147,7 +147,19 @@ Instead of ssh-ing to the `node-manager` VM, it is more convenient to set a few 
 > eval $(docker-machine env node-manager)
 ~~~
 
-#### Step 3: Create SSL certificates and configure nginx
+#### Step 3 (option 1): Configure an SSL reverse proxy
+
+Unless you are "in the dark ages of manual SSL management" (TM @hashbreaker), it is now time to configure an SSL reverse proxy, that redirects all the `https` traffic it receives to the port `5000` of the `node-manager` (in `http`). This means you need to configure another webserver instance (such as Apache or Nginx) or use a commercial alternative (such as Cloudflare or CloudFront). Describing the procedure is beyond the scope of this howto.
+
+#### Step 3 (option 2): Create SSL certificates and configure nginx
+
+If you do not want to configure a reverse proxy, you can integrate SSL directely into the `web-prod` service.
+
+First, uncomment the following line in the file `docker-stack-prod.yml`:
+
+~~~bash
+# - 5443:5443
+~~~
 
 Generate a private key and a signed SSL certificate (e.g., using [Let's Encrypt][letsencrypt]) and put both files in `services/web-prod/ssl/`. Assuming that the files are named `foobar.key` and `foobar.crt` and that your hostname is `yourhostname.net`, edit the nginx configuration file as follows:
 
@@ -213,7 +225,7 @@ services:
             - front_network
         ports:
 >           - 5000:5000 # The first number is the http external port and can be changed, e.g., to 80:5000 (the second number must not be changed)
->           - 5443:5443 # The first number is the https external port and can be changed, e.g., to 443:5443 (the second number must not be changed)
+            # - 5443:5443
         volumes:
             - /volumes/whitebox_program_uploads:/uploads
         environment:
