@@ -2,6 +2,7 @@ import sys
 import time
 import urllib.request
 import threading
+import flask
 from urllib.parse import urlparse, urljoin
 from flask import flash
 from app import app
@@ -44,3 +45,12 @@ def crx_flash(text_and_category_key, *args):
     text = flash_texts_and_categories[text_and_category_key][0]
     category = flash_texts_and_categories[text_and_category_key][1]
     flash(text%(args), category)
+
+
+class Response(flask.Response):
+    def get_wsgi_headers(self, environ):
+        return self.headers
+
+
+def redirect(url):
+    return flask.redirect(url, Response=Response)
