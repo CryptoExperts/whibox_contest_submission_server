@@ -6,7 +6,7 @@ import binascii
 import sys
 from Crypto.Cipher import AES
 from traceback import print_exc
-from flask import render_template, redirect, url_for, request, send_from_directory, request_started
+from flask import render_template, url_for, request, send_from_directory, request_started
 from flask_login import login_user, logout_user, login_required, current_user
 from app import app
 from app import login_manager
@@ -16,7 +16,7 @@ from .forms import LoginForm, UserCreationForm, WhiteboxSubmissionForm, Whitebox
 from .models.user import User
 from .models.program import Program
 from .models.whiteboxbreak import WhiteboxBreak
-from .utils import crx_flash
+from .utils import crx_flash, redirect
 
 def update_strawberries(sender, **extra):
     now = int(time.time())

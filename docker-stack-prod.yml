@@ -8,7 +8,7 @@ services:
             - front_network
         ports:
             - 5000:5000 # The first number is the external port and can be changed, e.g., to 80:5000 (the second number must not be changed)
-            - 5443:5443
+            # - 5443:5443
         volumes:
             - /volumes/whitebox_program_uploads:/uploads
         environment:
