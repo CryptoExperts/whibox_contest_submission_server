@@ -35,8 +35,8 @@ When running in [Production mode](#running-the-server-in-production-mode), the o
 In order to run this server, you need to install the following softwares first:
 
 * [VirtualBox][virtualbox] (tested on versions 5.1.18 and 5.1.22)
-* Docker Engine (tested on Docker version 17.03.1)
-* Docker Machine (tested on version 0.10.0)
+* Docker Engine (tested on Docker version 17.06.0)
+* Docker Machine (tested on version 0.12.0)
 * Make (tested on versions 3.81 and 4.2.1 😉)
 
 For Mac users, note that Docker Machine is included by default when installing [Docker for Mac][docker_for_mac].

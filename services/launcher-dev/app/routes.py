@@ -70,7 +70,7 @@ def compile_and_test():
            'CHALLENGE_MAX_TIME_EXECUTION_IN_SECS=%d'%app.config['CHALLENGE_MAX_TIME_EXECUTION_IN_SECS'],
            'CHALLENGE_NUMBER_OF_TEST_VECTORS=%d'%app.config['CHALLENGE_NUMBER_OF_TEST_VECTORS'],
     ]
-    mounts = ['/whitebox_program_uploads:/uploads']
+    mounts = ['/whitebox_program_uploads:/uploads:ro']
     service = client.services.create(image='crx/compile_and_test',
                                      mounts=mounts,
                                      env=env,
