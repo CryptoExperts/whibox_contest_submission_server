@@ -22,6 +22,9 @@ else
     if [ ! -d $PWD/volumes/whitebox_program_uploads ]; then
 	mkdir $PWD/volumes/whitebox_program_uploads
     fi
+    if [ ! -d $PWD/volumes/whitebox_program_uploads/compilations ]; then
+	mkdir $PWD/volumes/whitebox_program_uploads/compilations
+    fi
 
     docker-machine create -d virtualbox --virtualbox-share-folder $PWD/volumes:volumes node-manager
     VBoxManage controlvm node-manager poweroff

@@ -38,6 +38,7 @@ clean-machines:
 clean-volumes:
 	cd volumes; rm -rf database; mkdir database
 	cd volumes; rm -rf whitebox_program_uploads; mkdir whitebox_program_uploads
+	cd volumes; cd whitebox_program_uploads; mkdir compilations
 
 #############
 # Dev targets

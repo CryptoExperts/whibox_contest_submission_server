@@ -52,6 +52,7 @@ services:
             - /services/launcher-dev/app:/app # must be mounted here, because of the location of run_dev.py
             - /var/run/docker.sock:/var/run/docker.sock
             - /volumes/whitebox_program_uploads:/uploads:ro
+            - /volumes/whitebox_program_uploads/compilations:/compilations
         environment:
             - DEBUG=True
             - MYSQL_DATABASE=db_wb

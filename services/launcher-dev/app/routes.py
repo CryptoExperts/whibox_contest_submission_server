@@ -6,6 +6,8 @@ import os
 import inspect
 import time
 import binascii
+import random
+import string
 from app import app
 from app import db
 from app import utils
@@ -70,7 +72,20 @@ def compile_and_test():
            'CHALLENGE_MAX_TIME_EXECUTION_IN_SECS=%d'%app.config['CHALLENGE_MAX_TIME_EXECUTION_IN_SECS'],
            'CHALLENGE_NUMBER_OF_TEST_VECTORS=%d'%app.config['CHALLENGE_NUMBER_OF_TEST_VECTORS'],
     ]
-    mounts = ['/whitebox_program_uploads:/uploads']
+
+    # We copy the source file from /uploads to a fresh directory in /compilations
+    dir_for_compilation = basename
+    path_for_compilations = os.path.join('/compilations', dir_for_compilation)
+    if not os.path.exists(path_for_compilations):
+        os.makedirs(path_for_compilations)
+    source_name = basename + '.c'
+    path_to_uploaded_source = os.path.join('/uploads', source_name)
+    path_to_source_for_compilation = os.path.join(path_for_compilations, source_name)
+    if not os.path.exists(path_to_source_for_compilation):
+        shutil.copy(path_to_uploaded_source, path_to_source_for_compilation)
+
+    # We configure and launch the compile_and_test docker
+    mounts = ['/whitebox_program_uploads/compilations/%s:/uploads:ro'%dir_for_compilation]
     service = client.services.create(image='crx/compile_and_test',
                                      mounts=mounts,
                                      env=env,
@@ -119,6 +134,17 @@ def compile_and_test_result(basename, nonce, ret):
     if not utils.basename_and_nonce_are_valid(basename, nonce) or ret is None:
         return ""
     program = Program.get(basename)
+
+    # We (try to) remove the compilation directory
+    dir_for_compilation = basename
+    path_for_compilations = os.path.join('/compilations', dir_for_compilation)
+    utils.console('Trying to remove %s'%str(path_for_compilations))
+    try:
+        shutil.rmtree(path_for_compilations)
+    except:
+        utils.console('Could NOT remove the directory %s'%str(path_for_compilations))
+
+    # We process the ret code
     if ret == ERR_CODE_COMPILATION_FAILED:
         program.set_status_to_compilation_failed('Compilation failed for unknown reason (may be due to an excessive memory usage).')
         utils.console('Compilation failed for file with basename %s'%str(basename))
@@ -131,8 +157,10 @@ def compile_and_test_result(basename, nonce, ret):
     elif ret == ERR_CODE_EXECUTION_FAILED:
         program.set_status_to_execution_failed()
         utils.console('Code execution failed for file with basename %s'%str(basename))
+    elif ret == CODE_SUCCESS:
+        utils.console('Success for file with basename %s'%str(basename))
     else:
-        utils.console('We received an unexpected return code for file with basename %s'%str(basename))
+        utils.console('We received an unexpected return code (%s) for file with basename %s'%(str(ret), str(basename)))
     db.session.commit()
     client = docker.from_env()
     utils.remove_compiler_service_for_basename(client, basename, app)
