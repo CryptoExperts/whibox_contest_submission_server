@@ -8,6 +8,7 @@ import time
 import binascii
 import random
 import string
+from traceback import print_exc
 from app import app
 from app import db
 from app import utils
@@ -25,8 +26,26 @@ ERR_CODE_EXECUTION_FAILED = 4
 @app.route('/compile_and_test', methods=['GET', 'POST'])
 def compile_and_test():
 
-    Program.clean_programs_which_failed_to_compile_or_test()
-    db.session.commit()
+    utils.console('Starting compile and test')
+
+    retry_count = 0
+    while True:
+        try:
+            utils.console('Calling Program.clean_programs_which_failed_to_compile_or_test...')
+            Program.clean_programs_which_failed_to_compile_or_test()
+            db.session.commit()
+        except:
+            retry_count += 1
+            if retry_count < 5:
+                utils.console('Exception catched, trying again in 2sec')
+                time.sleep(2)
+                continue
+            else:
+                utils.console('Could not clean programs which failed to compile or test')
+                utils.console('Exception:')
+                print_exc()
+                return ""
+        break
 
     client = docker.from_env()
     api_client = docker.APIClient(app.config['SOCK'])
@@ -35,8 +54,24 @@ def compile_and_test():
         utils.console('A program is currently being compiled or tested. Exiting.')
         return ""
 
-    utils.console('Looking for a program to compile and test.')
-    program_to_compile_and_test = Program.get_next_program_to_compile()
+    retry_count = 0
+    while True:
+        try:
+            utils.console('Looking for a program to compile and test.')
+            program_to_compile_and_test = Program.get_next_program_to_compile()
+        except:
+            retry_count += 1
+            if retry_count < 5:
+                utils.console('Exception catched, trying again in 2sec')
+                time.sleep(2)
+                continue
+            else:
+                utils.console('Could not look for a program to compile and test.')
+                utils.console('Exception:')
+                print_exc()
+                return ""
+        break
+
     if program_to_compile_and_test is None:
         utils.console('There is no program to compile and test. Exiting')
         return ""
@@ -48,13 +83,31 @@ def compile_and_test():
         if len(key_bytes) != 16:
             raise
     except:
-        utils.console("The key is invalid")
+        utils.console("The key is invalid, setting the status to test failed.")
+        program.set_status_to_test_failed()
+        db.session.commit()
         return ""
 
     utils.console('Preparing to compile and test a program (basename=%s)'%basename)
 
-    nonce = program_to_compile_and_test.generate_nonce()
-    db.session.commit()
+    retry_count = 0
+    while True:
+        try:
+            utils.console('Generating nonce')
+            nonce = program_to_compile_and_test.generate_nonce()
+            db.session.commit()
+        except:
+            retry_count += 1
+            if retry_count < 5:
+                utils.console('Exception catched, trying again in 2sec')
+                time.sleep(2)
+                continue
+            else:
+                utils.console('Could not generate nonce.')
+                utils.console('Exception:')
+                print_exc()
+                return ""
+        break
 
     # TODO: add more constraints on the service, use https instead of http, do not hardcode the urls
     restart_policy = docker.types.RestartPolicy(condition='on-failure', max_attempts=1)
@@ -100,10 +153,27 @@ def compile_and_test():
         time.sleep(0.1)
     task = service.tasks()[0]
     task_id = task['ID']
-    program_to_compile_and_test.task_id = task_id
-    db.session.commit()
+    retry_count = 0
+    while True:
+        try:
+            utils.console('Setting the program\'s task id to %s'%task_id)
+            program_to_compile_and_test.task_id = task_id
+            db.session.commit()
+        except:
+            retry_count += 1
+            if retry_count < 5:
+                utils.console('Exception catched, trying again in 2sec')
+                time.sleep(2)
+                continue
+            else:
+                utils.console('Could not set the program task ide.')
+                utils.console('Exception:')
+                print_exc()
+                return ""
+        break
 
-    utils.console(program_to_compile_and_test)
+    utils.console('End of the compile_and_test procedure for the program:')
+    utils.console(str(program_to_compile_and_test))
 
     return "youpi"
 

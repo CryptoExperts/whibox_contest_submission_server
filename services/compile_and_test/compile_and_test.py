@@ -21,14 +21,20 @@ def exit_after_notifying_launcher(code, post_data=None):
     url = urljoin(url_to_ping_back, './%d'%code)
     print("Contacting %s"%url)
     sys.stdout.flush()
-    try:
-        urllib.request.urlopen(url, data=post_data)
-    except:
-        print("Could not contact %s"%url)
-        sys.stdout.flush()
-        sys.exit(-1)
+    retry_count = 0
+    while retry_count < 5:
+        try:
+            response = urllib.request.urlopen(url, data=post_data)
+            if response.getcode() < 400:
+                sys.stdout.flush()
+                sys.exit(0)
+        except:
+            pass
+        finally:
+            retry_count += 1
+    print("Could not contact %s"%url)
     sys.stdout.flush()
-    sys.exit(0)
+    sys.exit(-1)
 
 
 def try_fetch_plaintexts():

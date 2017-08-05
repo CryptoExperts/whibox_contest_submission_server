@@ -1,9 +1,12 @@
 import sys
+import datetime
 from Crypto.Cipher import AES
 from .models.program import Program
 
 def console(s):
-    print(str(s), file=sys.stderr)
+    date = str(datetime.datetime.now())
+    date_and_s = date + ' -- ' + s 
+    print(str(date_and_s), file=sys.stderr)
     sys.stderr.flush()
 
 
