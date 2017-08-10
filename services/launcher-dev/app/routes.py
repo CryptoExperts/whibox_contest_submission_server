@@ -202,8 +202,6 @@ def get_plaintexts(basename, nonce):
 def compile_and_test_result(basename, nonce, ret):
     utils.console("Entering compile_and_test_result(basename=%s, nonce=%s, ret=%d)"%(basename, nonce, ret))
     if not utils.basename_and_nonce_are_valid(basename, nonce) or ret is None:
-        # Look for another program to compile and test
-        compile_and_test()
         return ""
     program = Program.get(basename)
 
@@ -237,8 +235,6 @@ def compile_and_test_result(basename, nonce, ret):
     client = docker.from_env()
     utils.remove_compiler_service_for_basename(client, basename, app)
     if ret != CODE_SUCCESS:
-        # Look for another program to compile and test
-        compile_and_test()
         return ""
 
     # If we reach this point, the program was successfuly compiled, we can test the ciphertexts
@@ -252,8 +248,6 @@ def compile_and_test_result(basename, nonce, ret):
         program.error_message = error_message
         program.set_status_to_test_failed()
         db.session.commit()
-        # Look for another program to compile and test
-        compile_and_test()
         return ""
 
     # If we reach this point, the ciphertexts stream has the appropriate length
@@ -277,8 +271,6 @@ def compile_and_test_result(basename, nonce, ret):
         error_message = "Could not compute the test vectors for the given key."
         program.set_status_to_test_failed(error_message)
         db.session.commit()
-        # Look for another program to compile and test
-        compile_and_test()
         return ""
     for i in range(number_of_test_vectors):
         ciphertext = ciphertexts[16*i:16*(i+1)]
@@ -296,8 +288,6 @@ def compile_and_test_result(basename, nonce, ret):
                      binascii.hexlify(expected_ciphertext).decode())
             program.set_status_to_test_failed(error_message)
             db.session.commit()
-            # Look for another program to compile and test
-            compile_and_test()
             return ""
 
     # If we reach this point, all the tests were successful. We save 10 test vectors in the database so that we can test
