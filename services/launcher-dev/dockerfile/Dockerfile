@@ -1,6 +1,6 @@
 FROM crx/nginx:latest
 
-RUN apk add --no-cache 'mysql-client<10.1.23' 'python3<3.6' 'py3-crypto<2.6.2'
+RUN apk add --no-cache 'mysql-client<10.1.23' 'python3<3.6' 'py3-crypto<2.6.2' 'curl'
 
 RUN pip3 install --upgrade pip
 RUN pip3 install Flask==0.12
@@ -12,6 +12,9 @@ RUN pip3 install passlib==1.7.1
 
 COPY docker-entrypoint.sh /usr/local/bin/
 RUN chmod 755 /usr/local/bin/docker-entrypoint.sh
+
+COPY get_compile_and_test.sh /usr/local/bin/
+RUN chmod 755 /usr/local/bin/get_compile_and_test.sh
 
 ENTRYPOINT ["docker-entrypoint.sh"]
 

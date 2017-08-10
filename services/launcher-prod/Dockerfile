@@ -13,6 +13,9 @@ RUN pip3 install passlib==1.7.1
 COPY config/docker-entrypoint.sh /usr/local/bin/
 RUN chmod 755 /usr/local/bin/docker-entrypoint.sh
 
+COPY config/get_compile_and_test.sh /usr/local/bin/
+RUN chmod 755 /usr/local/bin/get_compile_and_test.sh
+
 ENTRYPOINT ["docker-entrypoint.sh"]
 
 COPY config/uwsgi.ini /etc/uwsgi.ini

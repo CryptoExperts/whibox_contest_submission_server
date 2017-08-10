@@ -8,4 +8,8 @@ done
 
 >&2 echo "Mysql is up !"
 
+# Create a cron job that gets the compile_and_test route every minute
+crontab -l | { cat; echo "* * * * * /usr/local/bin/get_compile_and_test.sh"; } | crontab -
+crond
+
 exec "$@"
