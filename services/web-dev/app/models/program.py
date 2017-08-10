@@ -205,17 +205,15 @@ class Program(db.Model):
                                 .order_by(Program._timestamp_compilation_start.desc())\
                                 .all()
         # We ensure the first program has not been compiled/tested for too long
-        for p in programs[:1]:
+        for p in programs:
             max_compile_time = app.config['CHALLENGE_MAX_TIME_COMPILATION_IN_SECS']
             max_exec_time = app.config['CHALLENGE_MAX_TIME_EXECUTION_IN_SECS'] * app.config['CHALLENGE_NUMBER_OF_TEST_VECTORS']
             max_time = 10 + max_compile_time + max_exec_time
+            
             if now > p._timestamp_compilation_start + max_time:
                 p.set_status_to_execution_failed('Compilation and/or testing took too much time. Timeout!')
-        # Any other unpublished program with a lower 'timestamp_compilation_start' must have crashed their docker
-        for p in programs[1:]:
-            p.set_status_to_execution_failed('Compilation and/or testing failed for unknown reason.')
-
-
+            else:
+                break
 
     @staticmethod
     def refresh_all_strawberry_rankings():
