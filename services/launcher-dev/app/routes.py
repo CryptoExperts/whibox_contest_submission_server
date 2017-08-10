@@ -203,10 +203,16 @@ def compile_and_test_result(basename, nonce, ret):
     utils.console("Entering compile_and_test_result(basename=%s, nonce=%s, ret=%d)"%(basename, nonce, ret))
     if not utils.basename_and_nonce_are_valid(basename, nonce) or ret is None:
         # Look for another program to compile and test
+        utils.console("Calling compile_and_test()... (0)")
+        compile_and_test()
+        return ""
+
+    program = Program.get(basename)
+    if program.status != Program.Status.submitted:
+        utils.console("The program %s status is %s. No need to proceed for this program.")
         utils.console("Calling compile_and_test()... (1)")
         compile_and_test()
         return ""
-    program = Program.get(basename)
 
     # We (try to) remove the compilation directory
     dir_for_compilation = basename
