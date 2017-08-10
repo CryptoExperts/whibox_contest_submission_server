@@ -203,6 +203,7 @@ def compile_and_test_result(basename, nonce, ret):
     utils.console("Entering compile_and_test_result(basename=%s, nonce=%s, ret=%d)"%(basename, nonce, ret))
     if not utils.basename_and_nonce_are_valid(basename, nonce) or ret is None:
         # Look for another program to compile and test
+        utils.console("Calling compile_and_test()... (1)")
         compile_and_test()
         return ""
     program = Program.get(basename)
@@ -238,6 +239,7 @@ def compile_and_test_result(basename, nonce, ret):
     utils.remove_compiler_service_for_basename(client, basename, app)
     if ret != CODE_SUCCESS:
         # Look for another program to compile and test
+        utils.console("Calling compile_and_test()... (2)")
         compile_and_test()
         return ""
 
@@ -253,6 +255,7 @@ def compile_and_test_result(basename, nonce, ret):
         program.set_status_to_test_failed()
         db.session.commit()
         # Look for another program to compile and test
+        utils.console("Calling compile_and_test()... (3)")
         compile_and_test()
         return ""
 
@@ -278,6 +281,7 @@ def compile_and_test_result(basename, nonce, ret):
         program.set_status_to_test_failed(error_message)
         db.session.commit()
         # Look for another program to compile and test
+        utils.console("Calling compile_and_test()... (4)")
         compile_and_test()
         return ""
     for i in range(number_of_test_vectors):
@@ -297,6 +301,7 @@ def compile_and_test_result(basename, nonce, ret):
             program.set_status_to_test_failed(error_message)
             db.session.commit()
             # Look for another program to compile and test
+            utils.console("Calling compile_and_test()... (5)")
             compile_and_test()
             return ""
 
@@ -319,6 +324,7 @@ def compile_and_test_result(basename, nonce, ret):
         utils.console("Could NOT remove the file %s"%path_to_plaintexts_file)
 
     # Look for another program to compile and test
+    utils.console("Calling compile_and_test()... (6)")
     compile_and_test()
 
     return ""

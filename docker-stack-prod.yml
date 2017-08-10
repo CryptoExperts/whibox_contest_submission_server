@@ -12,8 +12,8 @@ services:
         volumes:
             - /volumes/whitebox_program_uploads:/uploads
         environment:
-            - RECAPTCHA_PUBLIC_KEY=6Le3QBoUAAAAANKiIexuJsV5XE_HjgqICK2kHGCb
-            - RECAPTCHA_PRIVATE_KEY=6Le3QBoUAAAAALLIh0LrUMsIT8F1lV5fr3eqzj4x
+            - RECAPTCHA_PUBLIC_KEY=6LfadSwUAAAAAEJY762usuBYGZqkt7EwV5ZrUIYs
+            - RECAPTCHA_PRIVATE_KEY=6LfadSwUAAAAAI6OcNUiEBbqWZJDDGYhxYgWJVML
             - SECRET_KEY=da39a3ee5e6b4b0d3255bfef95601890afd80709
             - MYSQL_DATABASE=db_wb
             - MYSQL_USER=user_wb
@@ -46,6 +46,7 @@ services:
         volumes:
             - /var/run/docker.sock:/var/run/docker.sock
             - /volumes/whitebox_program_uploads:/uploads:ro
+            - /volumes/whitebox_program_uploads/compilations:/compilations
         environment:
             - MYSQL_DATABASE=db_wb
             - MYSQL_USER=user_wb
