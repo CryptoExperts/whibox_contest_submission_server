@@ -13,8 +13,10 @@ from app import app
 from app import db
 from app import utils
 from flask import request
+from threading import Lock
 from .models.program import Program
 from .models.user import User
+
 
 CODE_SUCCESS = 0
 ERR_CODE_COMPILATION_FAILED = 1
@@ -23,60 +25,9 @@ ERR_CODE_LINK_FAILED = 3
 ERR_CODE_EXECUTION_FAILED = 4
 
 
-@app.route('/compile_and_test', methods=['GET', 'POST'])
-def compile_and_test():
-
-    utils.console('Starting compile and test')
-
-    retry_count = 0
-    while True:
-        try:
-            utils.console('Calling Program.clean_programs_which_failed_to_compile_or_test...')
-            Program.clean_programs_which_failed_to_compile_or_test()
-            db.session.commit()
-        except:
-            retry_count += 1
-            if retry_count < 5:
-                utils.console('Exception catched, trying again in 2sec')
-                time.sleep(2)
-                continue
-            else:
-                utils.console('Could not clean programs which failed to compile or test')
-                utils.console('Exception:')
-                print_exc()
-                return ""
-        break
-
-    client = docker.from_env()
-    api_client = docker.APIClient(app.config['SOCK'])
-
-    if utils.service_runs_already(client, app.config['NAME_OF_COMPILE_AND_TEST_SERVICE']):
-        utils.console('A program is currently being compiled or tested. Exiting.')
-        return ""
-
-    retry_count = 0
-    while True:
-        try:
-            utils.console('Looking for a program to compile and test.')
-            program_to_compile_and_test = Program.get_next_program_to_compile()
-        except:
-            retry_count += 1
-            if retry_count < 5:
-                utils.console('Exception catched, trying again in 2sec')
-                time.sleep(2)
-                continue
-            else:
-                utils.console('Could not look for a program to compile and test.')
-                utils.console('Exception:')
-                print_exc()
-                return ""
-        break
-
-    if program_to_compile_and_test is None:
-        utils.console('There is no program to compile and test. Exiting')
-        return ""
-    basename = os.path.splitext(program_to_compile_and_test.filename)[0]
-    key_string = program_to_compile_and_test.key
+def compile_and_test_program(program, docker_client):
+    basename = os.path.splitext(program.filename)[0]
+    key_string = program.key
     # Make sure the key can be converted in a 16-byte string
     try:
         key_bytes = bytes.fromhex(key_string)
@@ -86,15 +37,14 @@ def compile_and_test():
         utils.console("The key is invalid, setting the status to test failed.")
         program.set_status_to_test_failed()
         db.session.commit()
-        return ""
+        return False
 
     utils.console('Preparing to compile and test a program (basename=%s)'%basename)
-
     retry_count = 0
+    utils.console('Generating nonce')
+    nonce = program.generate_nonce()
     while True:
         try:
-            utils.console('Generating nonce')
-            nonce = program_to_compile_and_test.generate_nonce()
             db.session.commit()
         except:
             retry_count += 1
@@ -106,7 +56,7 @@ def compile_and_test():
                 utils.console('Could not generate nonce.')
                 utils.console('Exception:')
                 print_exc()
-                return ""
+                return False
         break
 
     # TODO: add more constraints on the service, use https instead of http, do not hardcode the urls
@@ -128,7 +78,7 @@ def compile_and_test():
 
     # We copy the source file from /uploads to a fresh directory in /compilations
     dir_for_compilation = basename
-    path_for_compilations = os.path.join('/compilations', dir_for_compilation)
+    path_for_compilations = os.path.join('/uploads/compilations', dir_for_compilation)
     if not os.path.exists(path_for_compilations):
         os.makedirs(path_for_compilations)
     source_name = basename + '.c'
@@ -139,43 +89,118 @@ def compile_and_test():
 
     # We configure and launch the compile_and_test docker
     mounts = ['/whitebox_program_uploads/compilations/%s:/uploads:ro'%dir_for_compilation]
-    service = client.services.create(image='crx/compile_and_test',
-                                     mounts=mounts,
-                                     env=env,
-                                     constraints=['node.labels.vm == node-sandbox'],
-                                     name=app.config['NAME_OF_COMPILE_AND_TEST_SERVICE'],
-                                     restart_policy=restart_policy,
-                                     labels={'basename': str(basename)},
-                                     networks=networks,
-                                     resources=resources)
+    service = docker_client.services.create(image='crx/compile_and_test',
+                                            mounts=mounts,
+                                            env=env,
+                                            constraints=['node.labels.vm == node-sandbox'],
+                                            name=app.config['NAME_OF_COMPILE_AND_TEST_SERVICE'],
+                                            restart_policy=restart_policy,
+                                            labels={'basename': str(basename)},
+                                            networks=networks,
+                                            resources=resources)
 
     while len(service.tasks()) == 0:
         time.sleep(0.1)
     task = service.tasks()[0]
     task_id = task['ID']
     retry_count = 0
+
+    utils.console('Setting the program\'s task id to %s'%task_id)
+    program.task_id = task_id
     while True:
         try:
-            utils.console('Setting the program\'s task id to %s'%task_id)
-            program_to_compile_and_test.task_id = task_id
             db.session.commit()
         except:
             retry_count += 1
             if retry_count < 5:
-                utils.console('Exception catched, trying again in 2sec')
+                utils.console('Exception catched, trying again in 2sec.')
                 time.sleep(2)
                 continue
             else:
-                utils.console('Could not set the program task ide.')
+                utils.console('Could not set the program task id.')
                 utils.console('Exception:')
                 print_exc()
-                return ""
+                return False
         break
 
     utils.console('End of the compile_and_test procedure for the program:')
-    utils.console(str(program_to_compile_and_test))
+    utils.console(str(program))
+    return True
 
-    return "youpi"
+
+@app.route('/compile_and_test', methods=['GET', 'POST'])
+def compile_and_test():
+    utils.console('Starting compile and test')
+
+    # lock the compile and test procedure
+    lock = Lock()
+
+    try:
+        while not lock.acquire(False):
+            utils.console('Compile and test service is busy. sleep for 5 seconds')
+            time.sleep(5)
+            
+        # get docker client
+        client = docker.from_env()
+        api_client = docker.APIClient(app.config['SOCK'])
+
+        while True:
+            while utils.service_runs_already(client, app.config['NAME_OF_COMPILE_AND_TEST_SERVICE']):
+                utils.console('A program is currently being compiled or tested. Sleep for 10 seconds.')
+                time.sleep(10)
+
+            # clean failed programs
+            retry_count = 0
+            while True:
+                try:
+                    utils.console('Calling Program.clean_programs_which_failed_to_compile_or_test...')
+                    Program.clean_programs_which_failed_to_compile_or_test()
+                    db.session.commit()
+                except:
+                    retry_count += 1
+                    if retry_count < 5:
+                        utils.console('Exception catched, trying again in 2sec')
+                        time.sleep(2)
+                        continue
+                    else:
+                        utils.console('Could not clean programs which failed to compile or test')
+                        utils.console('Exception:')
+                        raise
+                break
+
+            # fetch a program to compile and test
+            retry_count = 0
+            while True:
+                try:
+                    utils.console('Looking for a program to compile and test.')
+                    program_to_compile_and_test = Program.get_next_program_to_compile()
+                    utils.console(str(program_to_compile_and_test))
+                except:
+                    retry_count += 1
+                    if retry_count < 5:
+                        utils.console('Exception catched, trying again in 2sec')
+                        time.sleep(2)
+                        continue
+                    else:
+                        utils.console('Could not look for a program to compile and test.')
+                        utils.console('Exception:')
+                        print_exc()
+                        raise
+                break
+
+            if program_to_compile_and_test is None:
+                utils.console('No program to be compiled.')
+                return ""
+
+            if compile_and_test_program(program_to_compile_and_test, client):
+                utils.console('Program %s is compiling and testing. sleep for 5 seconds' % str(program_to_compile_and_test))
+                time.sleep(5)
+            else:
+                utils.console('Program %s is failed to compile and test for some reason' % str(program_to_compile_and_test))
+    finally:
+        if lock.locked():
+            lock.release()
+
 
 
 @app.route('/get_plaintexts/<basename:basename>/<basename:nonce>', methods=['GET'])
@@ -202,14 +227,12 @@ def get_plaintexts(basename, nonce):
 def compile_and_test_result(basename, nonce, ret):
     utils.console("Entering compile_and_test_result(basename=%s, nonce=%s, ret=%d)"%(basename, nonce, ret))
     if not utils.basename_and_nonce_are_valid(basename, nonce) or ret is None:
-        # Look for another program to compile and test
-        compile_and_test()
         return ""
     program = Program.get(basename)
 
     # We (try to) remove the compilation directory
     dir_for_compilation = basename
-    path_for_compilations = os.path.join('/compilations', dir_for_compilation)
+    path_for_compilations = os.path.join('/uploads/compilations', dir_for_compilation)
     utils.console('Trying to remove %s'%str(path_for_compilations))
     try:
         shutil.rmtree(path_for_compilations)
@@ -237,8 +260,6 @@ def compile_and_test_result(basename, nonce, ret):
     client = docker.from_env()
     utils.remove_compiler_service_for_basename(client, basename, app)
     if ret != CODE_SUCCESS:
-        # Look for another program to compile and test
-        compile_and_test()
         return ""
 
     # If we reach this point, the program was successfuly compiled, we can test the ciphertexts
@@ -252,8 +273,6 @@ def compile_and_test_result(basename, nonce, ret):
         program.error_message = error_message
         program.set_status_to_test_failed()
         db.session.commit()
-        # Look for another program to compile and test
-        compile_and_test()
         return ""
 
     # If we reach this point, the ciphertexts stream has the appropriate length
@@ -277,8 +296,6 @@ def compile_and_test_result(basename, nonce, ret):
         error_message = "Could not compute the test vectors for the given key."
         program.set_status_to_test_failed(error_message)
         db.session.commit()
-        # Look for another program to compile and test
-        compile_and_test()
         return ""
     for i in range(number_of_test_vectors):
         ciphertext = ciphertexts[16*i:16*(i+1)]
@@ -296,8 +313,6 @@ def compile_and_test_result(basename, nonce, ret):
                      binascii.hexlify(expected_ciphertext).decode())
             program.set_status_to_test_failed(error_message)
             db.session.commit()
-            # Look for another program to compile and test
-            compile_and_test()
             return ""
 
     # If we reach this point, all the tests were successful. We save 10 test vectors in the database so that we can test

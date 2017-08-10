@@ -63,6 +63,9 @@ def service_runs_already(client, service_name):
             program_being_compiled = Program.get_program_being_compiled(running_task_id)
             if program_being_compiled is not None:
                 return True
+            else:
+                # TODO: discard these programs
+    
     # If reach this point, there is no program being compiled (but there is a compiler_service to remove)
     compiler_service.remove()
     return False

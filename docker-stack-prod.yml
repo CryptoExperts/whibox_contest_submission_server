@@ -45,7 +45,7 @@ services:
             - back_network
         volumes:
             - /var/run/docker.sock:/var/run/docker.sock
-            - /volumes/whitebox_program_uploads:/uploads:ro
+            - /volumes/whitebox_program_uploads:/uploads
         environment:
             - MYSQL_DATABASE=db_wb
             - MYSQL_USER=user_wb

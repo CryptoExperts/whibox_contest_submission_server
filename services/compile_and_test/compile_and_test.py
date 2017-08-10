@@ -29,7 +29,7 @@ def exit_after_notifying_launcher(code, post_data=None):
                 sys.stdout.flush()
                 sys.exit(0)
         except:
-            pass
+            print("Failed to contact %s for %d time." % (url, retry_count+1))
         finally:
             retry_count += 1
     print("Could not contact %s"%url)
