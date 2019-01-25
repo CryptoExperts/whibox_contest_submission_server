@@ -75,6 +75,7 @@ services:
 
     mysql:
         image: crx/mysql
+        command: "--innodb-use-native-aio=0 --default-authentication-plugin=mysql_native_password --mysqlx=0"
         networks:
             - front_network
         volumes:

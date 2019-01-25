@@ -108,9 +108,9 @@ This will create 2 VirtualBox VMs, called `node-manager` and `node-sandbox`, and
 
 ~~~bash
 > docker-machine ls
-NAME           ACTIVE   DRIVER       STATE     URL                         SWARM   DOCKER        ERRORS
-node-manager   -        virtualbox   Running   tcp://192.168.99.100:2376           v17.03.1-ce
-node-sandbox   -        virtualbox   Running   tcp://192.168.99.101:2376           v17.03.1-ce
+NAME           ACTIVE   DRIVER       STATE     URL                         SWARM   DOCKER     ERRORS
+node-manager   -        virtualbox   Running   tcp://192.168.99.100:2376           v18.09.1
+node-sandbox   -        virtualbox   Running   tcp://192.168.99.101:2376           v18.09.1
 ~~~
 
 To stop both VMs:

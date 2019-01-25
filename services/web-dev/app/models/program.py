@@ -291,6 +291,8 @@ class Program(db.Model):
         if Program.Status.authorized_status_change(self.status, Program.Status.unbroken):
             now = int(time.time())
             if now > app.config['FINAL_DEADLINE']:
+                utils.console("Submission rejected after final deadline")
+                self.set_status_to_compilation_failed("Submission rejected after final deadline")
                 return
             self._status = Program.Status.unbroken.value
             self._key = None
