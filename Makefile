@@ -1,5 +1,7 @@
 .PHONY: machines swarm-init
 
+MYSQL_VERSION = 8.0.15-1debian9
+
 clean:
 	find . -type f -name '*~' -delete
 	find . -type d -name '__pycache__' | xargs rm -rf
@@ -136,21 +138,21 @@ copy-common-app-dev-files:
 	chmod 400 services/launcher-dev/app/funny_name_generator.py
 
 build-dev: copy-vendors-files-dev copy-common-app-dev-files
-	docker build -t crx/mysql services/mysql/
+	docker build -t crx/mysql:$(MYSQL_VERSION) services/mysql/
 	docker build -t crx/nginx services/nginx/
 	docker build -t crx/web-dev services/web-dev/dockerfile/
 	docker build -t crx/launcher-dev services/launcher-dev/dockerfile/
 	/bin/bash scripts/on_node-sandbox.sh docker build -t crx/compile_and_test services/compile_and_test/
 
 build-dev-no-cache: copy-vendors-files-dev copy-common-app-dev-files
-	docker build --no-cache -t crx/mysql services/mysql/
+	docker build --no-cache -t crx/mysql:$(MYSQL_VERSION) services/mysql/
 	docker build --no-cache -t crx/nginx services/nginx/
 	docker build --no-cache -t crx/web-dev services/web-dev/dockerfile/
 	docker build --no-cache -t crx/launcher-dev services/launcher-dev/dockerfile/
 	/bin/bash scripts/on_node-sandbox.sh docker build --no-cache -t crx/compile_and_test services/compile_and_test/
 
 stack-deploy-dev: copy-vendors-files-dev copy-common-app-dev-files
-	docker stack deploy -c docker-stack-dev.yml dev
+	MYSQL_VERSION=$(MYSQL_VERSION) docker stack deploy -c docker-stack-dev.yml dev
 
 stack-rm-dev:
 	docker stack rm dev
@@ -181,14 +183,31 @@ copy-files-from-dev-to-prod: clean clean-prod copy-vendors-files-dev copy-common
 	find services/launcher-prod/app -type f -exec chmod 444 {} +
 
 build-prod: copy-files-from-dev-to-prod
-	docker build -t crx/mysql services/mysql/
+	docker build -t crx/mysql:$(MYSQL_VERSION) services/mysql/
 	docker build -t crx/nginx services/nginx/
 	docker build -t crx/web-prod services/web-prod/
 	docker build -t crx/launcher-prod services/launcher-prod/
 	/bin/bash scripts/on_node-sandbox.sh docker build -t crx/compile_and_test services/compile_and_test/
 
+backup-images:
+	docker save crx/mysql:$(MYSQL_VERSION) > backups/images/mysql.backup
+	docker save crx/nginx > backups/images/nginx.backup
+	docker save crx/web-dev > backups/images/web-dev.backup
+	docker save crx/web-prod > backups/images/web-prod.backup
+	docker save crx/launcher-dev > backups/images/launcher-dev.backup
+	docker save crx/launcher-prod > backups/images/launcher-prod.backup
+
+restore-images:
+	docker load -i backups/images/mysql.backup
+	docker load -i backups/images/nginx.backup
+	docker load -i backups/images/web-dev.backup
+	docker load -i backups/images/web-prod.backup
+	docker load -i backups/images/launcher-dev.backup
+	docker load -i backups/images/launcher-prod.backup
+
+
 build-prod-no-cache: copy-files-from-dev-to-prod
-	docker build --no-cache -t crx/mysql services/mysql/
+	docker build --no-cache -t crx/mysql:$(MYSQL_VERSION) services/mysql/
 	docker build --no-cache -t crx/nginx services/nginx/
 	docker build --no-cache -t crx/web-prod services/web-prod/
 	docker build --no-cache -t crx/launcher-prod services/launcher-prod/

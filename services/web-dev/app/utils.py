@@ -8,6 +8,7 @@ from flask import flash
 from app import app
 from app.text_contents import flash_texts_and_categories
 
+
 def console(s):
     print(str(s), file=sys.stderr)
     sys.stderr.flush()
@@ -24,6 +25,7 @@ def format_timestamp(timestamp):
         return None
     return time.strftime('%Y-%m-%d %H:%M UTC', time.gmtime(timestamp))
 
+
 def _contact_launcher(url):
     retry_count = 0
     while retry_count < 5:
@@ -36,15 +38,16 @@ def _contact_launcher(url):
         finally:
             retry_count += 1
 
+
 def launch_compilation_and_test():
-    url=app.config['URL_COMPILE_AND_TEST']
+    url = app.config['URL_COMPILE_AND_TEST']
     threading.Thread(target=_contact_launcher, args=(url,)).start()
 
 
 def crx_flash(text_and_category_key, *args):
     text = flash_texts_and_categories[text_and_category_key][0]
     category = flash_texts_and_categories[text_and_category_key][1]
-    flash(text%(args), category)
+    flash(text % (args), category)
 
 
 class Response(flask.Response):

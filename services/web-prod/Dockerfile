@@ -1,6 +1,6 @@
 FROM crx/nginx:latest
 
-RUN apk add --no-cache 'uwsgi<=2.0.17-r1' 'uwsgi-python3<=2.0.17-r1' 'mysql-client<=10.2.19-r1' 'python3<3.7' 'ca-certificates' 'py3-crypto<2.6.2'
+RUN apk add --no-cache 'uwsgi<2.0.18' 'uwsgi-python3<2.0.18' 'mysql-client<10.4' 'python3<3.7' 'ca-certificates' 'py3-crypto<2.6.2'
 
 RUN pip3 install --upgrade pip
 RUN pip3 install Flask==1.0.2 Flask-WTF==0.14.2 Flask-SQLAlchemy==2.3.2 Flask-Login==0.4.1 passlib==1.7.1 blinker==1.4 PyMySQL==0.9.3

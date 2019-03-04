@@ -210,6 +210,13 @@ crx/compile_and_test   latest              60a2c138871f        7 minutes ago    
 alpine                 3.5                 4a415e366388        3 weeks ago         3.99 MB
 ~~~
 
+Optionally, you can backup the built mysql images by running:
+
+~~~bash
+> make backup-mysql-image
+~~~
+
+
 #### Step 5: Configure the services
 
 A few parameters **must** be changed in the `docker-stack-prod.yml` file before the server can be run. These parameters are indicated by a `>` sign:

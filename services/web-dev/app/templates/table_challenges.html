@@ -9,6 +9,7 @@
 	<th data-type="fruit">Strawberries Peak</th>
 	<th>User</th>
 	<th>Status</th>
+	<th>Compiler</th>
 	<th>Publication Date</th>
 	<th>Date of First Break</th>
 	<th data-type="fruit">Current Strawberries</th>
@@ -37,6 +38,7 @@
 	      <span class="text-success">Unbroken</span>
 	    {% endif %}
 	  </td>
+	  <td class="compiler">{{ program.compiler }}</td>
 	  <td>{{ program.datetime_published }}</td>
 	  <td>{{ program.datetime_first_break or '-' }}</td>
 	  <td class="text-right">{{ program.strawberries_last }} 🍓</td>

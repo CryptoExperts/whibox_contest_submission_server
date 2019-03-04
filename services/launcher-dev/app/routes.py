@@ -31,7 +31,8 @@ def compile_and_test():
     retry_count = 0
     while True:
         try:
-            utils.console('Calling Program.clean_programs_which_failed_to_compile_or_test...')
+            utils.console(
+                'Calling Program.clean_programs_which_failed_to_compile_or_test...')
             Program.clean_programs_which_failed_to_compile_or_test()
             db.session.commit()
         except:
@@ -41,7 +42,8 @@ def compile_and_test():
                 time.sleep(2)
                 continue
             else:
-                utils.console('Could not clean programs which failed to compile or test')
+                utils.console(
+                    'Could not clean programs which failed to compile or test')
                 utils.console('Exception:')
                 print_exc()
                 return ""
@@ -51,7 +53,8 @@ def compile_and_test():
     api_client = docker.APIClient(app.config['SOCK'])
 
     if utils.service_runs_already(client, app.config['NAME_OF_COMPILE_AND_TEST_SERVICE']):
-        utils.console('A program is currently being compiled or tested. Exiting.')
+        utils.console(
+            'A program is currently being compiled or tested. Exiting.')
         return ""
 
     retry_count = 0
@@ -66,7 +69,8 @@ def compile_and_test():
                 time.sleep(2)
                 continue
             else:
-                utils.console('Could not look for a program to compile and test.')
+                utils.console(
+                    'Could not look for a program to compile and test.')
                 utils.console('Exception:')
                 print_exc()
                 return ""
@@ -77,6 +81,7 @@ def compile_and_test():
         return ""
     basename = os.path.splitext(program_to_compile_and_test.filename)[0]
     key_string = program_to_compile_and_test.key
+    compiler = program_to_compile_and_test.compiler
     # Make sure the key can be converted in a 16-byte string
     try:
         key_bytes = bytes.fromhex(key_string)
@@ -84,11 +89,12 @@ def compile_and_test():
             raise
     except:
         utils.console("The key is invalid, setting the status to test failed.")
-        program.set_status_to_test_failed()
+        program_to_compile_and_test.set_status_to_test_failed()
         db.session.commit()
         return ""
 
-    utils.console('Preparing to compile and test a program (basename=%s)'%basename)
+    utils.console(
+        'Preparing to compile and test a program (basename=%s)' % basename)
 
     retry_count = 0
     while True:
@@ -110,21 +116,30 @@ def compile_and_test():
         break
 
     # TODO: add more constraints on the service, use https instead of http, do not hardcode the urls
-    restart_policy = docker.types.RestartPolicy(condition='on-failure', max_attempts=1)
-    mem_limit = 2**20 * max(app.config['CHALLENGE_MAX_MEM_COMPILATION_IN_MB'], app.config['CHALLENGE_MAX_MEM_EXECUTION_IN_MB']) # in Bytes
+    restart_policy = docker.types.RestartPolicy(condition='on-failure',
+                                                max_attempts=1)
+    mem_limit = 2**20 * max(
+        app.config['CHALLENGE_MAX_MEM_COMPILATION_IN_MB'],
+        app.config['CHALLENGE_MAX_MEM_EXECUTION_IN_MB'])  # in Bytes
     resources = docker.types.Resources(mem_limit=mem_limit)
     networks = [app.config['COMPILE_AND_TEST_SERVICE_NETWORK']]
     env = ['UPLOAD_FOLDER=/uploads',
-           'FILE_BASENAME=%s'%basename,
-           'URL_TO_PING_BACK=%s'%'http://launcher:5000/compile_and_test_result/%s/%s/'%(basename, nonce),
-           'URL_FOR_FETCHING_PLAINTEXTS=%s'%'http://launcher:5000/get_plaintexts/%s/%s'%(basename, nonce),
-           'CHALLENGE_MAX_MEM_COMPILATION_IN_MB=%d'%app.config['CHALLENGE_MAX_MEM_COMPILATION_IN_MB'],
-           'CHALLENGE_MAX_TIME_COMPILATION_IN_SECS=%d'%app.config['CHALLENGE_MAX_TIME_COMPILATION_IN_SECS'],
-           'CHALLENGE_MAX_BINARY_SIZE_IN_MB=%d'%app.config['CHALLENGE_MAX_BINARY_SIZE_IN_MB'],
-           'CHALLENGE_MAX_MEM_EXECUTION_IN_MB=%d'%app.config['CHALLENGE_MAX_MEM_EXECUTION_IN_MB'],
-           'CHALLENGE_MAX_TIME_EXECUTION_IN_SECS=%d'%app.config['CHALLENGE_MAX_TIME_EXECUTION_IN_SECS'],
-           'CHALLENGE_NUMBER_OF_TEST_VECTORS=%d'%app.config['CHALLENGE_NUMBER_OF_TEST_VECTORS'],
-    ]
+           'FILE_BASENAME=%s' % basename,
+           'COMPILER=%s' % compiler,
+           'URL_TO_PING_BACK=%s' % 'http://launcher:5000/compile_and_test_result/%s/%s/' % (
+               basename, nonce),
+           'URL_FOR_FETCHING_PLAINTEXTS=%s' % 'http://launcher:5000/get_plaintexts/%s/%s' % (
+               basename, nonce),
+           'CHALLENGE_MAX_MEM_COMPILATION_IN_MB=%d' % app.config[
+               'CHALLENGE_MAX_MEM_COMPILATION_IN_MB'],
+           'CHALLENGE_MAX_TIME_COMPILATION_IN_SECS=%d' % app.config[
+               'CHALLENGE_MAX_TIME_COMPILATION_IN_SECS'],
+           'CHALLENGE_MAX_BINARY_SIZE_IN_MB=%d' % app.config['CHALLENGE_MAX_BINARY_SIZE_IN_MB'],
+           'CHALLENGE_MAX_MEM_EXECUTION_IN_MB=%d' % app.config['CHALLENGE_MAX_MEM_EXECUTION_IN_MB'],
+           'CHALLENGE_MAX_TIME_EXECUTION_IN_SECS=%d' % app.config[
+               'CHALLENGE_MAX_TIME_EXECUTION_IN_SECS'],
+           'CHALLENGE_NUMBER_OF_TEST_VECTORS=%d' % app.config['CHALLENGE_NUMBER_OF_TEST_VECTORS'],
+           ]
 
     # We copy the source file from /uploads to a fresh directory in /compilations
     dir_for_compilation = basename
@@ -133,21 +148,25 @@ def compile_and_test():
         os.makedirs(path_for_compilations)
     source_name = basename + '.c'
     path_to_uploaded_source = os.path.join('/uploads', source_name)
-    path_to_source_for_compilation = os.path.join(path_for_compilations, source_name)
+    path_to_source_for_compilation = os.path.join(
+        path_for_compilations, source_name)
     if not os.path.exists(path_to_source_for_compilation):
         shutil.copy(path_to_uploaded_source, path_to_source_for_compilation)
 
     # We configure and launch the compile_and_test docker
-    mounts = ['/whitebox_program_uploads/compilations/%s:/uploads:ro'%dir_for_compilation]
-    service = client.services.create(image='crx/compile_and_test',
-                                     mounts=mounts,
-                                     env=env,
-                                     constraints=['node.labels.vm == node-sandbox'],
-                                     name=app.config['NAME_OF_COMPILE_AND_TEST_SERVICE'],
-                                     restart_policy=restart_policy,
-                                     labels={'basename': str(basename)},
-                                     networks=networks,
-                                     resources=resources)
+    mounts = [
+        '/whitebox_program_uploads/compilations/%s:/uploads:ro' % dir_for_compilation
+    ]
+    service = client.services.create(
+        image='crx/compile_and_test',
+        mounts=mounts,
+        env=env,
+        constraints=['node.labels.vm == node-sandbox'],
+        name=app.config['NAME_OF_COMPILE_AND_TEST_SERVICE'],
+        restart_policy=restart_policy,
+        labels={'basename': str(basename)},
+        networks=networks,
+        resources=resources)
 
     while len(service.tasks()) == 0:
         time.sleep(0.1)
@@ -156,7 +175,7 @@ def compile_and_test():
     retry_count = 0
     while True:
         try:
-            utils.console('Setting the program\'s task id to %s'%task_id)
+            utils.console('Setting the program\'s task id to %s' % task_id)
             program_to_compile_and_test.task_id = task_id
             db.session.commit()
         except:
@@ -188,7 +207,8 @@ def get_plaintexts(basename, nonce):
     # If it doesn't already exist, create the file containting the plaintexts
     if not os.path.exists(path_to_plaintexts_file):
         with open(path_to_plaintexts_file, 'wb') as f:
-            f.write(os.urandom(16 * app.config['CHALLENGE_NUMBER_OF_TEST_VECTORS']))
+            f.write(os.urandom(
+                16 * app.config['CHALLENGE_NUMBER_OF_TEST_VECTORS']))
 
     plaintexts = b''
     with open(path_to_plaintexts_file, 'rb') as f:
@@ -197,10 +217,10 @@ def get_plaintexts(basename, nonce):
     return plaintexts
 
 
-
 @app.route('/compile_and_test_result/<basename:basename>/<basename:nonce>/<int:ret>', methods=['GET', 'POST'])
 def compile_and_test_result(basename, nonce, ret):
-    utils.console("Entering compile_and_test_result(basename=%s, nonce=%s, ret=%d)"%(basename, nonce, ret))
+    utils.console("Entering compile_and_test_result(basename=%s, nonce=%s, ret=%d)" % (
+        basename, nonce, ret))
     if not utils.basename_and_nonce_are_valid(basename, nonce) or ret is None:
         # Look for another program to compile and test
         utils.console("Calling compile_and_test()... (0)")
@@ -209,7 +229,8 @@ def compile_and_test_result(basename, nonce, ret):
 
     program = Program.get(basename)
     if program.status != Program.Status.submitted:
-        utils.console("The program %s status is %s. No need to proceed for this program.")
+        utils.console(
+            "The program %s status is %s. No need to proceed for this program.")
         utils.console("Calling compile_and_test()... (1)")
         compile_and_test()
         return ""
@@ -217,29 +238,36 @@ def compile_and_test_result(basename, nonce, ret):
     # We (try to) remove the compilation directory
     dir_for_compilation = basename
     path_for_compilations = os.path.join('/compilations', dir_for_compilation)
-    utils.console('Trying to remove %s'%str(path_for_compilations))
+    utils.console('Trying to remove %s' % str(path_for_compilations))
     try:
         shutil.rmtree(path_for_compilations)
     except:
-        utils.console('Could NOT remove the directory %s'%str(path_for_compilations))
+        utils.console('Could NOT remove the directory %s' %
+                      str(path_for_compilations))
 
     # We process the ret code
     if ret == ERR_CODE_COMPILATION_FAILED:
-        program.set_status_to_compilation_failed('Compilation failed for unknown reason (may be due to an excessive memory usage).')
-        utils.console('Compilation failed for file with basename %s'%str(basename))
+        program.set_status_to_compilation_failed(
+            'Compilation failed for unknown reason (may be due to an excessive memory usage).')
+        utils.console(
+            'Compilation failed for file with basename %s' % str(basename))
     elif ret == ERR_CODE_BIN_TOO_LARGE:
-        program.set_status_to_compilation_failed('Compiled binary file size exceeds the limit of %dMB.'%app.config['CHALLENGE_MAX_BINARY_SIZE_IN_MB'])
-        utils.console('Compilation failed for file with basename %s'%str(basename))
+        program.set_status_to_compilation_failed(
+            'Compiled binary file size exceeds the limit of %dMB.' % app.config['CHALLENGE_MAX_BINARY_SIZE_IN_MB'])
+        utils.console(
+            'Compilation failed for file with basename %s' % str(basename))
     elif ret == ERR_CODE_LINK_FAILED:
         program.set_status_to_link_failed()
-        utils.console('Link failed for file with basename %s'%str(basename))
+        utils.console('Link failed for file with basename %s' % str(basename))
     elif ret == ERR_CODE_EXECUTION_FAILED:
         program.set_status_to_execution_failed()
-        utils.console('Code execution failed for file with basename %s'%str(basename))
+        utils.console(
+            'Code execution failed for file with basename %s' % str(basename))
     elif ret == CODE_SUCCESS:
-        utils.console('Success for file with basename %s'%str(basename))
+        utils.console('Success for file with basename %s' % str(basename))
     else:
-        utils.console('We received an unexpected return code (%s) for file with basename %s'%(str(ret), str(basename)))
+        utils.console('We received an unexpected return code (%s) for file with basename %s' % (
+            str(ret), str(basename)))
     db.session.commit()
     client = docker.from_env()
     utils.remove_compiler_service_for_basename(client, basename, app)
@@ -254,7 +282,8 @@ def compile_and_test_result(basename, nonce, ret):
     ciphertexts = request.get_data()
     number_of_test_vectors = app.config['CHALLENGE_NUMBER_OF_TEST_VECTORS']
     if len(ciphertexts) != 16 * number_of_test_vectors:
-        utils.console("The length of the ciphertexts is %d, we were expecting %d."%(len(ciphertexts), 16 * number_of_test_vectors))
+        utils.console("The length of the ciphertexts is %d, we were expecting %d." % (
+            len(ciphertexts), 16 * number_of_test_vectors))
         error_message = "The stream of ciphertexts does not have the appropriate length."
         utils.console(error_message)
         program.error_message = error_message
@@ -268,7 +297,8 @@ def compile_and_test_result(basename, nonce, ret):
     # If we reach this point, the ciphertexts stream has the appropriate length
 
     utils.console("We received the appropriate number of ciphertexts.")
-    utils.console("Testing the plaintexts against the ciphertexts using the announced key...")
+    utils.console(
+        "Testing the plaintexts against the ciphertexts using the announced key...")
 
     # Retrieve the plaintexts from the saved file
     path_to_plaintexts_file = os.path.join('/tmp', basename + '.plaintext.bin')
@@ -277,9 +307,11 @@ def compile_and_test_result(basename, nonce, ret):
         plaintexts = f.read()
 
     # Check the ciphertexts against the plaintext and key.
-    key = bytes.fromhex(program.key) # TODO the db should always return the key as 16 bytes
+    # TODO the db should always return the key as 16 bytes
+    key = bytes.fromhex(program.key)
     try:
-        expected_ciphertexts = utils.compute_ciphertexts(plaintexts, key, number_of_test_vectors)
+        expected_ciphertexts = utils.compute_ciphertexts(
+            plaintexts, key, number_of_test_vectors)
         if len(expected_ciphertexts) != 16 * number_of_test_vectors:
             raise
     except:
@@ -295,15 +327,16 @@ def compile_and_test_result(basename, nonce, ret):
         expected_ciphertext = expected_ciphertexts[16*i:16*(i+1)]
         if ciphertext != expected_ciphertext:
             plaintext = plaintexts[16*i:16*(i+1)]
-            utils.console("One of the ciphertext failed the test (plaintext=%s, key=%s, ciphertext=%s)."%(plaintext, key, ciphertext))
+            utils.console("One of the ciphertext failed the test (plaintext=%s, key=%s, ciphertext=%s)." % (
+                plaintext, key, ciphertext))
             error_message = '''One of the tests failed:
 - plaintext   %s
 - key         %s
 - ciphertext  %s
-- expected    %s'''%(binascii.hexlify(plaintext).decode(),
-                     binascii.hexlify(key).decode(),
-                     binascii.hexlify(ciphertext).decode(),
-                     binascii.hexlify(expected_ciphertext).decode())
+- expected    %s''' % (binascii.hexlify(plaintext).decode(),
+                       binascii.hexlify(key).decode(),
+                       binascii.hexlify(ciphertext).decode(),
+                       binascii.hexlify(expected_ciphertext).decode())
             program.set_status_to_test_failed(error_message)
             db.session.commit()
             # Look for another program to compile and test
@@ -325,9 +358,9 @@ def compile_and_test_result(basename, nonce, ret):
     # Cleanup
     try:
         os.remove(path_to_plaintexts_file)
-        utils.console("We removed the file %s"%path_to_plaintexts_file)
+        utils.console("We removed the file %s" % path_to_plaintexts_file)
     except:
-        utils.console("Could NOT remove the file %s"%path_to_plaintexts_file)
+        utils.console("Could NOT remove the file %s" % path_to_plaintexts_file)
 
     # Look for another program to compile and test
     utils.console("Calling compile_and_test()... (6)")

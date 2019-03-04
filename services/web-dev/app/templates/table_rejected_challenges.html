@@ -5,6 +5,7 @@
 	<th class='column-to-sort-first'>Submission Date</th>
 	<th>id</th>
 	<th>Status</th>
+	<th>Compiler</th>
 	<th>Log</th>
 	<th></th>
       </tr>
@@ -15,6 +16,7 @@
 	  <th scope="row">{{ program.datetime_submitted }}</th>
 	  <td class="text-center">{{ program._id }}</td>
 	  <td>{{ program.status }}</td>
+	  <td class="compiler">{{ program.compiler }}</td>
 	  <td>
 	    {% if program.error_message %}
 	      <pre style="margin-top: 10px;">{{ program.error_message }}</pre>

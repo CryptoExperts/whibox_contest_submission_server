@@ -85,3 +85,7 @@ tbody td.nowrap {
   99% { opacity: 0; transform: translateY(-30px);}
   100% { opacity: 0; }
 }
+
+.compiler {
+    text-transform: uppercase
+}

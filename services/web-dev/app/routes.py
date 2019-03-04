@@ -3,7 +3,6 @@ import time
 import random
 import string
 import binascii
-import sys
 from Crypto.Cipher import AES
 from traceback import print_exc
 from flask import render_template, url_for, request, send_from_directory, request_started
@@ -18,6 +17,7 @@ from .models.program import Program
 from .models.whiteboxbreak import WhiteboxBreak
 from .utils import crx_flash, redirect
 
+
 def update_strawberries(sender, **extra):
     now = int(time.time())
     try:
@@ -29,13 +29,14 @@ def update_strawberries(sender, **extra):
         db.session.rollback()
         print_exc()
 
+
 def clean_programs_which_failed_to_compile_or_test(sender, **extra):
     Program.clean_programs_which_failed_to_compile_or_test()
     db.session.commit()
 
+
 request_started.connect(update_strawberries, app)
 request_started.connect(clean_programs_which_failed_to_compile_or_test, app)
-
 
 
 def plot_data_for_program(program, now):
@@ -43,30 +44,31 @@ def plot_data_for_program(program, now):
     strawberries = program.strawberries(now)
     if len(strawberries) > 0:
         for key, val in sorted(strawberries.items()):
-            data_flot += '[%d, %d], '%(key*1000, val)
+            data_flot += '[%d, %d], ' % (key*1000, val)
         data_flot = data_flot[:-2]
     data_flot += ']'
 
     series = '{'
-    series += 'color: "%s",'%program.hsl_color
-    series += 'label: "%d",'%program._id
+    series += 'color: "%s",' % program.hsl_color
+    series += 'label: "%d",' % program._id
     series += 'data: ' + data_flot + '}'
     return series
-
 
 
 @app.route('/', methods=['GET'])
 def index():
     total_number_of_users = User.get_total_number_of_users()
     users = User.get_all_sorted_by_bananas()
-    programs_to_plot = Program.get_all_published_sorted_by_ranking(max_rank=app.config['MAX_RANK_OF_PLOTED_CHALLENGES'])
+    programs_to_plot = Program.get_all_published_sorted_by_ranking(
+        max_rank=app.config['MAX_RANK_OF_PLOTED_CHALLENGES'])
     programs = Program.get_all_published_sorted_by_ranking()
     number_of_unbroken_programs = Program.get_number_of_unbroken_programs()
     wb_breaks = WhiteboxBreak.get_all()
     programs_broken_by_current_user = None
     if current_user and current_user.is_authenticated:
         wb_breaks_by_current_user = WhiteboxBreak.get_all_by_user(current_user)
-        programs_broken_by_current_user = [wb_break.program for wb_break in wb_breaks_by_current_user]
+        programs_broken_by_current_user = [
+            wb_break.program for wb_break in wb_breaks_by_current_user]
     # plot data
     data_flot = None
     if len(programs_to_plot) > 0:
@@ -84,7 +86,6 @@ def index():
                            programs_broken_by_current_user=programs_broken_by_current_user,
                            number_of_unbroken_programs=number_of_unbroken_programs,
                            data_flot=data_flot)
-
 
 
 @app.route('/user/signin', methods=['GET', 'POST'])
@@ -111,13 +112,11 @@ def user_signin():
                 return redirect(url_for('user_show'))
 
 
-
 @app.route('/user/signout', methods=['GET'])
 def signout():
     logout_user()
     crx_flash('SIGNOUT')
     return redirect(url_for('index'))
-
 
 
 @app.route('/user/create', methods=['GET', 'POST'])
@@ -140,7 +139,6 @@ def user_create():
         return redirect(url_for('user_signin'))
 
 
-
 @app.route('/submit/candidate', methods=['GET', 'POST'])
 @login_required
 def submit_candidate():
@@ -160,16 +158,20 @@ def submit_candidate():
         return render_template('submit_candidate.html', form=form, active_page='submit_candidate', testing=app.testing), 400
     else:
         upload_folder = app.config['UPLOAD_FOLDER']
-        basename = ''.join(random.SystemRandom().choice(string.ascii_lowercase + string.digits) for _ in range(32))
+        basename = ''.join(random.SystemRandom().choice(
+            string.ascii_lowercase + string.digits) for _ in range(32))
         filename = basename + '.c'
         key = form.key.data
+        compiler = form.compiler.data
         form_data = form.program.data
         form_data.save(os.path.join(upload_folder, filename))
-        Program.create(basename=basename, key=key, user=current_user)
+        Program.create(basename=basename,
+                       key=key,
+                       compiler=compiler,
+                       user=current_user)
         db.session.commit()
         utils.launch_compilation_and_test()
         return redirect(url_for('submit_candidate_ok'))
-
 
 
 # This route is called directly when the user has js activated (see file-progress.js)
@@ -178,7 +180,6 @@ def submit_candidate():
 def submit_candidate_ok():
     crx_flash('CHALLENGE_SUBMITTED')
     return redirect(url_for('user_show'))
-
 
 
 @app.route('/show/candidate/<int:identifier>', methods=['GET'])
@@ -198,7 +199,6 @@ def show_candidate(identifier):
     return send_from_directory(upload_folder, program.filename)
 
 
-
 @app.route('/user/show', methods=['GET'])
 @login_required
 def user_show():
@@ -213,7 +213,6 @@ def user_show():
                            programs_queued=programs_queued,
                            programs_rejected=programs_rejected,
                            wb_breaks=wb_breaks)
-
 
 
 @app.route('/break/candidate/<int:identifier>', methods=['GET', 'POST'])
@@ -288,7 +287,6 @@ def break_candidate(identifier):
     return redirect(url_for('break_candidate_ok', identifier=identifier))
 
 
-
 @app.route('/break/candidate/ok/<int:identifier>', methods=['GET'])
 @login_required
 def break_candidate_ok(identifier):
@@ -304,14 +302,14 @@ def break_candidate_ok(identifier):
     return render_template('challenge_break_ok.html', wb_break=wb_break, current_user=current_user)
 
 
-
-
 @app.route('/rules', methods=['GET'])
 def rules():
     return render_template('rules.html',
                            challenge_max_source_size_in_mb=app.config['CHALLENGE_MAX_SOURCE_SIZE_IN_MB'],
-                           challenge_max_mem_for_compilation_in_mb=app.config['CHALLENGE_MAX_MEM_COMPILATION_IN_MB'],
-                           challenge_max_time_for_compilation_in_secs=app.config['CHALLENGE_MAX_TIME_COMPILATION_IN_SECS'],
+                           challenge_max_mem_for_compilation_in_mb=app.config[
+                               'CHALLENGE_MAX_MEM_COMPILATION_IN_MB'],
+                           challenge_max_time_for_compilation_in_secs=app.config[
+                               'CHALLENGE_MAX_TIME_COMPILATION_IN_SECS'],
                            challenge_max_binary_size_in_mb=app.config['CHALLENGE_MAX_BINARY_SIZE_IN_MB'],
                            challenge_max_mem_execution_in_mb=app.config['CHALLENGE_MAX_MEM_EXECUTION_IN_MB'],
                            challenge_max_time_execution_in_secs=app.config['CHALLENGE_MAX_TIME_EXECUTION_IN_SECS'])
@@ -323,5 +321,6 @@ def unauthorized_handler():
         return redirect(url_for('user_signin', next=url_for(request.endpoint)))
     except:
         return redirect(url_for('index'))
+
 
 login_manager.unauthorized_handler(unauthorized_handler)

@@ -32,6 +32,16 @@
 		<div id="fileSize-ko" class="text-danger"> </div>
 	      </div>
 
+	      <div class="form-group mt-2 col-md-12" id="compiler-form-group">
+                <label for="compiler-select" class="col-sm-3 control-label">Choose you compiler:</label>
+	      	<div class="col-sm-2">
+	      	  <select id="compiler-select" class="form-control input-sm" name="compiler">
+	      	    <option value="gcc">GCC</option>
+	      	    <option value="tcc">TCC</option>
+	      	  </select>
+	      	</div>
+	      </div>
+
 	      <div class="form-group{% if form.key.errors %} has-error has-feedback{% endif %}" id="key-form-group">
 		<label class="control-label" id="key-ko"> </label>
 		{% for error in form.key.errors %}
