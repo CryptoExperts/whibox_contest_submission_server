@@ -5,16 +5,19 @@ import string
 import binascii
 from Crypto.Cipher import AES
 from traceback import print_exc
-from flask import render_template, url_for, request, send_from_directory, request_started
+from flask import render_template, url_for, request, send_from_directory, \
+    request_started
 from flask_login import login_user, logout_user, login_required, current_user
 from app import app
 from app import login_manager
 from app import utils
 from app import db
-from .forms import LoginForm, UserCreationForm, WhiteboxSubmissionForm, WhiteboxBreakForm
+from .forms import LoginForm, UserCreationForm, WhiteboxSubmissionForm, \
+    WhiteboxBreakForm, WhiteboxInvertForm
 from .models.user import User
 from .models.program import Program
 from .models.whiteboxbreak import WhiteboxBreak
+from .models.whiteboxinvert import WhiteboxInvert
 from .utils import crx_flash, redirect
 
 
@@ -64,11 +67,19 @@ def index():
     programs = Program.get_all_published_sorted_by_ranking()
     number_of_unbroken_programs = Program.get_number_of_unbroken_programs()
     wb_breaks = WhiteboxBreak.get_all()
+    # TODO: add globally wb_inversions
     programs_broken_by_current_user = None
     if current_user and current_user.is_authenticated:
         wb_breaks_by_current_user = WhiteboxBreak.get_all_by_user(current_user)
         programs_broken_by_current_user = [
             wb_break.program for wb_break in wb_breaks_by_current_user]
+    programs_inverted_by_current_user = None
+    if current_user and current_user.is_authenticated:
+        wb_inversions_by_current_user = WhiteboxInvert.get_all_by_user(
+            current_user)
+        programs_inverted_by_current_user = [
+            wb_inversion.program for wb_inversion in wb_inversions_by_current_user]
+
     # plot data
     data_flot = None
     if len(programs_to_plot) > 0:
@@ -84,6 +95,7 @@ def index():
                            programs=programs,
                            wb_breaks=wb_breaks,
                            programs_broken_by_current_user=programs_broken_by_current_user,
+                           programs_inverted_by_current_user=programs_inverted_by_current_user,
                            number_of_unbroken_programs=number_of_unbroken_programs,
                            data_flot=data_flot)
 
@@ -253,32 +265,32 @@ def break_candidate(identifier):
 
     if program.plaintexts is None or program.ciphertexts is None:
         return redirect(url_for('index'))
-    if len(program.plaintexts) != len(program.ciphertexts):
-        return redirect(url_for('index'))
-    if len(program.plaintexts) % 16 != 0:
+    number_of_test_vectors = 10
+    plaintexts = program.plaintexts[:16*number_of_test_vectors]
+    ciphertexts = program.ciphertexts[:16*number_of_test_vectors]
+    if len(plaintexts) != len(ciphertexts) or len(plaintexts) % 16 != 0 or len(plaintexts) == 0:
         return redirect(url_for('index'))
 
-    number_of_test_vectors = len(program.plaintexts) // 16
     key = bytes.fromhex(form.key.data)
     try:
         aes = AES.new(key, AES.MODE_ECB)
     except:
         return redirect(url_for('index'))
     for i in range(number_of_test_vectors):
-        plaintext = program.plaintexts[16*i:16*(i+1)]
-        ciphertext = program.ciphertexts[16*i:16*(i+1)]
+        pt = plaintexts[16*i:16*(i+1)]
+        ct = ciphertexts[16*i:16*(i+1)]
         try:
-            computed_ciphertext = aes.encrypt(plaintext)
+            computed_ct = aes.encrypt(pt)
         except:
-            computed_ciphertext = None
-        if computed_ciphertext is None or ciphertext != computed_ciphertext:
-            plaintext_as_text = binascii.hexlify(plaintext).decode()
-            ciphertext_as_text = binascii.hexlify(ciphertext).decode()
+            computed_ct = None
+        if computed_ct is None or ct != computed_ct:
+            pt_as_text = binascii.hexlify(pt).decode()
+            ct_as_text = binascii.hexlify(ct).decode()
             return render_template('challenge_break_ko.html',
                                    identifier=identifier,
                                    current_user=current_user,
-                                   plaintext=plaintext_as_text,
-                                   ciphertext=ciphertext_as_text)
+                                   plaintext=pt_as_text,
+                                   ciphertext=ct_as_text)
 
     # If we reach this point, the submitted key is correct
     program.set_status_to_broken(current_user, now)
@@ -300,6 +312,98 @@ def break_candidate_ok(identifier):
         return redirect(url_for('index'))
     # If we reach this point, the user indeed broke the challenge
     return render_template('challenge_break_ok.html', wb_break=wb_break, current_user=current_user)
+
+
+@app.route('/invert/candidate/<int:identifier>', methods=['GET', 'POST'])
+@login_required
+def invert_candidate(identifier):
+    now = int(time.time())
+    if now < app.config['STARTING_DATE']:
+        return redirect(url_for('index'))
+    if now > app.config['FINAL_DEADLINE']:
+        return render_template(
+            'break_candidate_deadline_exceeded.html',
+            active_page='submit_candidate',
+            final_deadline=utils.format_timestamp(app.config['FINAL_DEADLINE'])
+        )
+
+    # Only published programs can be broken
+    program = Program.get_unbroken_or_broken_by_id(identifier)
+    if program is None or not program.is_published:
+        return redirect(url_for('index'))
+
+    # If the current user is the one who submitted the program,
+    # redirect to index
+    if program.user == current_user:
+        crx_flash('CANNOT_INVERT_OWN')
+        return redirect(url_for('index'))
+
+    # A user cannot invert the same challenge twice
+    wb_invert = WhiteboxInvert.get(current_user, program)
+    if wb_invert is not None:
+        crx_flash('CANNOT_INVERT_TWICE')
+        return redirect(url_for('index'))
+
+    if program.plaintexts is None or program.ciphertexts is None:
+        return redirect(url_for('index'))
+    number_of_test_vectors = 10
+    plaintexts = program.plaintexts[16*number_of_test_vectors:]
+    ciphertexts = program.ciphertexts[16*number_of_test_vectors:]
+    if len(plaintexts) != len(ciphertexts) or len(plaintexts) % 16 != 0 or len(plaintexts) == 0:
+        return redirect(url_for('index'))
+
+    form = WhiteboxInvertForm()
+    if request.method != 'POST' or not form.validate_on_submit():
+        # Pick a plaintext / ciphertext pair
+        random_index = random.SystemRandom().randint(0, number_of_test_vectors-1)
+        ct = ciphertexts[random_index*16: (random_index+1)*16]
+        ct_as_text = binascii.hexlify(ct).decode()
+        pt = plaintexts[random_index*16: (random_index+1)*16]
+        return render_template(
+            'invert_candidate.html',
+            form=form,
+            datetime_strawberries_next_update=program.datetime_strawberries_next_update,
+            # TODO: carrots=program.carrots_last,
+            ciphertext=ct_as_text,
+            identifier=identifier,
+            testing=app.testing)
+
+    # todo: return pt in some way
+    pt = bytes.fromhex(form.plaintext.data)
+    found_pt = plaintexts.find(pt)
+    ct = bytes.fromhex(form.ciphertext.data)
+    found_ct = ciphertexts.find(ct)
+    if len(pt) != 16 or len(ct) != 16 or not found_pt or not found_ct or \
+       found_pt != found_ct or found_pt % 16 != 0:
+        return render_template('challenge_inversion_ko.html',
+                               identifier=identifier,
+                               current_user=current_user,
+                               plaintext=form.plaintext.data,
+                               ciphertext=form.ciphertext.data)
+
+    # If we reach this point, the submitted key is correct
+    program.add_inversion(current_user, now)
+    db.session.commit()
+
+    return redirect(url_for('invert_candidate_ok', identifier=identifier))
+
+
+@app.route('/invert/candidate/ok/<int:identifier>', methods=['GET'])
+@login_required
+def invert_candidate_ok(identifier):
+    # TODO: Check that the program is broken by this user or inverted by him
+    program = Program.get_unbroken_or_broken_by_id(identifier)
+    # if program is None or not program.is_broken:
+    #     return redirect(url_for('index'))
+
+    # Check that the user indeed broke the challenge
+    wb_inversion = WhiteboxInvert.get(current_user, program)
+    if wb_inversion is None:
+        return redirect(url_for('index'))
+    # If we reach this point, the user indeed broke the challenge
+    return render_template('challenge_inversion_ok.html',
+                           wb_inversion=wb_inversion,
+                           current_user=current_user)
 
 
 @app.route('/rules', methods=['GET'])

@@ -1,14 +1,9 @@
 import time
-import datetime
 import sys
-from enum import Enum, unique
 from app import db
 from app import login_manager
 from passlib.hash import pbkdf2_sha256
-from traceback import print_exc
-from app import utils
-from .whiteboxbreak import WhiteboxBreak
-from .program import Program
+
 
 class User(db.Model):
 
@@ -73,7 +68,8 @@ class User(db.Model):
 
     @staticmethod
     def refresh_all_banana_rankings():
-        users = User.query.filter(User._bananas != None).order_by(User._bananas.desc()).all()
+        users = User.query.filter(User._bananas != None).order_by(
+            User._bananas.desc()).all()
         if len(users) == 0:
             return
         users[0]._bananas_ranking = 1
@@ -91,7 +87,7 @@ class User(db.Model):
 
     @login_manager.user_loader
     def load_user(id):
-        return User.query.filter(User._id==int(id)).first()
+        return User.query.filter(User._id == int(id)).first()
 
     def refresh_strawberries_count_and_rank(self):
         s = max([p.strawberries_peak for p in self.published_programs])
@@ -101,7 +97,8 @@ class User(db.Model):
 
     @staticmethod
     def refresh_all_strawberry_rankings():
-        users = User.query.filter(User._strawberries != None).order_by(User._strawberries.desc()).all()
+        users = User.query.filter(User._strawberries != None).order_by(
+            User._strawberries.desc()).all()
         if len(users) == 0:
             return
         users[0]._strawberries_ranking = 1
@@ -117,12 +114,11 @@ class User(db.Model):
             user._strawberries_ranking = r
             b = user._strawberries
 
-
     # User creation and password verification
 
     @staticmethod
     def create(username, password, email):
-        password_hash=pbkdf2_sha256.hash(password)
+        password_hash = pbkdf2_sha256.hash(password)
         user = User(_username=username,
                     _password_hash=password_hash,
                     _email=email)
@@ -131,7 +127,7 @@ class User(db.Model):
 
     @staticmethod
     def validate(username, password):
-        user = User.query.filter(User._username==username).first()
+        user = User.query.filter(User._username == username).first()
         if user is not None and pbkdf2_sha256.verify(password, user._password_hash):
             return user
         else:
@@ -139,7 +135,7 @@ class User(db.Model):
 
     @staticmethod
     def get(username):
-        user = User.query.filter(User._username==username).first()
+        user = User.query.filter(User._username == username).first()
         return user
 
     @staticmethod

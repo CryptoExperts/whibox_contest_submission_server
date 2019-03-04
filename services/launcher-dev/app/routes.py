@@ -1,13 +1,9 @@
 import sys
 import docker
-import html
 import shutil
 import os
-import inspect
 import time
 import binascii
-import random
-import string
 from traceback import print_exc
 from app import app
 from app import db
@@ -344,11 +340,12 @@ def compile_and_test_result(basename, nonce, ret):
             compile_and_test()
             return ""
 
-    # If we reach this point, all the tests were successful. We save 10 test vectors in the database so that we can test
-    # key candidates in the future.
-
-    plaintexts = plaintexts[0:10*16]
-    ciphertexts = ciphertexts[0:10*16]
+    # If we reach this point, all the tests were successful.
+    # We save 20 test vectors in the database:
+    # - the first 10 of which will be used for validate key extraction,
+    # - and the last 10 of which will be used for test invertability.
+    plaintexts = plaintexts[0:20*16]
+    ciphertexts = ciphertexts[0:20*16]
     program.plaintexts = plaintexts
     program.ciphertexts = ciphertexts
     program.set_status_to_unbroken()

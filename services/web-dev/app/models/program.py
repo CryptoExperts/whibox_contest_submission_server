@@ -9,6 +9,7 @@ from app import utils
 from app.funny_name_generator import get_funny_name
 from sqlalchemy import or_
 from .whiteboxbreak import WhiteboxBreak
+from .whiteboxinvert import WhiteboxInvert
 
 
 class Program(db.Model):
@@ -39,23 +40,25 @@ class Program(db.Model):
                 return 'Unbroken'
             elif self == self.broken:
                 return 'Broken'
+            elif self == self.inverted:
+                return 'Inverted'
             else:
                 return '-'
 
         @staticmethod
         def authorized_status_change(current_status, new_status):
-            all_authorized_status_change = [(Program.Status.submitted, Program.Status.compilation_failed),
-                                            (Program.Status.submitted,
-                                             Program.Status.link_failed),
-                                            (Program.Status.submitted,
-                                             Program.Status.execution_failed),
-                                            (Program.Status.submitted,
-                                             Program.Status.test_failed),
-                                            (Program.Status.submitted,
-                                             Program.Status.unbroken),
-                                            (Program.Status.unbroken,
-                                             Program.Status.broken),
-                                            (Program.Status.broken, Program.Status.broken)]
+            all_authorized_status_change = [
+                (Program.Status.submitted, Program.Status.compilation_failed),
+                (Program.Status.submitted, Program.Status.link_failed),
+                (Program.Status.submitted, Program.Status.execution_failed),
+                (Program.Status.submitted, Program.Status.test_failed),
+                (Program.Status.submitted, Program.Status.unbroken),
+                (Program.Status.unbroken, Program.Status.broken),
+                (Program.Status.unbroken, Program.Status.inverted),
+                (Program.Status.inverted, Program.Status.inverted),
+                (Program.Status.inverted, Program.Status.broken),
+                (Program.Status.broken, Program.Status.broken)
+            ]
             return (current_status, new_status) in all_authorized_status_change
 
     def _now(context):
@@ -86,6 +89,8 @@ class Program(db.Model):
     _strawberries_ranking = db.Column(db.BigInteger, default=None)
     _timestamp_strawberries_next_update = db.Column(
         db.BigInteger, default=None)  # First set when the program is published
+    _carrots_last = db.Column(db.BigInteger, default=None)
+    _timestamp_first_inversion = db.Column(db.BigInteger, default=None)
 
     @property
     def position_in_the_compilation_queue(self):
@@ -127,6 +132,10 @@ class Program(db.Model):
     @property
     def strawberries_ranking(self):
         return self._strawberries_ranking
+
+    @property
+    def carrots_last(self):
+        return self._carrots_last
 
     @property
     def hsl_color(self):
@@ -211,10 +220,10 @@ class Program(db.Model):
     def clean_programs_which_failed_to_compile_or_test():
         now = int(time.time())
 
-        programs = Program.query.filter(Program._status == Program.Status.submitted.value,
-                                        Program._task_id != None)\
-            .order_by(Program._timestamp_compilation_start.desc())\
-            .all()
+        programs = Program.query.filter(
+            Program._status == Program.Status.submitted.value,
+            Program._task_id != None
+        ).order_by(Program._timestamp_compilation_start.desc()).all()
         # We ensure the first program has not been compiled/tested for too long
         for p in programs[:1]:
             max_compile_time = app.config['CHALLENGE_MAX_TIME_COMPILATION_IN_SECS']
@@ -327,6 +336,20 @@ class Program(db.Model):
             whitebox_break = WhiteboxBreak.create(
                 user, self, now, self._strawberries_last)
             db.session.add(whitebox_break)
+        else:
+            utils.console("Could NOT set status to broken")
+
+    def add_inversion(self, user, now):
+        if now > app.config['FINAL_DEADLINE']:
+            return
+        if self._timestamp_first_inversion is None:
+            self._timestamp_first_inversion = now
+            self._timestamp_carrots_next_update = now
+            # TODO:
+            self._carrots_last = 0
+            whitebox_inversion = WhiteboxInvert.create(
+                user, self, now, self._carrots_last)
+            db.session.add(whitebox_inversion)
         else:
             utils.console("Could NOT set status to broken")
 

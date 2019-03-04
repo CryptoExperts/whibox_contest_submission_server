@@ -5,7 +5,6 @@ import urllib.request
 import os
 import subprocess
 from urllib.parse import urljoin
-from traceback import print_exc
 
 CODE_SUCCESS = 0
 ERR_CODE_COMPILATION_FAILED = 1

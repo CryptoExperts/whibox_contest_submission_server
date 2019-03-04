@@ -1,13 +1,13 @@
 {% extends "base.html" %}
 
-{% block title %}Well done! You successfully broke challenge {{ wb_break.program._id }}!{% endblock %}
+{% block title %}You successfully inverted challenge {{ wb_inversion.program._id }}!{% endblock %}
 
 {% block content %}
 
   <div class="row">
     <div class="col-xs-12">
-      <p class="lead">At the time you broke the challenge, it was worth {{ wb_break.strawberries }} strawberries 🍓.</p>
-      <p class="lead">You currently have {{ current_user.bananas }} bananas 🍌. Well done!</p>
+      <p class="lead">At the time you invert the challenge, it was worth {{ wb_inversion.carrots }} carrots 🥕 .</p>
+      <p class="lead">You currently have {{ current_user.bananas }} bananas 🍌 . Well done!</p>
       <p class="lead">You are ranked {{ current_user.bananas_ranking }} within the Banana competition.</p>
     </div>
   </div>

@@ -5,7 +5,7 @@
 	<th class='column-to-sort-first asc'>Rank</th>
 	<th>id</th>
 	<th></th>
-	<th>Name</th>
+	<th>Name (click to download)</th>
 	<th data-type="fruit">Strawberries Peak</th>
 	<th>User</th>
 	<th>Status</th>
@@ -13,7 +13,9 @@
 	<th>Publication Date</th>
 	<th>Date of First Break</th>
 	<th data-type="fruit">Current Strawberries</th>
+	{% if current_user.is_authenticated %}
 	<th></th>
+	{% endif %}
       </tr>
     </thead>
     <tbody>
@@ -22,7 +24,7 @@
 	  <th class="text-center" scope="row">#{{ program.strawberries_ranking }}</th>
 	  <td class="text-center">{{ program._id }}</td>
 	  <td><div style="width: 1em; height: 1em; background-color: {{ program.hsl_color }}"></div></td>
-	  <td>{{ program.funny_name }}</td>
+	  <td><a href='/show/candidate/{{ program._id }}'>{{ program.funny_name }}</a></td>
 	  <td class="text-right">{{ program.strawberries_peak }} 🍓</td>
 	  <td class="ellipsable">
 	    {% if current_user.is_authenticated and current_user == program.user %}
@@ -42,18 +44,21 @@
 	  <td>{{ program.datetime_published }}</td>
 	  <td>{{ program.datetime_first_break or '-' }}</td>
 	  <td class="text-right">{{ program.strawberries_last }} 🍓</td>
+	  {% if current_user.is_authenticated %}
 	  <td class="nowrap">
-	    <a href='/show/candidate/{{ program._id }}' class="btn btn-primary btn-sm">Download</a>
-	    {% if current_user.is_authenticated %}
-	      {% if program.user == current_user %}
-		<span class="badge badge-info">Yours!</span>
-	      {% elif program in programs_broken_by_current_user %}
-		<span class="badge badge-pimp">Broken by you!</span>
-	      {% else %}
-		<a href="/break/candidate/{{ program._id }}" class="btn btn-warning btn-sm">Break</a>
-	      {% endif %}
+	    {% if program.user == current_user %}
+	    <span class="badge badge-primary">Yours!</span>
+	    {% elif program in programs_broken_by_current_user %}
+	    <span class="badge badge-success">Broken by you!</span>
+	    {% elif program in programs_inverted_by_current_user %}
+	    <a href="/break/candidate/{{ program._id }}" class="btn btn-danger btn-sm">Break</a>
+	    <span class="badge badge-info">Inverted by you!</span>
+	    {% else %}
+	    <a href="/break/candidate/{{ program._id }}" class="btn btn-danger btn-sm">Break</a>
+	    <a href="/invert/candidate/{{ program._id }}" class="btn btn-warning btn-sm">Invert</a>
 	    {% endif %}
 	  </td>
+	  {% endif %}
 	</tr>
       {% endfor %}
     </tbody>
