@@ -10,6 +10,7 @@
 	<th>User</th>
 	<th>Status</th>
 	<th>Compiler</th>
+	<th>Performance</th>
 	<th>Publication Date</th>
 	<th>Date of First Break</th>
 	<th data-type="fruit">Current Strawberries</th>
@@ -43,6 +44,7 @@
 	    {% endif %}
 	  </td>
 	  <td class="compiler">{{ program.compiler }}</td>
+	  <td>{{ program.performance_factor | round(2) }}</td>
 	  <td>{{ program.datetime_published }}</td>
 	  <td>{{ program.datetime_first_break or '-' }}</td>
 	  <td class="text-right">{{ program.strawberries_last }} 🍓</td>

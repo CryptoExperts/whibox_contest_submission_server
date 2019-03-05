@@ -1,6 +1,7 @@
 import time
 import random
 import string
+from math import log
 from traceback import print_exc
 from enum import Enum, unique
 from app import app
@@ -75,6 +76,10 @@ class Program(db.Model):
     _status = db.Column(db.String(100), default=Status.submitted.value)
     _key = db.Column(db.String(32), default=None)
     _compiler = db.Column(db.String(16), default='gcc')
+    _performance_factor = db.Column(db.Float, default=1.0)
+    _size_factor = db.Column(db.Float, default=1.0)
+    _ram_factor = db.Column(db.Float, default=1.0)
+    _time_factor = db.Column(db.Float, default=1.0)
     # ID of the docker task responsible for the compilation and plaintext/ciphertext pairs generation
     _task_id = db.Column(db.String(32), default=None)
     _timestamp_compilation_start = db.Column(db.BigInteger, default=None)
@@ -164,6 +169,22 @@ class Program(db.Model):
     @property
     def key(self):
         return self._key
+
+    @property
+    def performance_factor(self):
+        return self._performance_factor
+
+    @property
+    def size_factor(self):
+        return self._size_factor
+
+    @property
+    def ram_factor(self):
+        return self._ram_factor
+
+    @property
+    def time_factor(self):
+        return self._time_factor
 
     @property
     def compiler(self):
@@ -385,6 +406,13 @@ class Program(db.Model):
     def compare_nonces(self, nonce):
         return self._nonce == nonce
 
+    def set_performance_factor(self, size_factor, ram_factor, time_factor):
+        self._size_factor = size_factor
+        self._ram_factor = ram_factor
+        self._time_factor = time_factor
+        self._performance_factor = 1 - \
+            log(size_factor) - log(ram_factor) - log(time_factor)
+
     @staticmethod
     def get_number_of_submitted_programs():
         return Program.query.count()
@@ -418,7 +446,6 @@ class Program(db.Model):
         else:
             return None
 
-
     @staticmethod
     def get_inverted_or_broken_by_id(_id):
         program = Program.query.filter(Program._id == _id).first()
@@ -426,7 +453,6 @@ class Program(db.Model):
             return program
         else:
             return None
-
 
     @staticmethod
     def get_all_published_sorted_by_ranking(max_rank=None):

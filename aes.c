@@ -1,5 +1,5 @@
-/* 	
-	NOTE: This is just a correct implementation of AES-128, 
+/*
+	NOTE: This is just a correct implementation of AES-128,
 	not an example of a challenge program.
 */
 

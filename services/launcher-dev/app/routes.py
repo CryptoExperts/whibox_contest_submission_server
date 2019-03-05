@@ -1,9 +1,11 @@
-import sys
-import docker
-import shutil
-import os
-import time
 import binascii
+import docker
+import os
+import sys
+import shutil
+import time
+import urllib
+
 from traceback import print_exc
 from app import app
 from app import db
@@ -17,6 +19,8 @@ ERR_CODE_COMPILATION_FAILED = 1
 ERR_CODE_BIN_TOO_LARGE = 2
 ERR_CODE_LINK_FAILED = 3
 ERR_CODE_EXECUTION_FAILED = 4
+ERR_CODE_EXCEED_RAM_LIMAT = 5
+ERR_CODE_EXCEED_EXECUTION_TIME_LIMAT = 6
 
 
 @app.route('/compile_and_test', methods=['GET', 'POST'])
@@ -193,7 +197,8 @@ def compile_and_test():
     return "youpi"
 
 
-@app.route('/get_plaintexts/<basename:basename>/<basename:nonce>', methods=['GET'])
+@app.route('/get_plaintexts/<basename:basename>/<basename:nonce>',
+           methods=['GET'])
 def get_plaintexts(basename, nonce):
     if not utils.basename_and_nonce_are_valid(basename, nonce):
         return ""
@@ -213,10 +218,13 @@ def get_plaintexts(basename, nonce):
     return plaintexts
 
 
-@app.route('/compile_and_test_result/<basename:basename>/<basename:nonce>/<int:ret>', methods=['GET', 'POST'])
+@app.route(
+    '/compile_and_test_result/<basename:basename>/<basename:nonce>/<int:ret>',
+    methods=['GET', 'POST'])
 def compile_and_test_result(basename, nonce, ret):
-    utils.console("Entering compile_and_test_result(basename=%s, nonce=%s, ret=%d)" % (
-        basename, nonce, ret))
+    utils.console(
+        "Entering compile_and_test_result(basename=%s, nonce=%s, ret=%d)" %
+        (basename, nonce, ret))
     if not utils.basename_and_nonce_are_valid(basename, nonce) or ret is None:
         # Look for another program to compile and test
         utils.console("Calling compile_and_test()... (0)")
@@ -273,9 +281,15 @@ def compile_and_test_result(basename, nonce, ret):
         compile_and_test()
         return ""
 
-    # If we reach this point, the program was successfuly compiled, we can test the ciphertexts
+    # If we reach this point, the program was successfuly compiled,
+    # we can test the ciphertexts
+    response = request.get_json()
+    size_factor = response['size_factor']
+    ram_factor = response['ram_factor']
+    time_factor = response['time_factor']
+    program.set_performance_factor(size_factor, ram_factor, time_factor)
 
-    ciphertexts = request.get_data()
+    ciphertexts = bytes.fromhex(response['ciphertexts'])
     number_of_test_vectors = app.config['CHALLENGE_NUMBER_OF_TEST_VECTORS']
     if len(ciphertexts) != 16 * number_of_test_vectors:
         utils.console("The length of the ciphertexts is %d, we were expecting %d." % (
@@ -291,7 +305,6 @@ def compile_and_test_result(basename, nonce, ret):
         return ""
 
     # If we reach this point, the ciphertexts stream has the appropriate length
-
     utils.console("We received the appropriate number of ciphertexts.")
     utils.console(
         "Testing the plaintexts against the ciphertexts using the announced key...")

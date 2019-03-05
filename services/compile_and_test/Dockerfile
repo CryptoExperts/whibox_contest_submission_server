@@ -8,5 +8,7 @@ COPY main.c /
 RUN gcc -c /main.c -o /main.o
 
 COPY compile_and_test.py /
+COPY execute.py /
+
 RUN chmod 755 /compile_and_test.py
 CMD ["/compile_and_test.py"]
