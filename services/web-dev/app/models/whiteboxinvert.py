@@ -24,7 +24,7 @@ class WhiteboxInvert(db.Model):
         return self._carrots
 
     @property
-    def datetime_broken(self):
+    def datetime_inverted(self):
         return self._format_timestamp(self._timestamp)
 
     @staticmethod

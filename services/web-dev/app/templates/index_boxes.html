@@ -54,8 +54,8 @@
             <i class="fa fa-check-circle fa-5x"></i>
           </div>
           <div class="col-xs-9 text-right">
-            <div class="huge">{{ number_of_unbroken_programs }}</div>
-	    <div>Unbroken!</div>
+            <div class="huge">{{ number_of_unbroken_programs }} / {{ number_of_uninverted_programs }}</div>
+	    <div>Unbroken! / Uninverted!</div>
           </div>
         </div>
       </div>
@@ -77,8 +77,8 @@
             <i class="fa fa-crosshairs fa-5x"></i>
           </div>
           <div class="col-xs-9 text-right">
-            <div class="huge">{{ wb_breaks|length }}</div>
-            <div>Break{% if wb_breaks|length > 1 %}s{% endif %}!</div>
+            <div class="huge">{{ wb_breaks|length }} / {{ wb_inverts|length }}</div>
+            <div>Break{% if wb_breaks|length > 1 %}s{% endif %}! / Inversion{% if wb_inverts|length > 1 %}s{% endif %}!</div>
           </div>
         </div>
       </div>

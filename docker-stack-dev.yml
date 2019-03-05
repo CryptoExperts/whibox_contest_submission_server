@@ -34,7 +34,7 @@ services:
             - CHALLENGE_MAX_BINARY_SIZE_IN_MB=20         # In MB. Must be identical in the launcher service. Must be 20 in production.
             - CHALLENGE_MAX_MEM_EXECUTION_IN_MB=20       # In MB. Must be identical in the launcher service. Must be 20 in production.
             - CHALLENGE_MAX_TIME_EXECUTION_IN_SECS=1     # In seconds. Must be identical in the launcher service. Must be 1 in production.
-            - CHALLENGE_NUMBER_OF_TEST_VECTORS=1000      # Must be identical in the launcher service. Must be at least 1000 in production.
+            - CHALLENGE_NUMBER_OF_TEST_VECTORS=100       # Must be identical in the launcher service. Must be at least 1000 in production.
         deploy:
             placement:
                 constraints: [node.labels.vm == node-manager]
@@ -73,7 +73,7 @@ services:
             - CHALLENGE_MAX_BINARY_SIZE_IN_MB=20         # In MB. Must be identical in the web service. Must be 20 in production.
             - CHALLENGE_MAX_MEM_EXECUTION_IN_MB=20       # In MB. Must be identical in the web service. Must be 20 in production.
             - CHALLENGE_MAX_TIME_EXECUTION_IN_SECS=1     # In seconds. Must be identical in the web service. Must be 1 in production.
-            - CHALLENGE_NUMBER_OF_TEST_VECTORS=1000      # Must be identical in the web service. Must be at least 1000 in production.
+            - CHALLENGE_NUMBER_OF_TEST_VECTORS=100       # Must be identical in the web service. Must be at least 1000 in production.
 
         deploy:
             placement:

@@ -2,7 +2,6 @@ import time
 import random
 import string
 from math import log
-from traceback import print_exc
 from enum import Enum, unique
 from app import app
 from app import db
@@ -80,7 +79,7 @@ class Program(db.Model):
     _size_factor = db.Column(db.Float, default=1.0)
     _ram_factor = db.Column(db.Float, default=1.0)
     _time_factor = db.Column(db.Float, default=1.0)
-    # ID of the docker task responsible for the compilation and plaintext/ciphertext pairs generation
+    # ID of the docker task responsible for the compilation
     _task_id = db.Column(db.String(32), default=None)
     _timestamp_compilation_start = db.Column(db.BigInteger, default=None)
     _timestamp_compilation_finished = db.Column(db.BigInteger, default=None)
@@ -101,12 +100,13 @@ class Program(db.Model):
     def position_in_the_compilation_queue(self):
         if self.status != Program.Status.submitted:
             return None
-        if self._task_id != None:
+        if self._task_id is not None:
             return 'In progress'
-        pos = Program.query.filter(Program._status == Program.Status.submitted.value,
-                                   Program._task_id == None,
-                                   Program._timestamp_submitted < self._timestamp_submitted)\
-            .count()
+        pos = Program.query.filter(
+            Program._status == Program.Status.submitted.value,
+            Program._task_id.is_(None),
+            Program._timestamp_submitted < self._timestamp_submitted
+        ).count()
         if pos == 0:
             return "Next"
         else:
@@ -144,7 +144,9 @@ class Program(db.Model):
 
     @property
     def hsl_color(self):
-        return 'hsl(%d, 100%%, %d%%)' % (self._timestamp_submitted % 360, self._timestamp_published % 47 + 20)
+        return 'hsl(%d, 100%%, %d%%)' % \
+            (self._timestamp_submitted % 360,
+             self._timestamp_published % 47 + 20)
 
     @property
     def datetime_submitted(self):
@@ -221,20 +223,23 @@ class Program(db.Model):
         else:
             return utils.format_timestamp(self._timestamp_first_break)
 
+    # TODO
     def update_strawberries_and_next_update_timestamp(self, now):
         if not self.is_published:
             return
         strawberries = self.strawberries(now)
         # Update the strawberries peak and last value in DB
         new_peak = max(strawberries.values())
-        if self._strawberries_peak != new_peak:
+        if self._strawberries_peak < new_peak:
             self._strawberries_peak = new_peak
             Program.refresh_all_strawberry_rankings()
         last_timestamp = max(strawberries.keys())
         self._strawberries_last = strawberries[last_timestamp]
-        self._timestamp_strawberries_next_update = last_timestamp + \
-            app.config['NBR_SECONDS_PER_DAY']
-        if self.user.strawberries is None or self._strawberries_peak > self.user.strawberries:
+        # TODO: refresh is too frequency
+        self._timestamp_strawberries_next_update = \
+            last_timestamp + app.config['NBR_SECONDS_PER_MINUTE']
+        if self.user.strawberries is None or \
+           self._strawberries_peak > self.user.strawberries:
             self.user.refresh_strawberries_count_and_rank()
 
     @staticmethod
@@ -243,7 +248,7 @@ class Program(db.Model):
 
         programs = Program.query.filter(
             Program._status == Program.Status.submitted.value,
-            Program._task_id != None
+            Program._task_id.isnot(None)
         ).order_by(Program._timestamp_compilation_start.desc()).all()
         # We ensure the first program has not been compiled/tested for too long
         for p in programs[:1]:
@@ -261,10 +266,11 @@ class Program(db.Model):
 
     @staticmethod
     def refresh_all_strawberry_rankings():
-        programs = Program.query.filter(or_(Program._status == Program.Status.unbroken.value,
-                                            Program._status == Program.Status.broken.value))\
-            .order_by(Program._strawberries_peak.desc())\
-            .all()
+        programs = Program.query.filter(or_(
+            Program._status == Program.Status.unbroken.value,
+            Program._status == Program.Status.inverted.value,
+            Program._status == Program.Status.broken.value)
+        ).order_by(Program._strawberries_peak.desc()).all()
         if len(programs) == 0:
             return
         programs[0]._strawberries_ranking = 1
@@ -280,58 +286,123 @@ class Program(db.Model):
             program._strawberries_ranking = r
             p = program._strawberries_peak
 
+    def strawberries_grow(self, start_timestamp, end_timestamp):
+        seconds_in_minute = app.config['NBR_SECONDS_PER_MINUTE']
+        seconds_in_hour = app.config['NBR_SECONDS_PER_HOUR']
+        seconds_in_day = app.config['NBR_SECONDS_PER_DAY']
+        final_deadline = app.config['FINAL_DEADLINE']
+
+        strawberries = {}
+        current_timestamp = start_timestamp
+
+        days = 0
+        while end_timestamp - current_timestamp > 1.5 * seconds_in_day:
+            strawberries[current_timestamp] = days**2
+            current_timestamp += seconds_in_day
+            days += 1
+
+        hours = 0
+        while end_timestamp - current_timestamp > 1.5 * seconds_in_hour:
+            strawberries[current_timestamp] = (days + hours/24.0) ** 2
+            current_timestamp += seconds_in_hour
+            hours += 1
+
+        mintues = 0
+        while end_timestamp - current_timestamp > seconds_in_minute:
+            strawberries[current_timestamp] = (
+                days + hours/24.0 + mintues/1440.0
+            ) ** 2
+            current_timestamp += seconds_in_minute
+            mintues += 1
+
+        return strawberries
+
+    def strawberries_decrease(self, start_timestamp, end_timestamp):
+        seconds_in_minute = app.config['NBR_SECONDS_PER_MINUTE']
+        seconds_in_hour = app.config['NBR_SECONDS_PER_HOUR']
+        seconds_in_day = app.config['NBR_SECONDS_PER_DAY']
+        final_deadline = app.config['FINAL_DEADLINE']
+
+        strawberries = {}
+        current_timestamp = start_timestamp
+
+        days = 0
+        while end_timestamp - current_timestamp > 1.5 * seconds_in_day:
+            strawberries[current_timestamp] = days**2
+            current_timestamp += seconds_in_day
+            days += 1
+
+        hours = 0
+        while end_timestamp - current_timestamp > 1.5 * seconds_in_hour:
+            strawberries[current_timestamp] = (days + hours/24.0) ** 2
+            current_timestamp += seconds_in_hour
+            hours += 1
+
+        mintues = 0
+        while end_timestamp - current_timestamp > seconds_in_minute:
+            strawberries[current_timestamp] = (
+                days + hours/24.0 + mintues/1440.0
+            ) ** 2
+            current_timestamp += seconds_in_minute
+            mintues += 1
+
+        return strawberries
+
     def strawberries(self, now=int(time.time())):
         if not self.is_published:
             return None
-
         strawberries = {}
-        running_val = 0
-        running_val_diff = 0
 
         if not self.is_broken:
-            for running_timestamp in range(self._timestamp_published, min(now, app.config['FINAL_DEADLINE'])+1, app.config['NBR_SECONDS_PER_DAY']):
-                running_val += running_val_diff
-                running_val_diff += 1
-                strawberries[running_timestamp] = running_val
+            final_deadline = app.config['FINAL_DEADLINE']
+            start_timestamp = self._timestamp_published
+            end_timestamp = min(now, final_deadline)
+            strawberries.update(self.strawberries_grow(
+                start_timestamp, end_timestamp))
         else:
-            for running_timestamp in range(self._timestamp_published, self._timestamp_first_break, app.config['NBR_SECONDS_PER_DAY']):
-                running_val += running_val_diff
-                running_val_diff += 1
-                strawberries[running_timestamp] = running_val
-            running_val = max(running_val - 1, 0)
-            for running_timestamp in range(self._timestamp_first_break, min(now, app.config['FINAL_DEADLINE'])+1, app.config['NBR_SECONDS_PER_DAY']):
-                strawberries[running_timestamp] = running_val
-                running_val_diff = max(running_val_diff - 1, 0)
-                running_val = max(running_val - running_val_diff, 0)
-
-        return strawberries
+            start_timestamp = self._timestamp_published
+            end_timestamp = self._timestamp_first_break
+            strawberries.update(self.strawberries_grow(
+                start_timestamp, end_timestamp))
+            # TODO: add decrease
+            # running_val = max(running_val - 1, 0)
+            # for running_timestamp in range(self._timestamp_first_break, min(now, final_deadline)+1, seconds_in_minute):
+            #     strawberries[running_timestamp] = running_val
+            #     running_val_diff = max(running_val_diff - 1, 0)
+            #     running_val = max(running_val - running_val_diff, 0)
+        return {k: v*self._performance_factor for k, v in strawberries.items()}
 
     def set_status_to_compilation_failed(self, error_message=None):
         utils.console(
             "Setting the status to compilation_failed for program with id %s" % str(self._id))
-        if Program.Status.authorized_status_change(self.status, Program.Status.compilation_failed):
+        if Program.Status.authorized_status_change(
+                self.status, Program.Status.compilation_failed):
             self._status = Program.Status.compilation_failed.value
             if error_message is not None and type(error_message) == str:
                 self._error_message = error_message
 
     def set_status_to_link_failed(self):
-        if Program.Status.authorized_status_change(self.status, Program.Status.link_failed):
+        if Program.Status.authorized_status_change(self.status,
+                                                   Program.Status.link_failed):
             self._status = Program.Status.link_failed.value
 
     def set_status_to_execution_failed(self, error_message=None):
-        if Program.Status.authorized_status_change(self.status, Program.Status.execution_failed):
+        if Program.Status.authorized_status_change(
+                self.status, Program.Status.execution_failed):
             self._status = Program.Status.execution_failed.value
             if error_message is not None and type(error_message) == str:
                 self._error_message = error_message
 
     def set_status_to_test_failed(self, error_message=None):
-        if Program.Status.authorized_status_change(self.status, Program.Status.test_failed):
+        if Program.Status.authorized_status_change(self.status,
+                                                   Program.Status.test_failed):
             self._status = Program.Status.test_failed.value
             if error_message is not None and type(error_message) == str:
                 self._error_message = error_message
 
     def set_status_to_unbroken(self):
-        if Program.Status.authorized_status_change(self.status, Program.Status.unbroken):
+        if Program.Status.authorized_status_change(self.status,
+                                                   Program.Status.unbroken):
             now = int(time.time())
             if now > app.config['FINAL_DEADLINE']:
                 utils.console("Submission rejected after final deadline")
@@ -348,11 +419,11 @@ class Program(db.Model):
     def set_status_to_broken(self, user, now):
         if now > app.config['FINAL_DEADLINE']:
             return
-        if Program.Status.authorized_status_change(self.status, Program.Status.broken):
+        if Program.Status.authorized_status_change(self.status,
+                                                   Program.Status.broken):
             self._status = Program.Status.broken.value
             if self._timestamp_first_break is None:
                 self._timestamp_first_break = now
-                # + app.config['NBR_SECONDS_PER_DAY']
                 self._timestamp_strawberries_next_update = now
             whitebox_break = WhiteboxBreak.create(
                 user, self, now, self._strawberries_last)
@@ -363,7 +434,8 @@ class Program(db.Model):
     def set_status_to_inverted(self, user, now):
         if now > app.config['FINAL_DEADLINE']:
             return
-        if Program.Status.authorized_status_change(self.status, Program.Status.inverted):
+        if Program.Status.authorized_status_change(self.status,
+                                                   Program.Status.inverted):
             self._status = Program.Status.inverted.value
         if self._timestamp_first_inversion is None:
             self._timestamp_first_inversion = now
@@ -419,15 +491,22 @@ class Program(db.Model):
 
     @staticmethod
     def get_number_of_unbroken_programs():
+        return Program.query.filter(or_(
+            Program._status == Program.Status.unbroken.value,
+            Program._status == Program.Status.inverted.value,
+        )).count()
+
+    @staticmethod
+    def get_number_of_inverted_programs():
         return Program.query.filter(
-            Program._status == Program.Status.unbroken.value
+            Program._status == Program.Status.inverted.value,
         ).count()
 
     @staticmethod
     def get_next_program_to_compile():
         return Program.query.filter(
             Program._status == Program.Status.submitted.value,
-            Program._task_id == None
+            Program._task_id.is_(None)
         ).order_by(Program._timestamp_submitted).first()
 
     @staticmethod
@@ -474,61 +553,71 @@ class Program(db.Model):
 
     @staticmethod
     def get_user_programs(user, status):
-        return Program.query.filter(Program._user_id == user._id, Program._status == status.value).all()
+        return Program.query.filter(
+            Program._user_id == user._id,
+            Program._status == status.value
+        ).all()
 
     @staticmethod
     def get_user_program_by_id(user, _id):
-        return Program.query.filter(Program._user_id == user._id, Program._id == _id).first()
+        return Program.query.filter(
+            Program._user_id == user._id,
+            Program._id == _id
+        ).first()
 
     @staticmethod
     def get_user_queued_programs(user):
-        return Program.query.filter(Program._user_id == user._id,
-                                    Program._status == Program.Status.submitted.value)\
-            .order_by(Program._timestamp_submitted)\
-            .all()
+        return Program.query.filter(
+            Program._user_id == user._id,
+            Program._status == Program.Status.submitted.value
+        ).order_by(Program._timestamp_submitted).all()
 
     @staticmethod
     def get_user_rejected_programs(user):
-        return Program.query.filter(Program._user_id == user._id,
-                                    or_(Program._status == Program.Status.compilation_failed.value,
-                                        Program._status == Program.Status.link_failed.value,
-                                        Program._status == Program.Status.execution_failed.value,
-                                        Program._status == Program.Status.test_failed.value))\
-            .order_by(Program._timestamp_submitted)\
-            .all()
+        return Program.query.filter(
+            Program._user_id == user._id,
+            or_(Program._status == Program.Status.compilation_failed.value,
+                Program._status == Program.Status.link_failed.value,
+                Program._status == Program.Status.execution_failed.value,
+                Program._status == Program.Status.test_failed.value)
+        ).order_by(Program._timestamp_submitted).all()
 
     @staticmethod
     def get_user_competing_programs(user):
-        return Program.query.filter(Program._user_id == user._id,
-                                    or_(Program._status == Program.Status.unbroken.value,
-                                        Program._status == Program.Status.broken.value))\
-            .order_by(Program._timestamp_submitted)\
-            .all()
+        return Program.query.filter(
+            Program._user_id == user._id,
+            or_(Program._status == Program.Status.unbroken.value,
+                Program._status == Program.Status.broken.value)
+        ).order_by(Program._timestamp_submitted).all()
 
     @staticmethod
     def get_programs_requiring_straberries_update(now):
-        return Program.query.filter(or_(Program._status == Program.Status.unbroken.value,
-                                        Program._status == Program.Status.broken.value),
-                                    Program._timestamp_strawberries_next_update < now)\
-            .all()
+        return Program.query.filter(
+            or_(Program._status == Program.Status.unbroken.value,
+                Program._status == Program.Status.broken.value),
+            Program._timestamp_strawberries_next_update < now
+        ).all()
 
     @staticmethod
     def rank_of_challenge(strawberries_peak):
         if strawberries_peak is None:
-            return 1 + Program.query.filter(or_(Program._status == Program.Status.unbroken.value,
-                                                Program._status == Program.Status.broken.value))\
-                .count()
+            return 1 + Program.query.filter(
+                or_(Program._status == Program.Status.unbroken.value,
+                    Program._status == Program.Status.broken.value)
+            ).count()
         else:
-            return 1 + Program.query.filter(or_(Program._status == Program.Status.unbroken.value,
-                                                Program._status == Program.Status.broken.value),
-                                            Program._strawberries_peak > strawberries_peak)\
-                .count()
+            return 1 + Program.query.filter(
+                or_(Program._status == Program.Status.unbroken.value,
+                    Program._status == Program.Status.broken.value),
+                Program._strawberries_peak > strawberries_peak
+            ).count()
 
     @staticmethod
     def get_program_being_compiled(running_task_id):
-        return Program.query.filter(Program._status == Program.Status.submitted.value,
-                                    Program._task_id == running_task_id)\
-            .first()
+        return Program.query.filter(
+            Program._status == Program.Status.submitted.value,
+            Program._task_id == running_task_id
+        ).first()
 
     def __str__(self):
         s = '[Program %d]\n' % (self._id)

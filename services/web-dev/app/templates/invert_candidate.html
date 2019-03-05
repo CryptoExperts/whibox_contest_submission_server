@@ -19,13 +19,13 @@ Trying to Invert Challenge {{ identifier }}
         <form id="form" class="form-signin" method="post">
           {{ form.hidden_tag() }}
           <fieldset>
-	    <div>
-	      <label class="control-label" id="plaintext">Please provide the plaintext of {{ ciphertext }}</label>
-	    </div>
+            <div>
+              <label class="control-label" id="plaintext">Please provide the plaintext of <code>{{ ciphertext }}</code></label>
+            </div>
             <div class="form-group{% if form.plaintext.errors %} has-error has-feedback{% endif %}" id="plaintext-form-group">
               {% for error in form.plaintext.errors %}
-                <label class="control-label" for="plaintext">{{ error }}</label>
-                <span class="glyphicon glyphicon-remove form-control-feedback" aria-hidden="true"></span>
+              <label class="control-label" for="plaintext">{{ error }}</label>
+              <span class="glyphicon glyphicon-remove form-control-feedback" aria-hidden="true"></span>
               {% endfor %}
               <label for="plaintext" class="sr-only">Key</label>
               <input type="hidden" name="ciphertext" id="ciphertext" class="form-control}" placeholder="Ciphertext" value="{{ ciphertext }}">

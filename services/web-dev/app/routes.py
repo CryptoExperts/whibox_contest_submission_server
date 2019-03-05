@@ -66,19 +66,21 @@ def index():
         max_rank=app.config['MAX_RANK_OF_PLOTED_CHALLENGES'])
     programs = Program.get_all_published_sorted_by_ranking()
     number_of_unbroken_programs = Program.get_number_of_unbroken_programs()
+    number_of_uninverted_programs = number_of_unbroken_programs - \
+        Program.get_number_of_inverted_programs()
     wb_breaks = WhiteboxBreak.get_all()
-    # TODO: add globally wb_inversions
+    wb_inverts = WhiteboxInvert.get_all()
     programs_broken_by_current_user = None
+    programs_inverted_by_current_user = None
     if current_user and current_user.is_authenticated:
         wb_breaks_by_current_user = WhiteboxBreak.get_all_by_user(current_user)
         programs_broken_by_current_user = [
             wb_break.program for wb_break in wb_breaks_by_current_user]
-    programs_inverted_by_current_user = None
-    if current_user and current_user.is_authenticated:
         wb_inversions_by_current_user = WhiteboxInvert.get_all_by_user(
             current_user)
         programs_inverted_by_current_user = [
-            wb_inversion.program for wb_inversion in wb_inversions_by_current_user]
+            wb_inversion.program for wb_inversion in wb_inversions_by_current_user
+        ]
 
     # plot data
     data_flot = None
@@ -88,16 +90,20 @@ def index():
         for program in programs_to_plot:
             data_flot += plot_data_for_program(program, now) + ', '
         data_flot = data_flot[:-2] + ' ]'
-    return render_template('index.html',
-                           active_page='index',
-                           users=users,
-                           total_number_of_users=total_number_of_users,
-                           programs=programs,
-                           wb_breaks=wb_breaks,
-                           programs_broken_by_current_user=programs_broken_by_current_user,
-                           programs_inverted_by_current_user=programs_inverted_by_current_user,
-                           number_of_unbroken_programs=number_of_unbroken_programs,
-                           data_flot=data_flot)
+    return render_template(
+        'index.html',
+        active_page='index',
+        users=users,
+        total_number_of_users=total_number_of_users,
+        programs=programs,
+        wb_breaks=wb_breaks,
+        wb_inverts=wb_inverts,
+        programs_broken_by_current_user=programs_broken_by_current_user,
+        programs_inverted_by_current_user=programs_inverted_by_current_user,
+        number_of_unbroken_programs=number_of_unbroken_programs,
+        number_of_uninverted_programs=number_of_uninverted_programs,
+        data_flot=data_flot
+    )
 
 
 @app.route('/user/signin', methods=['GET', 'POST'])
@@ -202,7 +208,9 @@ def show_candidate(identifier):
     do_show = False
     if program.is_published:
         do_show = True
-    if current_user is not None and current_user.is_authenticated and current_user == program.user:
+    if current_user is not None and \
+       current_user.is_authenticated and \
+       current_user == program.user:
         do_show = True
     if not do_show:
         return redirect(url_for('index'))

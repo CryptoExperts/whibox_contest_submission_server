@@ -7,9 +7,6 @@ from passlib.hash import pbkdf2_sha256
 
 class User(db.Model):
 
-    #NBR_SECONDS_PER_DAY = 86400
-    NBR_SECONDS_PER_DAY = 10
-
     _id = db.Column(db.Integer, primary_key=True)
     _email = db.Column(db.Text, nullable=False)
     _username = db.Column(db.String(64), index=True, unique=True)
@@ -97,8 +94,9 @@ class User(db.Model):
 
     @staticmethod
     def refresh_all_strawberry_rankings():
-        users = User.query.filter(User._strawberries != None).order_by(
-            User._strawberries.desc()).all()
+        users = User.query.filter(
+            User._strawberries.isnot(None)
+        ).order_by(User._strawberries.desc()).all()
         if len(users) == 0:
             return
         users[0]._strawberries_ranking = 1
@@ -115,7 +113,6 @@ class User(db.Model):
             b = user._strawberries
 
     # User creation and password verification
-
     @staticmethod
     def create(username, password, email):
         password_hash = pbkdf2_sha256.hash(password)
@@ -140,7 +137,9 @@ class User(db.Model):
 
     @staticmethod
     def get_all_sorted_by_bananas():
-        return User.query.filter(User._bananas_ranking != None).order_by(User._bananas.desc()).all()
+        return User.query.filter(
+            User._bananas_ranking.isnot(None)
+        ).order_by(User._bananas.desc()).all()
 
     @staticmethod
     def get_total_number_of_users():
