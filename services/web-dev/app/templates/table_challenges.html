@@ -24,7 +24,7 @@
 	  <th class="text-center" scope="row">#{{ program.strawberries_ranking }}</th>
 	  <td class="text-center">{{ program._id }}</td>
 	  <td><div style="width: 1em; height: 1em; background-color: {{ program.hsl_color }}"></div></td>
-	  <td><a href='/show/candidate/{{ program._id }}'>{{ program.funny_name }}</a></td>
+	  <td><a href='/show/candidate/{{ program._id }}.c'>{{ program.funny_name }}</a></td>
 	  <td class="text-right">{{ program.strawberries_peak }} 🍓</td>
 	  <td class="ellipsable">
 	    {% if current_user.is_authenticated and current_user == program.user %}
@@ -36,6 +36,8 @@
 	  <td>
 	    {% if program.is_broken %}
 	      <span class="text-danger">Broken!</span>
+	    {% elif program.is_inverted %}
+	      <span class="text-warning">Inverted!</span>
 	    {% else %}
 	      <span class="text-success">Unbroken</span>
 	    {% endif %}

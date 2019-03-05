@@ -38,10 +38,10 @@ class Program(db.Model):
                 return 'Test failed'
             elif self == self.unbroken:
                 return 'Unbroken'
-            elif self == self.broken:
-                return 'Broken'
             elif self == self.inverted:
                 return 'Inverted'
+            elif self == self.broken:
+                return 'Broken'
             else:
                 return '-'
 
@@ -339,9 +339,11 @@ class Program(db.Model):
         else:
             utils.console("Could NOT set status to broken")
 
-    def add_inversion(self, user, now):
+    def set_status_to_inverted(self, user, now):
         if now > app.config['FINAL_DEADLINE']:
             return
+        if Program.Status.authorized_status_change(self.status, Program.Status.inverted):
+            self._status = Program.Status.inverted.value
         if self._timestamp_first_inversion is None:
             self._timestamp_first_inversion = now
             self._timestamp_carrots_next_update = now
@@ -355,11 +357,17 @@ class Program(db.Model):
 
     @property
     def is_published(self):
-        return (self._status == Program.Status.unbroken.value) or (self._status == Program.Status.broken.value)
+        return (self._status == Program.Status.unbroken.value) or \
+            (self._status == Program.Status.inverted.value) or \
+            (self._status == Program.Status.broken.value)
 
     @property
     def is_broken(self):
         return self._status == Program.Status.broken.value
+
+    @property
+    def is_inverted(self):
+        return self._status == Program.Status.inverted.value
 
     @staticmethod
     def create(user, basename, key, compiler):
@@ -410,19 +418,32 @@ class Program(db.Model):
         else:
             return None
 
+
+    @staticmethod
+    def get_inverted_or_broken_by_id(_id):
+        program = Program.query.filter(Program._id == _id).first()
+        if program.status in [Program.Status.inverted, Program.Status.broken]:
+            return program
+        else:
+            return None
+
+
     @staticmethod
     def get_all_published_sorted_by_ranking(max_rank=None):
         if max_rank is not None:
-            programs = Program.query.filter(or_(Program._status == Program.Status.unbroken.value,
-                                                Program._status == Program.Status.broken.value))\
-                .filter(Program._strawberries_ranking <= max_rank)\
-                .order_by(Program._strawberries_ranking)\
-                .all()
+            programs = Program.query.filter(or_(
+                Program._status == Program.Status.unbroken.value,
+                Program._status == Program.Status.inverted.value,
+                Program._status == Program.Status.broken.value
+            )).filter(
+                Program._strawberries_ranking <= max_rank
+            ).order_by(Program._strawberries_ranking).all()
         else:
-            programs = Program.query.filter(or_(Program._status == Program.Status.unbroken.value,
-                                                Program._status == Program.Status.broken.value))\
-                .order_by(Program._strawberries_ranking)\
-                .all()
+            programs = Program.query.filter(or_(
+                Program._status == Program.Status.unbroken.value,
+                Program._status == Program.Status.inverted.value,
+                Program._status == Program.Status.broken.value
+            )).order_by(Program._strawberries_ranking).all()
         return programs
 
     @staticmethod

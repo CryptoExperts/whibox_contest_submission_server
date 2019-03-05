@@ -194,7 +194,7 @@ def submit_candidate_ok():
     return redirect(url_for('user_show'))
 
 
-@app.route('/show/candidate/<int:identifier>', methods=['GET'])
+@app.route('/show/candidate/<int:identifier>.c', methods=['GET'])
 def show_candidate(identifier):
     program = Program.get_by_id(identifier)
     if program is None:
@@ -382,7 +382,7 @@ def invert_candidate(identifier):
                                ciphertext=form.ciphertext.data)
 
     # If we reach this point, the submitted key is correct
-    program.add_inversion(current_user, now)
+    program.set_status_to_inverted(current_user, now)
     db.session.commit()
 
     return redirect(url_for('invert_candidate_ok', identifier=identifier))
@@ -391,10 +391,9 @@ def invert_candidate(identifier):
 @app.route('/invert/candidate/ok/<int:identifier>', methods=['GET'])
 @login_required
 def invert_candidate_ok(identifier):
-    # TODO: Check that the program is broken by this user or inverted by him
-    program = Program.get_unbroken_or_broken_by_id(identifier)
-    # if program is None or not program.is_broken:
-    #     return redirect(url_for('index'))
+    program = Program.get_inverted_or_broken_by_id(identifier)
+    if program is None:
+        return redirect(url_for('index'))
 
     # Check that the user indeed broke the challenge
     wb_inversion = WhiteboxInvert.get(current_user, program)

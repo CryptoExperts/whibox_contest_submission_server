@@ -210,10 +210,10 @@ crx/compile_and_test   latest              60a2c138871f        7 minutes ago    
 alpine                 3.5                 4a415e366388        3 weeks ago         3.99 MB
 ~~~
 
-Optionally, you can backup the built mysql images by running:
+Optionally, you can backup the built images by running:
 
 ~~~bash
-> make backup-mysql-image
+> make backup-images
 ~~~
 
 
