@@ -1,6 +1,7 @@
 import time
 import random
 import string
+from decimal import Decimal
 from math import log
 from enum import Enum, unique
 from app import app
@@ -8,6 +9,7 @@ from app import db
 from app import utils
 from app.funny_name_generator import get_funny_name
 from sqlalchemy import or_
+from sqlalchemy.dialects import mysql
 from .whiteboxbreak import WhiteboxBreak
 from .whiteboxinvert import WhiteboxInvert
 
@@ -75,10 +77,10 @@ class Program(db.Model):
     _status = db.Column(db.String(100), default=Status.submitted.value)
     _key = db.Column(db.String(32), default=None)
     _compiler = db.Column(db.String(16), default='gcc')
-    _performance_factor = db.Column(db.Float, default=1.0)
-    _size_factor = db.Column(db.Float, default=1.0)
-    _ram_factor = db.Column(db.Float, default=1.0)
-    _time_factor = db.Column(db.Float, default=1.0)
+    _performance_factor = db.Column(mysql.DOUBLE, default=1.0)
+    _size_factor = db.Column(mysql.DOUBLE, default=1.0)
+    _ram_factor = db.Column(mysql.DOUBLE, default=1.0)
+    _time_factor = db.Column(mysql.DOUBLE, default=1.0)
     # ID of the docker task responsible for the compilation
     _task_id = db.Column(db.String(32), default=None)
     _timestamp_compilation_start = db.Column(db.BigInteger, default=None)
@@ -87,13 +89,13 @@ class Program(db.Model):
     _plaintexts = db.Column(db.LargeBinary, default=None)
     _ciphertexts = db.Column(db.LargeBinary, default=None)
     # First set when the program is published
-    _strawberries_peak = db.Column(db.BigInteger, default=None)
+    _strawberries_peak = db.Column(mysql.DOUBLE, default=None)
     # First set when the program is published
-    _strawberries_last = db.Column(db.BigInteger, default=None)
+    _strawberries_last = db.Column(mysql.DOUBLE, default=None)
     _strawberries_ranking = db.Column(db.BigInteger, default=None)
     _timestamp_strawberries_next_update = db.Column(
         db.BigInteger, default=None)  # First set when the program is published
-    _carrots_last = db.Column(db.BigInteger, default=None)
+    _carrots_last = db.Column(mysql.DOUBLE, default=None)
     _timestamp_first_inversion = db.Column(db.BigInteger, default=None)
 
     @property
@@ -370,7 +372,8 @@ class Program(db.Model):
             #     strawberries[running_timestamp] = running_val
             #     running_val_diff = max(running_val_diff - 1, 0)
             #     running_val = max(running_val - running_val_diff, 0)
-        return {k: v*self._performance_factor for k, v in strawberries.items()}
+
+        return {k: Decimal(v)*self._performance_factor for k, v in strawberries.items()}
 
     def set_status_to_compilation_failed(self, error_message=None):
         utils.console(
@@ -587,6 +590,7 @@ class Program(db.Model):
         return Program.query.filter(
             Program._user_id == user._id,
             or_(Program._status == Program.Status.unbroken.value,
+                Program._status == Program.Status.inverted.value,
                 Program._status == Program.Status.broken.value)
         ).order_by(Program._timestamp_submitted).all()
 
@@ -594,6 +598,7 @@ class Program(db.Model):
     def get_programs_requiring_straberries_update(now):
         return Program.query.filter(
             or_(Program._status == Program.Status.unbroken.value,
+                Program._status == Program.Status.inverted.value,
                 Program._status == Program.Status.broken.value),
             Program._timestamp_strawberries_next_update < now
         ).all()
@@ -603,11 +608,13 @@ class Program(db.Model):
         if strawberries_peak is None:
             return 1 + Program.query.filter(
                 or_(Program._status == Program.Status.unbroken.value,
+                    Program._status == Program.Status.inverted.value,
                     Program._status == Program.Status.broken.value)
             ).count()
         else:
             return 1 + Program.query.filter(
                 or_(Program._status == Program.Status.unbroken.value,
+                    Program._status == Program.Status.inverted.value,
                     Program._status == Program.Status.broken.value),
                 Program._strawberries_peak > strawberries_peak
             ).count()

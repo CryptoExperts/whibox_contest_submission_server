@@ -1,6 +1,7 @@
 import time
 from app import db
 from sqlalchemy.sql import func
+from sqlalchemy.dialects import mysql
 
 
 class WhiteboxBreak(db.Model):
@@ -12,7 +13,7 @@ class WhiteboxBreak(db.Model):
                             nullable=False)
     _timestamp = db.Column(db.BigInteger, nullable=False)
     # Broken challenge's strawberries at the time it is broken
-    _strawberries = db.Column(db.BigInteger, nullable=False)
+    _strawberries = db.Column(mysql.DOUBLE, nullable=False)
 
     user = db.relationship("User", backref='breaks')
     program = db.relationship("Program")

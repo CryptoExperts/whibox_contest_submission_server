@@ -26,7 +26,7 @@
         <td class="text-center">{{ program._id }}</td>
         <td><div style="width: 1em; height: 1em; background-color: {{ program.hsl_color }}"></div></td>
         <td><a href='/show/candidate/{{ program._id }}.c'>{{ program.funny_name }}</a></td>
-        <td class="text-right">{{ program.strawberries_peak }} 🍓</td>
+        <td class="text-right">{{ program.strawberries_peak | round(2) }} 🍓</td>
         <td class="ellipsable">
           {% if current_user.is_authenticated and current_user == program.user %}
           <span class="badge badge-info">You!</span>
@@ -47,7 +47,7 @@
         <td>{{ program.performance_factor | round(2) }}</td>
         <td>{{ program.datetime_published }}</td>
         <td>{{ program.datetime_first_break or '-' }}</td>
-        <td class="text-right">{{ program.strawberries_last }} 🍓</td>
+        <td class="text-right">{{ program.strawberries_last | round(2) }} 🍓</td>
         {% if current_user.is_authenticated %}
         <td class="nowrap">
           {% if program.user == current_user %}

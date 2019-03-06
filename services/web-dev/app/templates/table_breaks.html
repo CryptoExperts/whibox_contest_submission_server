@@ -19,7 +19,7 @@
 	      {{ wb_break.user.username }}
 	    {% endif %}
 	  </td>
-	  <td class="text-right">{{ wb_break.strawberries }} 🍓</td>
+	  <td class="text-right">{{ wb_break.strawberries | round(2) }} 🍓</td>
 	  <td>{{ wb_break.program.funny_name }} ({{ wb_break.program._id }})</td>
 	</tr>
       {% endfor %}

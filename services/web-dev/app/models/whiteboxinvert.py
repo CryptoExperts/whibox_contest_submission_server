@@ -1,6 +1,7 @@
 import time
 from app import db
 from sqlalchemy.sql import func
+from sqlalchemy.dialects import mysql
 
 
 class WhiteboxInvert(db.Model):
@@ -12,7 +13,7 @@ class WhiteboxInvert(db.Model):
                             nullable=False)
     _timestamp = db.Column(db.BigInteger, nullable=False)
     # Broken challenge's carrots at the time it is broken
-    _carrots = db.Column(db.BigInteger, nullable=False)
+    _carrots = db.Column(mysql.DOUBLE, nullable=False)
 
     user = db.relationship("User", backref='inverts')
     program = db.relationship("Program")

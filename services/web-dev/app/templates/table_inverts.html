@@ -19,7 +19,7 @@
 	      {{ wb_invert.user.username }}
 	    {% endif %}
 	  </td>
-	  <td class="text-right">{{ wb_invert.carrots }} 🥕</td>
+	  <td class="text-right">{{ wb_invert.carrots | round(2) }} 🥕</td>
 	  <td>{{ wb_invert.program.funny_name }} ({{ wb_invert.program._id }})</td>
 	</tr>
       {% endfor %}

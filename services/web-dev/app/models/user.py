@@ -1,5 +1,5 @@
 import time
-import sys
+from sqlalchemy.dialects import mysql
 from app import db
 from app import login_manager
 from passlib.hash import pbkdf2_sha256
@@ -11,9 +11,9 @@ class User(db.Model):
     _email = db.Column(db.Text, nullable=False)
     _username = db.Column(db.String(64), index=True, unique=True)
     _password_hash = db.Column(db.String(256))
-    _bananas = db.Column(db.BigInteger, default=None)
+    _bananas = db.Column(mysql.DOUBLE, default=None)
     _bananas_ranking = db.Column(db.BigInteger, default=None)
-    _strawberries = db.Column(db.BigInteger, default=None)
+    _strawberries = db.Column(mysql.DOUBLE, default=None)
     _strawberries_ranking = db.Column(db.BigInteger, default=None)
     programs = db.relationship('Program', backref='user')
 
@@ -125,7 +125,8 @@ class User(db.Model):
     @staticmethod
     def validate(username, password):
         user = User.query.filter(User._username == username).first()
-        if user is not None and pbkdf2_sha256.verify(password, user._password_hash):
+        if user is not None and \
+           pbkdf2_sha256.verify(password, user._password_hash):
             return user
         else:
             return None
