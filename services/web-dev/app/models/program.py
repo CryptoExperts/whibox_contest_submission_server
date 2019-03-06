@@ -8,7 +8,7 @@ from app import app
 from app import db
 from app import utils
 from app.funny_name_generator import get_funny_name
-from sqlalchemy import or_
+from sqlalchemy import or_, and_
 from sqlalchemy.dialects import mysql
 from .whiteboxbreak import WhiteboxBreak
 from .whiteboxinvert import WhiteboxInvert
@@ -89,13 +89,11 @@ class Program(db.Model):
     _plaintexts = db.Column(db.LargeBinary, default=None)
     _ciphertexts = db.Column(db.LargeBinary, default=None)
     # First set when the program is published
-    _strawberries_peak = db.Column(mysql.DOUBLE, default=None)
-    # First set when the program is published
-    _strawberries_last = db.Column(mysql.DOUBLE, default=None)
+    _strawberries_peak = db.Column(mysql.DOUBLE, default=0)
+    _strawberries_last = db.Column(mysql.DOUBLE, default=0)
     _strawberries_ranking = db.Column(db.BigInteger, default=None)
-    _timestamp_strawberries_next_update = db.Column(
-        db.BigInteger, default=None)  # First set when the program is published
-    _carrots_last = db.Column(mysql.DOUBLE, default=None)
+    _carrots_peak = db.Column(mysql.DOUBLE, default=0)
+    _carrots_last = db.Column(mysql.DOUBLE, default=0)
     _timestamp_first_inversion = db.Column(db.BigInteger, default=None)
 
     @property
@@ -141,6 +139,10 @@ class Program(db.Model):
         return self._strawberries_ranking
 
     @property
+    def carrots_peak(self):
+        return self._carrots_peak
+
+    @property
     def carrots_last(self):
         return self._carrots_last
 
@@ -153,10 +155,6 @@ class Program(db.Model):
     @property
     def datetime_submitted(self):
         return utils.format_timestamp(self._timestamp_submitted)
-
-    @property
-    def datetime_strawberries_next_update(self):
-        return utils.format_timestamp(self._timestamp_strawberries_next_update)
 
     @property
     def datetime_published(self):
@@ -225,24 +223,30 @@ class Program(db.Model):
         else:
             return utils.format_timestamp(self._timestamp_first_break)
 
-    # TODO
-    def update_strawberries_and_next_update_timestamp(self, now):
+    @property
+    def datetime_first_inversion(self):
+        if self._timestamp_first_inversion is None:
+            return None
+        else:
+            return utils.format_timestamp(self._timestamp_first_inversion)
+
+    def update_strawberries(self, now):
         if not self.is_published:
             return
-        strawberries = self.strawberries(now)
-        # Update the strawberries peak and last value in DB
-        new_peak = max(strawberries.values())
-        if self._strawberries_peak < new_peak:
-            self._strawberries_peak = new_peak
-            Program.refresh_all_strawberry_rankings()
-        last_timestamp = max(strawberries.keys())
-        self._strawberries_last = strawberries[last_timestamp]
-        # TODO: refresh is too frequency
-        self._timestamp_strawberries_next_update = \
-            last_timestamp + app.config['NBR_SECONDS_PER_MINUTE']
-        if self.user.strawberries is None or \
-           self._strawberries_peak > self.user.strawberries:
-            self.user.refresh_strawberries_count_and_rank()
+
+        strawberries = self.current_strawberries(now)
+        self._strawberries_last = strawberries
+        if self._strawberries_peak < strawberries:
+            self._strawberries_peak = strawberries
+
+    def update_carrots(self, now):
+        if not self.is_published:
+            return
+
+        carrots = self.current_carrots(now)
+        self._carrots_last = carrots
+        if self._carrots_peak < carrots:
+            self._carrots_peak = carrots
 
     @staticmethod
     def clean_programs_which_failed_to_compile_or_test():
@@ -292,7 +296,6 @@ class Program(db.Model):
         seconds_in_minute = app.config['NBR_SECONDS_PER_MINUTE']
         seconds_in_hour = app.config['NBR_SECONDS_PER_HOUR']
         seconds_in_day = app.config['NBR_SECONDS_PER_DAY']
-        final_deadline = app.config['FINAL_DEADLINE']
 
         strawberries = {}
         current_timestamp = start_timestamp
@@ -305,25 +308,27 @@ class Program(db.Model):
 
         hours = 0
         while end_timestamp - current_timestamp > 1.5 * seconds_in_hour:
-            strawberries[current_timestamp] = (days + hours/24.0) ** 2
+            strawberries[current_timestamp] = (days + hours/24) ** 2
             current_timestamp += seconds_in_hour
             hours += 1
 
         mintues = 0
         while end_timestamp - current_timestamp > seconds_in_minute:
             strawberries[current_timestamp] = (
-                days + hours/24.0 + mintues/1440.0
+                days + hours/24 + mintues/1440
             ) ** 2
             current_timestamp += seconds_in_minute
             mintues += 1
 
+        strawberries[end_timestamp] = (
+            days + hours/24 + mintues/1440
+        ) ** 2
         return strawberries
 
     def strawberries_decrease(self, start_timestamp, end_timestamp):
         seconds_in_minute = app.config['NBR_SECONDS_PER_MINUTE']
         seconds_in_hour = app.config['NBR_SECONDS_PER_HOUR']
         seconds_in_day = app.config['NBR_SECONDS_PER_DAY']
-        final_deadline = app.config['FINAL_DEADLINE']
 
         strawberries = {}
         current_timestamp = start_timestamp
@@ -349,6 +354,55 @@ class Program(db.Model):
             mintues += 1
 
         return strawberries
+
+    def current_strawberries(self, end_timestamp):
+        if not self.is_published:
+            return None
+        final_deadline = app.config['FINAL_DEADLINE']
+        end_timestamp = min(end_timestamp, final_deadline)
+
+        if self.is_broken:
+            if end_timestamp < self._timestamp_first_break:
+                return None
+            surviving_minutes = (
+                self._timestamp_first_break-self._timestamp_published
+            ) / 60
+            minutes_after_broken = (
+                end_timestamp - self._timestamp_first_break
+            ) / 60
+            if minutes_after_broken > surviving_minutes:
+                strawberries = 0
+            else:
+                strawberries = (
+                    (surviving_minutes-minutes_after_broken)/1440.0)**2
+        else:
+            surviving_minutes = (end_timestamp-self._timestamp_published) / 60
+            strawberries = (surviving_minutes/1440.0) ** 2
+        return strawberries * float(self._performance_factor)
+
+    def current_carrots(self, end_timestamp):
+        if not self.is_published:
+            return None
+
+        final_deadline = app.config['FINAL_DEADLINE']
+        end_timestamp = min(end_timestamp, final_deadline)
+
+        if self.is_broken or self.is_inverted:
+            peak_timestamp = end_timestamp
+            if self.is_inverted:
+                peak_timestamp = self._timestamp_first_inversion
+            elif self.is_broken:
+                peak_timestamp = self._timestamp_first_break
+            surviving_minutes = (peak_timestamp-self._timestamp_published)/60
+            minutes_after_peak = (end_timestamp - peak_timestamp) / 60
+            if minutes_after_peak > surviving_minutes:
+                carrots = 0
+            else:
+                carrots = ((surviving_minutes-minutes_after_peak)/1440.0)**2
+        else:
+            surviving_minutes = (end_timestamp-self._timestamp_published) / 60
+            carrots = (surviving_minutes/1440.0) ** 2
+        return carrots * float(self._performance_factor) * 0.5
 
     def strawberries(self, now=int(time.time())):
         if not self.is_published:
@@ -359,13 +413,15 @@ class Program(db.Model):
             final_deadline = app.config['FINAL_DEADLINE']
             start_timestamp = self._timestamp_published
             end_timestamp = min(now, final_deadline)
-            strawberries.update(self.strawberries_grow(
-                start_timestamp, end_timestamp))
+            strawberries.update(
+                self.strawberries_grow(start_timestamp, end_timestamp)
+            )
         else:
             start_timestamp = self._timestamp_published
             end_timestamp = self._timestamp_first_break
-            strawberries.update(self.strawberries_grow(
-                start_timestamp, end_timestamp))
+            strawberries.update(
+                self.strawberries_grow(start_timestamp, end_timestamp)
+            )
             # TODO: add decrease
             # running_val = max(running_val - 1, 0)
             # for running_timestamp in range(self._timestamp_first_break, min(now, final_deadline)+1, seconds_in_minute):
@@ -373,7 +429,9 @@ class Program(db.Model):
             #     running_val_diff = max(running_val_diff - 1, 0)
             #     running_val = max(running_val - running_val_diff, 0)
 
-        return {k: Decimal(v)*self._performance_factor for k, v in strawberries.items()}
+        return {
+            k: Decimal(v)*Decimal(self._performance_factor) for k, v in strawberries.items()
+        }
 
     def set_status_to_compilation_failed(self, error_message=None):
         utils.console(
@@ -416,7 +474,7 @@ class Program(db.Model):
             self._key = None
             if self._timestamp_published is None:
                 self._timestamp_published = now
-            self.update_strawberries_and_next_update_timestamp(now)
+            self.update_strawberries(now)
             self._funny_name = get_funny_name(self._id)
 
     def set_status_to_broken(self, user, now):
@@ -427,7 +485,6 @@ class Program(db.Model):
             self._status = Program.Status.broken.value
             if self._timestamp_first_break is None:
                 self._timestamp_first_break = now
-                self._timestamp_strawberries_next_update = now
             whitebox_break = WhiteboxBreak.create(
                 user, self, now, self._strawberries_last)
             db.session.add(whitebox_break)
@@ -443,8 +500,6 @@ class Program(db.Model):
         if self._timestamp_first_inversion is None:
             self._timestamp_first_inversion = now
             self._timestamp_carrots_next_update = now
-            # TODO:
-            self._carrots_last = 0
             whitebox_inversion = WhiteboxInvert.create(
                 user, self, now, self._carrots_last)
             db.session.add(whitebox_inversion)
@@ -595,13 +650,16 @@ class Program(db.Model):
         ).order_by(Program._timestamp_submitted).all()
 
     @staticmethod
-    def get_programs_requiring_straberries_update(now):
+    def get_programs_requiring_update(now):
         return Program.query.filter(
-            or_(Program._status == Program.Status.unbroken.value,
+            or_(
+                Program._status == Program.Status.unbroken.value,
                 Program._status == Program.Status.inverted.value,
-                Program._status == Program.Status.broken.value),
-            Program._timestamp_strawberries_next_update < now
-        ).all()
+                and_(
+                    Program._status == Program.Status.broken.value,
+                    Program._strawberries_last > 0
+                )
+            )).all()
 
     @staticmethod
     def rank_of_challenge(strawberries_peak):
@@ -660,6 +718,4 @@ class Program(db.Model):
             str(self._strawberries_peak))
         s += '\t strawberries_last:                  %s\n' % (
             str(self._strawberries_last))
-        s += '\t timestamp_strawberries_next_update: %s\n' % (
-            str(self._timestamp_strawberries_next_update))
         return s

@@ -1,19 +1,19 @@
 <div class="table-responsive">
   <table class="table table-striped table-bordered data-table table-hover">
     <thead>
-      <tr>
+      <tr class="text-center">
         <th class='column-to-sort-first asc'>Rank</th>
-        <th>id</th>
-        <th></th>
-        <th>Name (click to download)</th>
-        <th data-type="fruit">Strawberries Peak</th>
-        <th>User</th>
-        <th>Status</th>
-        <th>Compiler</th>
-        <th>Performance</th>
-        <th>Publication Date</th>
-        <th>Date of First Break</th>
-        <th data-type="fruit">Current Strawberries</th>
+        <th class='text-center'>id</th>
+        <th class='text-center'></th>
+        <th class='text-center'>Name (click to download)</th>
+        <th data-type="fruit" class='text-center'> 🍓 / 🥕 Peak</th>
+        <th class='text-center'>User</th>
+        <th class='text-center'>Status</th>
+        <th class='text-center'>Compiler</th>
+        <th class='text-center'>Performance</th>
+        <th class='text-center'>Publication Date</th>
+        <th class='text-center'>Date of First Break</th>
+        <th data-type="fruit" class='text-center'>Current  🍓 / 🥕</th>
         {% if current_user.is_authenticated %}
         <th></th>
         {% endif %}
@@ -22,19 +22,19 @@
     <tbody>
       {% for program in programs %}
       <tr>
-        <th class="text-center" scope="row">#{{ program.strawberries_ranking }}</th>
+        <th class="text-center" scope="row">{{ program.strawberries_ranking }}</th>
         <td class="text-center">{{ program._id }}</td>
         <td><div style="width: 1em; height: 1em; background-color: {{ program.hsl_color }}"></div></td>
-        <td><a href='/show/candidate/{{ program._id }}.c'>{{ program.funny_name }}</a></td>
-        <td class="text-right">{{ program.strawberries_peak | round(2) }} 🍓</td>
-        <td class="ellipsable">
+        <td class="text-center"><a href='/show/candidate/{{ program._id }}.c'>{{ program.funny_name }}</a></td>
+        <td class="text-center">{{ program.strawberries_peak | round(2) }} 🍓 / {{ program.carrots_peak | round(2) }} 🥕</td>
+        <td class="ellipsable text-center">
           {% if current_user.is_authenticated and current_user == program.user %}
-          <span class="badge badge-info">You!</span>
+          <span class="badge badge-primary">You!</span>
           {% else %}
           {{ program.user.username }}
           {% endif %}
         </td>
-        <td>
+        <td class="text-center">
           {% if program.is_broken %}
           <span class="text-danger">Broken!</span>
           {% elif program.is_inverted %}
@@ -43,14 +43,22 @@
           <span class="text-success">Unbroken</span>
           {% endif %}
         </td>
-        <td class="compiler">{{ program.compiler }}</td>
-        <td>{{ program.performance_factor | round(2) }}</td>
-        <td>{{ program.datetime_published }}</td>
-        <td>{{ program.datetime_first_break or '-' }}</td>
-        <td class="text-right">{{ program.strawberries_last | round(2) }} 🍓</td>
+        <td class="compiler text-center">{{ program.compiler }}</td>
+        <td class="text-center">{{ program.performance_factor | round(2) }}</td>
+        <td class="text-center">{{ program.datetime_published }}</td>
+        <td class="text-center">
+          {% if program.is_broken %}
+          <span class="text-danger">{{ program.datetime_first_break }}</span>
+          {% elif program.is_inverted %}
+          <span class="text-warning">{{ program.datetime_first_inversion }}</span>
+          {% else %}
+          <span class="text-success">-</span>
+          {% endif %}
+	</td>
+        <td class="text-center">{{ program.strawberries_last | round(2) }} 🍓 / {{ program.carrots_last | round(2) }} 🥕</td>
         {% if current_user.is_authenticated %}
         <td class="nowrap">
-          {% if program.user == current_user %}
+	  {% if program.user == current_user %}
           <span class="badge badge-primary">Yours!</span>
           {% elif program in programs_broken_by_current_user %}
           <span class="badge badge-success">Broken by you!</span>

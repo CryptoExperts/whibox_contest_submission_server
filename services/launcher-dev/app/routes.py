@@ -1,10 +1,8 @@
 import binascii
 import docker
 import os
-import sys
 import shutil
 import time
-import urllib
 
 from traceback import print_exc
 from app import app
@@ -52,7 +50,8 @@ def compile_and_test():
     client = docker.from_env()
     api_client = docker.APIClient(app.config['SOCK'])
 
-    if utils.service_runs_already(client, app.config['NAME_OF_COMPILE_AND_TEST_SERVICE']):
+    if utils.service_runs_already(
+            client, app.config['NAME_OF_COMPILE_AND_TEST_SERVICE']):
         utils.console(
             'A program is currently being compiled or tested. Exiting.')
         return ""
@@ -234,7 +233,8 @@ def compile_and_test_result(basename, nonce, ret):
     program = Program.get(basename)
     if program.status != Program.Status.submitted:
         utils.console(
-            "The program %s status is %s. No need to proceed for this program.")
+            "The program %s status is %s. No need to proceed for this program."
+        )
         utils.console("Calling compile_and_test()... (1)")
         compile_and_test()
         return ""
@@ -270,8 +270,8 @@ def compile_and_test_result(basename, nonce, ret):
     elif ret == CODE_SUCCESS:
         utils.console('Success for file with basename %s' % str(basename))
     else:
-        utils.console('We received an unexpected return code (%s) for file with basename %s' % (
-            str(ret), str(basename)))
+        utils.console(
+            "We received an unexpected return code (%s) for file with basename %s" % (str(ret), str(basename)))
     db.session.commit()
     client = docker.from_env()
     utils.remove_compiler_service_for_basename(client, basename, app)

@@ -2,25 +2,25 @@
   <table class="table table-striped table-bordered data-table table-hover" style="width: 100%;">
     <thead>
       <tr>
-	<th class='column-to-sort-first'>Date</th>
-	<th>User</th>
-	<th data-type="fruit">Strawberries</th>
-	<th>Challenge Name</th>
+	<th class='column-to-sort-first text-center'>Date</th>
+	<th class="text-center">User</th>
+	<th data-type="fruit" class="text-center">Strawberries</th>
+	<th class="text-center">Challenge Name</th>
       </tr>
     </thead>
     <tbody>
       {% for wb_break in wb_breaks %}
 	<tr>
-	  <th scope="row">{{ wb_break.datetime_broken }}</th>
-	  <td>
+	  <th scope="row" class="text-center">{{ wb_break.datetime_broken }}</th>
+	  <td class="text-center">
 	    {% if current_user.is_authenticated and current_user == wb_break.user %}
-	      <span class="badge badge-info">You!</span>
+	      <span class="badge badge-primary">You!</span>
 	    {% else %}
 	      {{ wb_break.user.username }}
 	    {% endif %}
 	  </td>
-	  <td class="text-right">{{ wb_break.strawberries | round(2) }} 🍓</td>
-	  <td>{{ wb_break.program.funny_name }} ({{ wb_break.program._id }})</td>
+	  <td class="text-center">{{ wb_break.strawberries | round(2) }} 🍓</td>
+	  <td class="text-center"><a href='/show/candidate/{{ wb_break.program._id }}.c'>{{ wb_break.program.funny_name }}</a> ({{ wb_break.program._id }})</td>
 	</tr>
       {% endfor %}
     </tbody>

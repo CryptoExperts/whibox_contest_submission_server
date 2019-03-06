@@ -13,7 +13,7 @@ class User(db.Model):
     _password_hash = db.Column(db.String(256))
     _bananas = db.Column(mysql.DOUBLE, default=None)
     _bananas_ranking = db.Column(db.BigInteger, default=None)
-    _strawberries = db.Column(mysql.DOUBLE, default=None)
+    _strawberries = db.Column(mysql.DOUBLE, default=0)
     _strawberries_ranking = db.Column(db.BigInteger, default=None)
     programs = db.relationship('Program', backref='user')
 
@@ -65,8 +65,8 @@ class User(db.Model):
 
     @staticmethod
     def refresh_all_banana_rankings():
-        users = User.query.filter(User._bananas != None).order_by(
-            User._bananas.desc()).all()
+        users = User.query.filter(User._bananas.isnot(None)) \
+                          .order_by(User._bananas.desc()).all()
         if len(users) == 0:
             return
         users[0]._bananas_ranking = 1
@@ -86,16 +86,10 @@ class User(db.Model):
     def load_user(id):
         return User.query.filter(User._id == int(id)).first()
 
-    def refresh_strawberries_count_and_rank(self):
-        s = max([p.strawberries_peak for p in self.published_programs])
-        if self._strawberries != s:
-            self._strawberries = s
-            User.refresh_all_strawberry_rankings()
-
     @staticmethod
     def refresh_all_strawberry_rankings():
         users = User.query.filter(
-            User._strawberries.isnot(None)
+            User._strawberries > 0
         ).order_by(User._strawberries.desc()).all()
         if len(users) == 0:
             return

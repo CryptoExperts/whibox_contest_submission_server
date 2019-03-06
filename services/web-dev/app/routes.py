@@ -21,12 +21,27 @@ from .models.whiteboxinvert import WhiteboxInvert
 from .utils import crx_flash, redirect
 
 
-def update_strawberries(sender, **extra):
+def update_strawberries_and_carrots(sender, **extra):
+    url_rule = str(request.url_rule)
+    if url_rule.startswith('/static/') \
+       or url_rule.startswith('/user/') \
+       or url_rule == '/rules' \
+       or url_rule == '/submit/candidate':
+        return
+
     now = int(time.time())
     try:
-        programs = Program.get_programs_requiring_straberries_update(now)
+        programs = Program.get_programs_requiring_update(now)
+
+        # update the strawberries and carrots for each program
         for program in programs:
-            program.update_strawberries_and_next_update_timestamp(now)
+            program.update_strawberries(now)
+            program.update_carrots(now)
+
+        # refresh program and user ranking
+        Program.refresh_all_strawberry_rankings()
+        User.refresh_all_strawberry_rankings()
+
         db.session.commit()
     except:
         db.session.rollback()
@@ -38,7 +53,7 @@ def clean_programs_which_failed_to_compile_or_test(sender, **extra):
     db.session.commit()
 
 
-request_started.connect(update_strawberries, app)
+request_started.connect(update_strawberries_and_carrots, app)
 request_started.connect(clean_programs_which_failed_to_compile_or_test, app)
 
 
@@ -69,7 +84,7 @@ def index():
     number_of_uninverted_programs = number_of_unbroken_programs - \
         Program.get_number_of_inverted_programs()
     wb_breaks = WhiteboxBreak.get_all()
-    wb_inverts = WhiteboxInvert.get_all()
+    wb_inversions = WhiteboxInvert.get_all()
     programs_broken_by_current_user = None
     programs_inverted_by_current_user = None
     if current_user and current_user.is_authenticated:
@@ -97,7 +112,7 @@ def index():
         total_number_of_users=total_number_of_users,
         programs=programs,
         wb_breaks=wb_breaks,
-        wb_inverts=wb_inverts,
+        wb_inversions=wb_inversions,
         programs_broken_by_current_user=programs_broken_by_current_user,
         programs_inverted_by_current_user=programs_inverted_by_current_user,
         number_of_unbroken_programs=number_of_unbroken_programs,
@@ -226,13 +241,16 @@ def user_show():
     programs_queued = Program.get_user_queued_programs(current_user)
     programs_rejected = Program.get_user_rejected_programs(current_user)
     wb_breaks = WhiteboxBreak.get_all_by_user(current_user)
+    wb_inversions = WhiteboxInvert.get_all_by_user(current_user)
     return render_template('user_show.html',
                            active_page='user_show',
                            user=current_user,
                            programs=programs,
                            programs_queued=programs_queued,
                            programs_rejected=programs_rejected,
-                           wb_breaks=wb_breaks)
+                           wb_breaks=wb_breaks,
+                           wb_inversions=wb_inversions
+                           )
 
 
 @app.route('/break/candidate/<int:identifier>', methods=['GET', 'POST'])
@@ -266,7 +284,6 @@ def break_candidate(identifier):
     if request.method != 'POST' or not form.validate_on_submit():
         return render_template('break_candidate.html',
                                form=form,
-                               datetime_strawberries_next_update=program.datetime_strawberries_next_update,
                                strawberries=program.strawberries_last,
                                identifier=identifier,
                                testing=app.testing)
@@ -276,7 +293,8 @@ def break_candidate(identifier):
     number_of_test_vectors = 10
     plaintexts = program.plaintexts[:16*number_of_test_vectors]
     ciphertexts = program.ciphertexts[:16*number_of_test_vectors]
-    if len(plaintexts) != len(ciphertexts) or len(plaintexts) % 16 != 0 or len(plaintexts) == 0:
+    if len(plaintexts) != len(ciphertexts) or len(plaintexts) % 16 != 0 or \
+       len(plaintexts) == 0:
         return redirect(url_for('index'))
 
     key = bytes.fromhex(form.key.data)
@@ -370,7 +388,6 @@ def invert_candidate(identifier):
         return render_template(
             'invert_candidate.html',
             form=form,
-            datetime_strawberries_next_update=program.datetime_strawberries_next_update,
             # TODO: carrots=program.carrots_last,
             ciphertext=ct_as_text,
             identifier=identifier,
@@ -415,15 +432,16 @@ def invert_candidate_ok(identifier):
 
 @app.route('/rules', methods=['GET'])
 def rules():
-    return render_template('rules.html',
-                           challenge_max_source_size_in_mb=app.config['CHALLENGE_MAX_SOURCE_SIZE_IN_MB'],
-                           challenge_max_mem_for_compilation_in_mb=app.config[
-                               'CHALLENGE_MAX_MEM_COMPILATION_IN_MB'],
-                           challenge_max_time_for_compilation_in_secs=app.config[
-                               'CHALLENGE_MAX_TIME_COMPILATION_IN_SECS'],
-                           challenge_max_binary_size_in_mb=app.config['CHALLENGE_MAX_BINARY_SIZE_IN_MB'],
-                           challenge_max_mem_execution_in_mb=app.config['CHALLENGE_MAX_MEM_EXECUTION_IN_MB'],
-                           challenge_max_time_execution_in_secs=app.config['CHALLENGE_MAX_TIME_EXECUTION_IN_SECS'])
+    return render_template(
+        'rules.html',
+        challenge_max_source_size_in_mb=app.config['CHALLENGE_MAX_SOURCE_SIZE_IN_MB'],
+        challenge_max_mem_for_compilation_in_mb=app.config['CHALLENGE_MAX_MEM_COMPILATION_IN_MB'],
+        challenge_max_time_for_compilation_in_secs=app.config[
+            'CHALLENGE_MAX_TIME_COMPILATION_IN_SECS'],
+        challenge_max_binary_size_in_mb=app.config['CHALLENGE_MAX_BINARY_SIZE_IN_MB'],
+        challenge_max_mem_execution_in_mb=app.config['CHALLENGE_MAX_MEM_EXECUTION_IN_MB'],
+        challenge_max_time_execution_in_secs=app.config['CHALLENGE_MAX_TIME_EXECUTION_IN_SECS']
+    )
 
 
 def unauthorized_handler():

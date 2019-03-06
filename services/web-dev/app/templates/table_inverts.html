@@ -2,25 +2,25 @@
   <table class="table table-striped table-bordered data-table table-hover" style="width: 100%;">
     <thead>
       <tr>
-	<th class='column-to-sort-first'>Date</th>
-	<th>User</th>
-	<th data-type="fruit">Carrots</th>
-	<th>Challenge Name</th>
+	<th class='column-to-sort-first text-center'>Date</th>
+	<th class="text-center">User</th>
+	<th data-type="fruit" class="text-center">Carrots</th>
+	<th class="text-center">Challenge Name</th>
       </tr>
     </thead>
     <tbody>
-      {% for wb_invert in wb_inverts %}
-	<tr>
-	  <th scope="row">{{ wb_invert.datetime_inverted }}</th>
+      {% for wb_invert in wb_inversions %}
+	<tr class="text-center">
+	  <th scope="row" class="text-center">{{ wb_invert.datetime_inverted }}</th>
 	  <td>
 	    {% if current_user.is_authenticated and current_user == wb_invert.user %}
-	      <span class="badge badge-info">You!</span>
+	      <span class="badge badge-primary">You!</span>
 	    {% else %}
 	      {{ wb_invert.user.username }}
 	    {% endif %}
 	  </td>
-	  <td class="text-right">{{ wb_invert.carrots | round(2) }} 🥕</td>
-	  <td>{{ wb_invert.program.funny_name }} ({{ wb_invert.program._id }})</td>
+	  <td>{{ wb_invert.carrots | round(2) }} 🥕</td>
+	  <td><a href='/show/candidate/{{ wb_invert.program._id }}.c'>{{ wb_invert.program.funny_name }}</a> ({{ wb_invert.program._id }})</td>
 	</tr>
       {% endfor %}
     </tbody>

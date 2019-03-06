@@ -1,16 +1,16 @@
 <div class="table-responsive">
   <table class="table table-striped table-bordered data-table table-hover">
     <thead>
-      <tr>
-	<th class='column-to-sort-first asc'>Rank</th>
-	<th>User</th>
-	<th data-type="fruit">Bananas</th>
+      <tr class="text-center">
+	<th class='column-to-sort-first asc text-center'>Rank</th>
+	<th class="text-center">User</th>
+	<th data-type="fruit" class="text-center">Bananas</th>
       </tr>
     </thead>
     <tbody>
       {% for user in users %}
-	<tr>
-	  <th class="text-center" scope="row">#{{ user.bananas_ranking }}</th>
+	<tr class="text-center">
+	  <th class="text-center" scope="row">{{ user.bananas_ranking }}</th>
 	  <td>
 	    {% if current_user.is_authenticated and current_user == user %}
 	      <span class="badge badge-info">You!</span>
@@ -18,7 +18,7 @@
 	      {{ user.username }}
 	    {% endif %}
 	  </td>
-	  <td class="text-right">{{ user.bananas | round(2) }} 🍌</td>
+	  <td>{{ user.bananas | round(2) }} 🍌</td>
 	</tr>
       {% endfor %}
     </tbody>
