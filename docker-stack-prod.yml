@@ -25,13 +25,13 @@ services:
             - STARTING_DATE=1552867200    # In seconds since EPOCH. Must be identical in the launcher service. 18/03/2019 00:00 UTC is 1552867200
             - POSTING_DEADLINE=1564617600 # In seconds since EPOCH. Must be identical in the launcher service. 01/08/2019 00:00 UTC is 1564617600
             - FINAL_DEADLINE=1566345600   # In seconds since EPOCH. Must be identical in the launcher service. 21/08/2019 00:00 UTC is 1566345600
-            - CHALLENGE_MAX_SOURCE_SIZE_IN_MB=50 # In MB. Must be identical in the launcher service. Must be 50 in production.
-            - CHALLENGE_MAX_MEM_COMPILATION_IN_MB=500 # In MB. Must be identical in the launcher service. Must be 500 in production.
+            - CHALLENGE_MAX_SOURCE_SIZE_IN_MB=50         # In MB. Must be identical in the launcher service. Must be 50 in production.
+            - CHALLENGE_MAX_MEM_COMPILATION_IN_MB=500    # In MB. Must be identical in the launcher service. Must be 500 in production.
             - CHALLENGE_MAX_TIME_COMPILATION_IN_SECS=100 # In seconds. Must be identical in the launcher service. Must be 100 in production.
-            - CHALLENGE_MAX_BINARY_SIZE_IN_MB=20 # In MB. Must be identical in the launcher service. Must be 20 in production.
-            - CHALLENGE_MAX_MEM_EXECUTION_IN_MB=20 # In MB. Must be identical in the launcher service. Must be 20 in production.
-            - CHALLENGE_MAX_TIME_EXECUTION_IN_SECS=1 # In seconds. Must be identical in the launcher service. Must be 1 in production.
-            - CHALLENGE_NUMBER_OF_TEST_VECTORS=1000 # Must be identical in the launcher service. Must be at least 1000 in production.
+            - CHALLENGE_MAX_BINARY_SIZE_IN_MB=20         # In MB. Must be identical in the launcher service. Must be 20 in production.
+            - CHALLENGE_MAX_MEM_EXECUTION_IN_MB=20       # In MB. Must be identical in the launcher service. Must be 20 in production.
+            - CHALLENGE_MAX_TIME_EXECUTION_IN_SECS=1     # In seconds. Must be identical in the launcher service. Must be 1 in production.
+            - CHALLENGE_NUMBER_OF_TEST_VECTORS=1000      # Must be identical in the launcher service. Must be at least 1000 in production.
         deploy:
             placement:
                 constraints: [node.labels.vm == node-manager]
@@ -59,13 +59,13 @@ services:
             - STARTING_DATE=1552867200    # In seconds since EPOCH. Must be identical in the web service. 18/03/2019 00:00 UTC is 1552867200
             - POSTING_DEADLINE=1564617600 # In seconds since EPOCH. Must be identical in the web service. 01/08/2019 00:00 UTC is 1564617600
             - FINAL_DEADLINE=1566345600   # In seconds since EPOCH. Must be identical in the web service. 21/08/2019 00:00 UTC is 1566345600
-            - CHALLENGE_MAX_SOURCE_SIZE_IN_MB=50 # In MB. Must be identical in the web service. Must be 50 in production.
-            - CHALLENGE_MAX_MEM_COMPILATION_IN_MB=500 # In MB. Must be identical in the web service. Must be 500 in production.
+            - CHALLENGE_MAX_SOURCE_SIZE_IN_MB=50         # In MB. Must be identical in the web service. Must be 50 in production.
+            - CHALLENGE_MAX_MEM_COMPILATION_IN_MB=500    # In MB. Must be identical in the web service. Must be 500 in production.
             - CHALLENGE_MAX_TIME_COMPILATION_IN_SECS=100 # In seconds. Must be identical in the web service. Must be 100 in production.
-            - CHALLENGE_MAX_BINARY_SIZE_IN_MB=20 # In MB. Must be identical in the web service. Must be 20 in production.
-            - CHALLENGE_MAX_MEM_EXECUTION_IN_MB=20 # In MB. Must be identical in the web service. Must be 20 in production.
-            - CHALLENGE_MAX_TIME_EXECUTION_IN_SECS=1 # In seconds. Must be identical in the web service. Must be 1 in production.
-            - CHALLENGE_NUMBER_OF_TEST_VECTORS=1000 # Must be identical in the web service. Must be at least 1000 in production.
+            - CHALLENGE_MAX_BINARY_SIZE_IN_MB=20         # In MB. Must be identical in the web service. Must be 20 in production.
+            - CHALLENGE_MAX_MEM_EXECUTION_IN_MB=20       # In MB. Must be identical in the web service. Must be 20 in production.
+            - CHALLENGE_MAX_TIME_EXECUTION_IN_SECS=1     # In seconds. Must be identical in the web service. Must be 1 in production.
+            - CHALLENGE_NUMBER_OF_TEST_VECTORS=1000      # Must be identical in the web service. Must be at least 1000 in production.
 
         deploy:
             placement:
@@ -74,7 +74,7 @@ services:
 
 
     mysql:
-        image: crx/mysql
+        image: "crx/mysql:${MYSQL_VERSION}"
         command: "--innodb-use-native-aio=0 --default-authentication-plugin=mysql_native_password --mysqlx=0"
         networks:
             - front_network

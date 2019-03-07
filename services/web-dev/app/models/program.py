@@ -310,69 +310,6 @@ class Program(db.Model):
             program._strawberries_ranking = r
             p = program._strawberries_peak
 
-    def strawberries_grow(self, start_timestamp, end_timestamp):
-        seconds_in_minute = app.config['NBR_SECONDS_PER_MINUTE']
-        seconds_in_hour = app.config['NBR_SECONDS_PER_HOUR']
-        seconds_in_day = app.config['NBR_SECONDS_PER_DAY']
-
-        strawberries = {}
-        current_timestamp = start_timestamp
-
-        days = 0
-        while end_timestamp - current_timestamp > 1.5 * seconds_in_day:
-            strawberries[current_timestamp] = days**2
-            current_timestamp += seconds_in_day
-            days += 1
-
-        hours = 0
-        while end_timestamp - current_timestamp > 1.5 * seconds_in_hour:
-            strawberries[current_timestamp] = (days + hours/24) ** 2
-            current_timestamp += seconds_in_hour
-            hours += 1
-
-        mintues = 0
-        while end_timestamp - current_timestamp > seconds_in_minute:
-            strawberries[current_timestamp] = (
-                days + hours/24 + mintues/1440
-            ) ** 2
-            current_timestamp += seconds_in_minute
-            mintues += 1
-
-        strawberries[end_timestamp] = (
-            days + hours/24 + mintues/1440
-        ) ** 2
-        return strawberries
-
-    def strawberries_decrease(self, start_timestamp, end_timestamp):
-        seconds_in_minute = app.config['NBR_SECONDS_PER_MINUTE']
-        seconds_in_hour = app.config['NBR_SECONDS_PER_HOUR']
-        seconds_in_day = app.config['NBR_SECONDS_PER_DAY']
-
-        strawberries = {}
-        current_timestamp = start_timestamp
-
-        days = 0
-        while end_timestamp - current_timestamp > 1.5 * seconds_in_day:
-            strawberries[current_timestamp] = days**2
-            current_timestamp += seconds_in_day
-            days += 1
-
-        hours = 0
-        while end_timestamp - current_timestamp > 1.5 * seconds_in_hour:
-            strawberries[current_timestamp] = (days + hours/24.0) ** 2
-            current_timestamp += seconds_in_hour
-            hours += 1
-
-        mintues = 0
-        while end_timestamp - current_timestamp > seconds_in_minute:
-            strawberries[current_timestamp] = (
-                days + hours/24.0 + mintues/1440.0
-            ) ** 2
-            current_timestamp += seconds_in_minute
-            mintues += 1
-
-        return strawberries
-
     def current_strawberries(self, end_timestamp):
         if not self.is_published:
             return None
@@ -421,35 +358,6 @@ class Program(db.Model):
             surviving_minutes = (end_timestamp-self._timestamp_published) / 60
             carrots = (surviving_minutes/1440.0) ** 2
         return carrots * float(self._performance_factor) * 0.5
-
-    def strawberries(self, now=int(time.time())):
-        if not self.is_published:
-            return None
-        strawberries = {}
-
-        if not self.is_broken:
-            final_deadline = app.config['FINAL_DEADLINE']
-            start_timestamp = self._timestamp_published
-            end_timestamp = min(now, final_deadline)
-            strawberries.update(
-                self.strawberries_grow(start_timestamp, end_timestamp)
-            )
-        else:
-            start_timestamp = self._timestamp_published
-            end_timestamp = self._timestamp_first_break
-            strawberries.update(
-                self.strawberries_grow(start_timestamp, end_timestamp)
-            )
-            # TODO: add decrease
-            # running_val = max(running_val - 1, 0)
-            # for running_timestamp in range(self._timestamp_first_break, min(now, final_deadline)+1, seconds_in_minute):
-            #     strawberries[running_timestamp] = running_val
-            #     running_val_diff = max(running_val_diff - 1, 0)
-            #     running_val = max(running_val - running_val_diff, 0)
-
-        return {
-            k: Decimal(v)*Decimal(self._performance_factor) for k, v in strawberries.items()
-        }
 
     def set_status_to_compilation_failed(self, error_message=None):
         utils.console(

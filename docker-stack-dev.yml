@@ -59,7 +59,7 @@ services:
             - DEBUG=True
             - MYSQL_DATABASE=db_wb
             - MYSQL_USER=user_wb
-            - MYSQL_PASSWORD=a_not_so_random_user_password
+            - MYSQL_PASSWORD=a_not_so_random_user_password # Must be identical in web, launcher and mysql services.
             - MYSQL_HOST=mysql
             - MYSQL_PORT=3306
             - SOCK=unix:///var/run/docker.sock
@@ -96,7 +96,7 @@ services:
             - MYSQL_ROOT_PASSWORD=a_not_so_random_root_password
             - MYSQL_DATABASE=db_wb # specify the name of a database to be created on image startup (does nothing if the db already exists).
             - MYSQL_USER=user_wb # This user will be granted superuser permissions for the database specified by the MYSQL_DATABASE variable.
-            - MYSQL_PASSWORD=a_not_so_random_user_password
+            - MYSQL_PASSWORD=a_not_so_random_user_password # Must be identical in web, launcher and mysql services.
             - MYSQL_ALLOW_EMPTY_PASSWORD=no
         deploy:
             placement:

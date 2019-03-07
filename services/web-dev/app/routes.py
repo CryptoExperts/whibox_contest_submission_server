@@ -56,32 +56,7 @@ def update_strawberries_and_carrots(sender, **extra):
         print_exc()
 
 
-# def clean_programs_which_failed_to_compile_or_test(sender, **extra):
-#     url_rule = str(request.url_rule)
-#     if not need_to_check(url_rule):
-#         return
-#     Program.clean_programs_which_timeout_to_compile_or_test()
-#     db.session.commit()
-
-
 request_started.connect(update_strawberries_and_carrots, app)
-# request_started.connect(clean_programs_which_failed_to_compile_or_test, app)
-
-
-def plot_data_for_program(program, now):
-    data_flot = '['
-    strawberries = program.strawberries(now)
-    if len(strawberries) > 0:
-        for key, val in sorted(strawberries.items()):
-            data_flot += '[%d, %d], ' % (key*1000, val)
-        data_flot = data_flot[:-2]
-    data_flot += ']'
-
-    series = '{'
-    series += 'color: "%s",' % program.hsl_color
-    series += 'label: "%d",' % program._id
-    series += 'data: ' + data_flot + '}'
-    return series
 
 
 @app.route('/', methods=['GET'])
@@ -108,14 +83,6 @@ def index():
             wb_inversion.program for wb_inversion in wb_inversions_by_current_user
         ]
 
-    # plot data
-    data_flot = None
-    if len(programs_to_plot) > 0:
-        data_flot = '[ '
-        now = int(time.time())
-        for program in programs_to_plot:
-            data_flot += plot_data_for_program(program, now) + ', '
-        data_flot = data_flot[:-2] + ' ]'
     return render_template(
         'index.html',
         active_page='index',
@@ -128,7 +95,7 @@ def index():
         programs_inverted_by_current_user=programs_inverted_by_current_user,
         number_of_unbroken_programs=number_of_unbroken_programs,
         number_of_uninverted_programs=number_of_uninverted_programs,
-        data_flot=data_flot
+        programs_to_plot=programs_to_plot
     )
 
 

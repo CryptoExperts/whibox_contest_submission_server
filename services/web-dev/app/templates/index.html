@@ -26,17 +26,21 @@
     </div>
   </div><!-- row -->
 
-  {% if data_flot %}
+  {% if programs_to_plot %}
     <div class="row">
       <div class="col-xs-12">
 	<h3>Strawberry scores over time</h3>
-	<div class="flot-plot flot-chart" data-flot="{{ data_flot }}" style="height: 500px;"></div>
+	<div id="strawberryholder" style="height: 500px;"></div>
+      </div>
+
+      <div class="col-xs-12">
+	<h3>Carrots scores over time</h3>
+	<div id="carrotholder" style="height: 500px;"></div>
       </div>
     </div>
   {% endif %}
 
-  <hr>
-
+    <hr />
   {% if users %}
 
     <div class="row">

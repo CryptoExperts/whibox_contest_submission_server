@@ -217,7 +217,7 @@ build-prod-no-cache: copy-files-from-dev-to-prod
 	/bin/bash scripts/on_node-sandbox.sh docker build --no-cache -t crx/compile_and_test services/compile_and_test/
 
 stack-deploy-prod:
-	docker stack deploy -c docker-stack-prod.yml prod
+	MYSQL_VERSION=$(MYSQL_VERSION) docker stack deploy -c docker-stack-prod.yml prod
 
 stack-rm-prod:
 	docker stack rm prod
