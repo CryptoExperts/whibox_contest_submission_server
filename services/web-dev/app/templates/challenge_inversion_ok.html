@@ -6,8 +6,8 @@
 
   <div class="row">
     <div class="col-xs-12">
-      <p class="lead">At the time you invert the challenge, it was worth {{ wb_inversion.carrots }} carrots 🥕 .</p>
-      <p class="lead">You currently have {{ current_user.bananas }} bananas 🍌 . Well done!</p>
+      <p class="lead">At the time you invert the challenge, it was worth {{ wb_inversion.carrots | round(2) or 0 }} carrots 🥕 .</p>
+      <p class="lead">You currently have {{ current_user.bananas | round(2) or 0 }} bananas 🍌 . Well done!</p>
       <p class="lead">You are ranked {{ current_user.bananas_ranking }} within the Banana competition.</p>
     </div>
   </div>

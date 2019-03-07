@@ -14,7 +14,7 @@ Trying to Invert Challenge {{ identifier }}
     <div class="panel panel-default">
       <div class="panel-body">
 
-        <p class="lead">This challenge is worth {{ carrots }} carrots 🥕 until {{ datetime_strawberries_next_update }}!</p>
+        <p class="lead">This challenge is worth {{ carrots | round(2) or 0 }} carrots 🥕 !</p>
 
         <form id="form" class="form-signin" method="post">
           {{ form.hidden_tag() }}

@@ -1,5 +1,6 @@
 import binascii
 import docker
+import hashlib
 import os
 import shutil
 import time
@@ -21,31 +22,30 @@ ERR_CODE_EXCEED_RAM_LIMAT = 5
 ERR_CODE_EXCEED_EXECUTION_TIME_LIMAT = 6
 
 
-@app.route('/compile_and_test', methods=['GET', 'POST'])
-def compile_and_test():
-
-    utils.console('Starting compile and test')
-
-    retry_count = 0
-    while True:
+def clean_programs_timeout_to_compile_or_test():
+    for _ in range(5):
         try:
             utils.console(
-                'Calling Program.clean_programs_which_failed_to_compile_or_test...')
-            Program.clean_programs_which_failed_to_compile_or_test()
+                'Try to clean programs timeout to compile or test...'
+            )
+            Program.clean_programs_which_timeout_to_compile_or_test()
             db.session.commit()
+            return True
         except:
-            retry_count += 1
-            if retry_count < 5:
-                utils.console('Exception catched, trying again in 2sec')
-                time.sleep(2)
-                continue
-            else:
-                utils.console(
-                    'Could not clean programs which failed to compile or test')
-                utils.console('Exception:')
-                print_exc()
-                return ""
-        break
+            utils.console('Exception catched, trying again in 2sec')
+            print_exc()
+            time.sleep(2)
+
+    utils.console('Could not clean programs which failed to compile or test')
+    return False
+
+
+@app.route('/compile_and_test', methods=['GET', 'POST'])
+def compile_and_test():
+    utils.console('Starting compile and test')
+
+    if not clean_programs_timeout_to_compile_or_test():
+        return ""
 
     client = docker.from_env()
     api_client = docker.APIClient(app.config['SOCK'])
@@ -273,6 +273,7 @@ def compile_and_test_result(basename, nonce, ret):
         utils.console(
             "We received an unexpected return code (%s) for file with basename %s" % (str(ret), str(basename)))
     db.session.commit()
+
     client = docker.from_env()
     utils.remove_compiler_service_for_basename(client, basename, app)
     if ret != CODE_SUCCESS:
@@ -354,13 +355,18 @@ def compile_and_test_result(basename, nonce, ret):
             return ""
 
     # If we reach this point, all the tests were successful.
-    # We save 20 test vectors in the database:
-    # - the first 10 of which will be used for validate key extraction,
-    # - and the last 10 of which will be used for test invertability.
-    plaintexts = plaintexts[0:20*16]
-    ciphertexts = ciphertexts[0:20*16]
-    program.plaintexts = plaintexts
-    program.ciphertexts = ciphertexts
+    # We save 10 test vectors for key validation in the database:
+    plaintexts_for_breaking = plaintexts[0:10*16]
+    ciphertexts_for_breaking = ciphertexts[0:10*16]
+    program.plaintexts = plaintexts_for_breaking
+    program.ciphertexts = ciphertexts_for_breaking
+    # we save one pair for validating inversion
+    plaintext_for_inverting = plaintexts[10*16:11*16]
+    ciphertext_for_inverting = ciphertexts[10*16:11*16]
+    program.plaintext_sha256_for_inverting = hashlib.sha256(
+        plaintext_for_inverting).hexdigest()
+    program.ciphertext_for_inverting = ciphertext_for_inverting
+
     program.set_status_to_unbroken()
     db.session.commit()
     utils.console("The program is unbroken!")

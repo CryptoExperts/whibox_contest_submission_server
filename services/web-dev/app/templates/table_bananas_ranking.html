@@ -13,7 +13,7 @@
 	  <th class="text-center" scope="row">{{ user.bananas_ranking }}</th>
 	  <td>
 	    {% if current_user.is_authenticated and current_user == user %}
-	      <span class="badge badge-info">You!</span>
+	      <span class="badge badge-primary">You!</span>
 	    {% else %}
 	      {{ user.username }}
 	    {% endif %}

@@ -1,8 +1,10 @@
+import binascii
+import hashlib
 import os
-import time
 import random
 import string
-import binascii
+import time
+
 from Crypto.Cipher import AES
 from traceback import print_exc
 from flask import render_template, url_for, request, send_from_directory, \
@@ -21,12 +23,18 @@ from .models.whiteboxinvert import WhiteboxInvert
 from .utils import crx_flash, redirect
 
 
-def update_strawberries_and_carrots(sender, **extra):
-    url_rule = str(request.url_rule)
+def need_to_check(url_rule):
     if url_rule.startswith('/static/') \
-       or url_rule.startswith('/user/') \
+       or (url_rule.startswith('/user/') and url_rule != "/user/show") \
        or url_rule == '/rules' \
        or url_rule == '/submit/candidate':
+        return False
+    return True
+
+
+def update_strawberries_and_carrots(sender, **extra):
+    url_rule = str(request.url_rule)
+    if not need_to_check(url_rule):
         return
 
     now = int(time.time())
@@ -48,13 +56,16 @@ def update_strawberries_and_carrots(sender, **extra):
         print_exc()
 
 
-def clean_programs_which_failed_to_compile_or_test(sender, **extra):
-    Program.clean_programs_which_failed_to_compile_or_test()
-    db.session.commit()
+# def clean_programs_which_failed_to_compile_or_test(sender, **extra):
+#     url_rule = str(request.url_rule)
+#     if not need_to_check(url_rule):
+#         return
+#     Program.clean_programs_which_timeout_to_compile_or_test()
+#     db.session.commit()
 
 
 request_started.connect(update_strawberries_and_carrots, app)
-request_started.connect(clean_programs_which_failed_to_compile_or_test, app)
+# request_started.connect(clean_programs_which_failed_to_compile_or_test, app)
 
 
 def plot_data_for_program(program, now):
@@ -291,8 +302,8 @@ def break_candidate(identifier):
     if program.plaintexts is None or program.ciphertexts is None:
         return redirect(url_for('index'))
     number_of_test_vectors = 10
-    plaintexts = program.plaintexts[:16*number_of_test_vectors]
-    ciphertexts = program.ciphertexts[:16*number_of_test_vectors]
+    plaintexts = program.plaintexts
+    ciphertexts = program.ciphertexts
     if len(plaintexts) != len(ciphertexts) or len(plaintexts) % 16 != 0 or \
        len(plaintexts) == 0:
         return redirect(url_for('index'))
@@ -372,34 +383,29 @@ def invert_candidate(identifier):
 
     if program.plaintexts is None or program.ciphertexts is None:
         return redirect(url_for('index'))
-    number_of_test_vectors = 10
-    plaintexts = program.plaintexts[16*number_of_test_vectors:]
-    ciphertexts = program.ciphertexts[16*number_of_test_vectors:]
-    if len(plaintexts) != len(ciphertexts) or len(plaintexts) % 16 != 0 or len(plaintexts) == 0:
+    plaintext_sha256 = program.plaintext_sha256_for_inverting
+    ciphertext = program.ciphertext_for_inverting
+    if len(plaintext_sha256) != 64 or len(ciphertext) != 16:
         return redirect(url_for('index'))
 
     form = WhiteboxInvertForm()
     if request.method != 'POST' or not form.validate_on_submit():
-        # Pick a plaintext / ciphertext pair
-        random_index = random.SystemRandom().randint(0, number_of_test_vectors-1)
-        ct = ciphertexts[random_index*16: (random_index+1)*16]
-        ct_as_text = binascii.hexlify(ct).decode()
-        pt = plaintexts[random_index*16: (random_index+1)*16]
+        ciphertext_as_text = binascii.hexlify(ciphertext).decode()
         return render_template(
             'invert_candidate.html',
             form=form,
-            # TODO: carrots=program.carrots_last,
-            ciphertext=ct_as_text,
+            carrots=program._carrots_last,
+            ciphertext=ciphertext_as_text,
             identifier=identifier,
             testing=app.testing)
 
     # todo: return pt in some way
-    pt = bytes.fromhex(form.plaintext.data)
-    found_pt = plaintexts.find(pt)
-    ct = bytes.fromhex(form.ciphertext.data)
-    found_ct = ciphertexts.find(ct)
-    if len(pt) != 16 or len(ct) != 16 or not found_pt or not found_ct or \
-       found_pt != found_ct or found_pt % 16 != 0:
+    plaintext_submitted = bytes.fromhex(form.plaintext.data)
+    plaintext_submitted_sha256 = hashlib.sha256(
+        plaintext_submitted).hexdigest()
+
+    if len(plaintext_submitted_sha256) != 64 or \
+       plaintext_sha256 != plaintext_submitted_sha256:
         return render_template('challenge_inversion_ko.html',
                                identifier=identifier,
                                current_user=current_user,

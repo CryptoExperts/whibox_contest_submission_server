@@ -88,6 +88,8 @@ class Program(db.Model):
     _error_message = db.Column(db.Text, default=None)
     _plaintexts = db.Column(db.LargeBinary, default=None)
     _ciphertexts = db.Column(db.LargeBinary, default=None)
+    _plaintext_sha256_for_inverting = db.Column(db.String(64), default=None)
+    _ciphertext_for_inverting = db.Column(db.LargeBinary, default=None)
     # First set when the program is published
     _strawberries_peak = db.Column(mysql.DOUBLE, default=0)
     _strawberries_last = db.Column(mysql.DOUBLE, default=0)
@@ -207,6 +209,15 @@ class Program(db.Model):
             self._plaintexts = val
 
     @property
+    def plaintext_sha256_for_inverting(self):
+        return self._plaintext_sha256_for_inverting
+
+    @plaintext_sha256_for_inverting.setter
+    def plaintext_sha256_for_inverting(self, val):
+        if self._plaintext_sha256_for_inverting is None:
+            self._plaintext_sha256_for_inverting = val
+
+    @property
     def ciphertexts(self):
         return self._ciphertexts
 
@@ -215,6 +226,16 @@ class Program(db.Model):
         assert type(val) == bytes
         if self._ciphertexts is None:
             self._ciphertexts = val
+
+    @property
+    def ciphertext_for_inverting(self):
+        return self._ciphertext_for_inverting
+
+    @ciphertext_for_inverting.setter
+    def ciphertext_for_inverting(self, val):
+        assert type(val) == bytes
+        if self._ciphertext_for_inverting is None:
+            self._ciphertext_for_inverting = val
 
     @property
     def datetime_first_break(self):
@@ -249,19 +270,16 @@ class Program(db.Model):
             self._carrots_peak = carrots
 
     @staticmethod
-    def clean_programs_which_failed_to_compile_or_test():
-        now = int(time.time())
+    def clean_programs_which_timeout_to_compile_or_test():
+        programs = Program.get_all_programs_being_compiled_or_tested()
 
-        programs = Program.query.filter(
-            Program._status == Program.Status.submitted.value,
-            Program._task_id.isnot(None)
-        ).order_by(Program._timestamp_compilation_start.desc()).all()
         # We ensure the first program has not been compiled/tested for too long
         for p in programs[:1]:
             max_compile_time = app.config['CHALLENGE_MAX_TIME_COMPILATION_IN_SECS']
             max_exec_time = app.config['CHALLENGE_MAX_TIME_EXECUTION_IN_SECS'] * \
                 app.config['CHALLENGE_NUMBER_OF_TEST_VECTORS']
             max_time = 10 + max_compile_time + max_exec_time
+            now = int(time.time())
             if now > p._timestamp_compilation_start + max_time:
                 p.set_status_to_execution_failed(
                     'Compilation and/or testing took too much time. Timeout!')
@@ -485,11 +503,12 @@ class Program(db.Model):
             self._status = Program.Status.broken.value
             if self._timestamp_first_break is None:
                 self._timestamp_first_break = now
-            whitebox_break = WhiteboxBreak.create(
-                user, self, now, self._strawberries_last)
-            db.session.add(whitebox_break)
         else:
             utils.console("Could NOT set status to broken")
+
+        whitebox_break = WhiteboxBreak.create(
+            user, self, now, self._strawberries_last)
+        db.session.add(whitebox_break)
 
     def set_status_to_inverted(self, user, now):
         if now > app.config['FINAL_DEADLINE']:
@@ -497,14 +516,15 @@ class Program(db.Model):
         if Program.Status.authorized_status_change(self.status,
                                                    Program.Status.inverted):
             self._status = Program.Status.inverted.value
+        else:
+            utils.console("Could NOT set status to inverted")
+
         if self._timestamp_first_inversion is None:
             self._timestamp_first_inversion = now
-            self._timestamp_carrots_next_update = now
-            whitebox_inversion = WhiteboxInvert.create(
-                user, self, now, self._carrots_last)
-            db.session.add(whitebox_inversion)
-        else:
-            utils.console("Could NOT set status to broken")
+
+        whitebox_inversion = WhiteboxInvert.create(
+            user, self, now, self._carrots_last)
+        db.session.add(whitebox_inversion)
 
     @property
     def is_published(self):
@@ -540,8 +560,8 @@ class Program(db.Model):
         self._size_factor = size_factor
         self._ram_factor = ram_factor
         self._time_factor = time_factor
-        self._performance_factor = 1 - \
-            log(size_factor) - log(ram_factor) - log(time_factor)
+        self._performance_factor = 1 - log(size_factor, 2) - \
+            log(ram_factor, 2) - log(time_factor, 2)
 
     @staticmethod
     def get_number_of_submitted_programs():
@@ -578,7 +598,11 @@ class Program(db.Model):
     @staticmethod
     def get_unbroken_or_broken_by_id(_id):
         program = Program.query.filter(Program._id == _id).first()
-        if program.status in [Program.Status.unbroken, Program.Status.broken]:
+        if program.status in [
+                Program.Status.unbroken,
+                Program.Status.inverted,
+                Program.Status.broken
+        ]:
             return program
         else:
             return None
@@ -683,6 +707,13 @@ class Program(db.Model):
             Program._status == Program.Status.submitted.value,
             Program._task_id == running_task_id
         ).first()
+
+    @staticmethod
+    def get_all_programs_being_compiled_or_tested():
+        return Program.query.filter(
+            Program._status == Program.Status.submitted.value,
+            Program._task_id.isnot(None)
+        ).order_by(Program._timestamp_compilation_start.desc()).all()
 
     def __str__(self):
         s = '[Program %d]\n' % (self._id)

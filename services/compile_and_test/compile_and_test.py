@@ -7,6 +7,7 @@ import subprocess
 import sys
 import urllib.request
 from urllib.parse import urljoin
+from statistics import mean
 
 CODE_SUCCESS = 0
 ERR_CODE_COMPILATION_FAILED = 1
@@ -96,8 +97,8 @@ def performance_measure(executable,
                         cpu_time_limit):
     current_test_index = 0
     ciphertexts = b''
-    max_cpu_time = 0
-    max_ram = 0
+    all_cpu_time = list()
+    all_max_ram = list()
     cmd = '/execute.py %s %s'
     while current_test_index < number_of_tests:
         current_plaintext = plaintexts[
@@ -122,10 +123,8 @@ def performance_measure(executable,
                 exit_after_notifying_launcher(
                     ERR_CODE_EXCEED_EXECUTION_TIME_LIMAT)
 
-            if cpu_time > max_cpu_time:
-                max_cpu_time = cpu_time
-            if ram > max_ram:
-                max_ram = ram
+            all_cpu_time.append(cpu_time)
+            all_max_ram.append(ram)
             current_test_index += 1
         except:
             print("Execution failed")
@@ -136,7 +135,12 @@ def performance_measure(executable,
         raise
     print("The execution succeeded and we retrieved the ciphertexts.")
     sys.stdout.flush()
-    return (ciphertexts, max_cpu_time, max_ram)
+    all_cpu_time.sort()
+    all_max_ram.sort()
+    average_cpu_time = mean(all_cpu_time[5:-5])
+    average_max_ram = mean(all_max_ram[5:-5])
+
+    return (ciphertexts, average_cpu_time, average_cpu_time)
 
 
 def main():
@@ -167,13 +171,13 @@ def main():
     number_of_tests = int(os.environ['CHALLENGE_NUMBER_OF_TEST_VECTORS'])
     cpu_time_limit = int(os.environ['CHALLENGE_MAX_TIME_EXECUTION_IN_SECS'])
     ram_limit = 2**20 * int(os.environ['CHALLENGE_MAX_MEM_EXECUTION_IN_MB'])
-    ciphertexts, max_cpu_time, max_ram = performance_measure(
+    ciphertexts, average_cpu_time, average_max_ram = performance_measure(
         path_to_executable, plaintexts, number_of_tests,
         ram_limit, cpu_time_limit
     )
     size_factor = os.path.getsize(path_to_object) / max_bin_size
-    ram_factor = max_ram * 1.0 / ram_limit
-    time_factor = max_cpu_time * 1.0 / cpu_time_limit
+    ram_factor = average_max_ram * 1.0 / ram_limit
+    time_factor = average_cpu_time * 1.0 / cpu_time_limit
 
     # If we reach this line, everything went fine
     post_data = {
