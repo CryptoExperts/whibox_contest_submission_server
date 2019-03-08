@@ -16,7 +16,7 @@
 	    {% if current_user.is_authenticated and current_user == wb_invert.user %}
 	      <span class="badge badge-primary">You!</span>
 	    {% else %}
-	      {{ wb_invert.user.username }}
+	      {{ wb_invert.user.displayname or wb_invert.user.username }}
 	    {% endif %}
 	  </td>
 	  <td>{{ wb_invert.carrots | round(2) }} 🥕</td>

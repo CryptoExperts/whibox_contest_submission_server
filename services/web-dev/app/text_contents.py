@@ -4,6 +4,8 @@ flash_categories = {'success': 'success',
                     'danger': 'danger'}
 
 flash_texts_and_categories = {
+    'ACCOUNT_UPDATE_FAILED': ('Failed to update your display name.', flash_categories['danger']),
+    'ACCOUNT_UPDATED': ('Display name updated.', flash_categories['success']),
     'BAD_USERNAME_OR_PWD': ('Bad username or password', flash_categories['danger']),
     'WELCOME_BACK': ('Welcome back %s', flash_categories['success']),
     'SIGNOUT': ('You have signed out', flash_categories['info']),

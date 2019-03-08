@@ -16,7 +16,7 @@
 	    {% if current_user.is_authenticated and current_user == wb_break.user %}
 	      <span class="badge badge-primary">You!</span>
 	    {% else %}
-	      {{ wb_break.user.username }}
+	      {{ wb_break.user.displayname or wb_break.user.username }}
 	    {% endif %}
 	  </td>
 	  <td class="text-center">{{ wb_break.strawberries | round(2) }} 🍓</td>

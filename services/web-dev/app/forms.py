@@ -16,12 +16,18 @@ class LoginForm(FlaskForm):
 class UserCreationForm(FlaskForm):
     username = StringField('username', validators=[
                            DataRequired(), Length(min=3, max=32)])
+    displayname = StringField('displayname', validators=[Length(max=10)])
     email1 = EmailField('email1', validators=[DataRequired(), Email()])
     email2 = EmailField('email2', validators=[DataRequired(), Email(), EqualTo(
         'email1', message=flash_texts_and_categories['EMAIL_MUST_MATCH'][0])])
     password1 = PasswordField('password1', validators=[DataRequired()])
     password2 = PasswordField('password2', validators=[DataRequired(), EqualTo(
         'password1', message=flash_texts_and_categories['PWD_MUST_MATCH'][0])])
+    recaptcha = RecaptchaField()
+
+
+class UserUpdateForm(FlaskForm):
+    displayname = StringField('displayname', validators=[Length(max=10)])
     recaptcha = RecaptchaField()
 
 

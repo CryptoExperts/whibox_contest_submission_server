@@ -16,6 +16,10 @@
 
 	      {{ formidable.input(form.username, 'Username', autofocus=true) }}
 
+	      <p>An <strong>optional</strong> display name can be chosen to personalize your name in the dashboard.</p>
+
+	      {{ formidable.input(form.displayname, 'Display Name', autofocus=true) }}
+
 	      <p>An email address is required in case the organizing committee needs to contact you. This email address will <strong>not</strong> be shown to other participants. Please note that you will <strong>not</strong> be able to modify it and that the existence of this address will <strong>not</strong> be checked.</p>
 
 	      {{ formidable.input(form.email1, 'Email address') }}

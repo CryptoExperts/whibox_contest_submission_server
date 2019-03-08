@@ -13,21 +13,24 @@
   <ul class="nav navbar-top-links navbar-right">
     <li class="dropdown">
       <a class="dropdown-toggle" data-toggle="dropdown" href="#" aria-expanded="false">
-	{% if current_user.is_authenticated %}
-	  Logged in as {{ current_user.username }}
-	{% endif %}
+        {% if current_user.is_authenticated %}
+          Logged in as
+          {% if current_user.displayname %} <strong>{{ current_user.displayname }}</strong> ({{ current_user.username }})
+          {% else %} <strong>{{ current_user.username }}</strong>
+          {% endif %}
+        {% endif %}
         <i class="fa fa-user fa-fw"></i> <i class="fa fa-caret-down"></i>
       </a>
       <ul class="dropdown-menu dropdown-users">
-	{% if current_user.is_authenticated %}
-          <li><a href="/user/show"><i class="fa fa-user fa-fw"></i> Your Dashboard</a></li>
+        {% if current_user.is_authenticated %}
+          <li><a href="/user/update"><i class="fa fa-user fa-fw"></i> Update your display name</a></li>
           <li class="divider"></li>
           <li><a href="/user/signout"><i class="fa fa-sign-out fa-fw"></i> Logout</a></li>
-	{% else %}
+        {% else %}
           <li><a href="/user/create"><i class="fa fa-user fa-fw"></i> Create an Account</a></li>
           <li class="divider"></li>
           <li><a href="/user/signin"><i class="fa fa-sign-in fa-fw"></i> Sign in</a></li>
-	{% endif %}
+        {% endif %}
       </ul><!-- /.dropdown-user -->
     </li><!-- /.dropdown -->
   </ul><!-- /.navbar-top-links -->
@@ -47,19 +50,19 @@
         <li class="{% if active_page == 'rules' %} active{% endif %}">
           <a href="/rules"><i class="fa fa-book fa-fw"></i> Competition Rules</a>
         </li>
-	<li style="height: 2em; background-color: #fafafa;"></li>
-	{% if not current_user.is_authenticated %}
+        <li style="height: 2em; background-color: #fafafa;"></li>
+        {% if not current_user.is_authenticated %}
           <li class="{% if active_page == 'user_create' %} active{% endif %}">
             <a href="/user/create"><i class="fa fa-user fa-fw"></i> Create an Account</a>
           </li>
           <li class="{% if active_page == 'user_signin' %} active{% endif %}">
             <a href="/user/signin"><i class="fa fa-sign-in fa-fw"></i> Sign in</a>
           </li>
-	{% else %}
+        {% else %}
           <li>
             <a href="/user/signout"><i class="fa fa-sign-out fa-fw"></i> Logout</a>
           </li>
-	{% endif %}
+        {% endif %}
       </ul>
     </div>
     <!-- /.sidebar-collapse -->

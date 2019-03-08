@@ -31,7 +31,7 @@
           {% if current_user.is_authenticated and current_user == program.user %}
           <span class="badge badge-primary">You!</span>
           {% else %}
-          {{ program.user.username }}
+          {{ program.user.displayname or program.user.username}}
           {% endif %}
         </td>
         <td class="text-center">
