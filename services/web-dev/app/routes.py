@@ -8,14 +8,14 @@ import time
 from Crypto.Cipher import AES
 from traceback import print_exc
 from flask import render_template, url_for, request, send_from_directory, \
-    request_started
+    request_started, jsonify
 from flask_login import login_user, logout_user, login_required, current_user
 from app import app
 from app import login_manager
 from app import utils
 from app import db
 from .forms import LoginForm, UserCreationForm, WhiteboxSubmissionForm, \
-    WhiteboxBreakForm, WhiteboxInvertForm
+    WhiteboxBreakForm, WhiteboxInvertForm, UserUpdateForm
 from .models.user import User
 from .models.program import Program
 from .models.whiteboxbreak import WhiteboxBreak
@@ -139,15 +139,37 @@ def user_create():
         return render_template('create.html', form=form, active_page='user_create', testing=app.testing)
     else:
         username = form.username.data
+        displayname = form.displayname.data
         password = form.password1.data
         email = form.email1.data
         try:
-            User.create(username=username, password=password, email=email)
+            User.create(username=username, displayname=displayname,
+                        password=password, email=email)
         except:
             crx_flash('ERROR_USER_EXISTS')
             return redirect(url_for('user_create'))
         crx_flash('ACCOUNT_CREATED', username)
         return redirect(url_for('user_signin'))
+
+
+@app.route('/user/update', methods=['GET', 'POST'])
+def user_update():
+    if not current_user.is_authenticated:
+        return redirect(url_for('index'))
+    form = UserUpdateForm()
+    if not form.validate_on_submit():
+        return render_template('update.html', form=form, active_page='update_update', testing=app.testing)
+    else:
+        displayname = form.displayname.data
+        import sys
+        print(displayname, file=sys.stderr)
+        try:
+            current_user.displayname = displayname
+        except:
+            crx_flash('ACCOUNT_UPDATE_FAILED')
+            return redirect(url_for('index'))
+        crx_flash('ACCOUNT_UPDATED')
+        return redirect(url_for('index'))
 
 
 @app.route('/submit/candidate', methods=['GET', 'POST'])
@@ -210,6 +232,30 @@ def show_candidate(identifier):
     # If we reach this point, we can show the source code
     upload_folder = app.config['UPLOAD_FOLDER']
     return send_from_directory(upload_folder, program.filename)
+
+
+@app.route('/show/candidate/<int:identifier>/testvectors', methods=['GET'])
+def show_candidate_sample(identifier):
+    program = Program.get_by_id(identifier)
+    if program is None or not program.is_published:
+        return redirect(url_for('index'))
+
+    number_of_test_vectors = int(len(program.plaintexts) / 16)
+    test_vectors = list()
+    for i in range(number_of_test_vectors):
+        test_vectors.append({
+            "plaintext": binascii.hexlify(
+                program.plaintexts[i*16:(i+1)*16]).decode(),
+            "ciphertext": binascii.hexlify(
+                program.ciphertexts[i*16:(i+1)*16]).decode()
+        })
+
+    res = {
+        "id": program._id,
+        "test_vectors": test_vectors
+    }
+
+    return jsonify(res)
 
 
 @app.route('/user/show', methods=['GET'])

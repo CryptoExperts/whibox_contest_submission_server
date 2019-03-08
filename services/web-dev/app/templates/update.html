@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}Update your Account{% endblock %}
+
+{% block content %}
+
+  {% import 'form_element.html' as formidable %}
+
+  <div class="row">
+    <div class="col-lg-6 col-lg-offset-3">
+      <div class="panel panel-default">
+        <div class="panel-body">
+          <form role="form-update" method="post">
+	    {{ form.hidden_tag() }}
+            <fieldset>
+
+	      <p>Update your <strong>optional</strong> display name.</p>
+
+	      {{ formidable.input(form.displayname, current_user.displayname, autofocus=true) }}
+
+	      {{ formidable.recaptcha(form.recaptcha, testing) }}
+
+	      <button class="btn btn-lg btn-success btn-block" type="submit">Update your Account</button>
+
+            </fieldset>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+{% endblock %}
