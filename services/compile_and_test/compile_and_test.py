@@ -140,7 +140,7 @@ def performance_measure(executable,
     average_cpu_time = mean(all_cpu_time[5:-5])
     average_max_ram = mean(all_max_ram[5:-5])
 
-    return (ciphertexts, average_cpu_time, average_cpu_time)
+    return (ciphertexts, average_cpu_time, average_max_ram)
 
 
 def main():
@@ -170,7 +170,7 @@ def main():
     # performance measure
     number_of_tests = int(os.environ['CHALLENGE_NUMBER_OF_TEST_VECTORS'])
     cpu_time_limit = int(os.environ['CHALLENGE_MAX_TIME_EXECUTION_IN_SECS'])
-    ram_limit = 2**20 * int(os.environ['CHALLENGE_MAX_MEM_EXECUTION_IN_MB'])
+    ram_limit = 2**10 * int(os.environ['CHALLENGE_MAX_MEM_EXECUTION_IN_MB'])
     ciphertexts, average_cpu_time, average_max_ram = performance_measure(
         path_to_executable, plaintexts, number_of_tests,
         ram_limit, cpu_time_limit
