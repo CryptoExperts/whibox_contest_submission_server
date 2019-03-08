@@ -5,6 +5,7 @@ import json
 import os
 import subprocess
 import sys
+import traceback
 import urllib.request
 from urllib.parse import urljoin
 from statistics import mean
@@ -36,6 +37,8 @@ def exit_after_notifying_launcher(code, post_data=None):
         print("!!! Could not contact %s" % url)
         sys.exit(1)
     sys.stdout.flush()
+    if code == ERR_CODE_EXECUTION_FAILED:
+        sys.exit(1)
     sys.exit(0)
 
 
@@ -69,6 +72,7 @@ def compile(basename, compiler, source, obj):
     except:
         print("The compilation of file %s.c failed." % basename)
         print("The compile command is:\t%s\t" % cmd_compiler)
+        traceback.print_exc()
         sys.stdout.flush()
         exit_after_notifying_launcher(ERR_CODE_COMPILATION_FAILED)
     print("The compilation of the file with basename %s succeeded." % basename)
@@ -99,16 +103,17 @@ def performance_measure(executable,
     ciphertexts = b''
     all_cpu_time = list()
     all_max_ram = list()
-    cmd = '/execute.py %s %s'
+    cmd = '/execute.py %s %s %d'
     while current_test_index < number_of_tests:
         current_plaintext = plaintexts[
             current_test_index * 16:(current_test_index+1)*16
         ]
         current_pt_as_text = binascii.hexlify(current_plaintext).decode()
         try:
-            ps = subprocess.run(cmd % (executable, current_pt_as_text),
-                                check=True,
-                                stdout=subprocess.PIPE, shell=True)
+            ps = subprocess.run(
+                cmd % (executable, current_pt_as_text, current_test_index),
+                check=True,
+                stdout=subprocess.PIPE, shell=True)
             ct_as_text, cpu_time, ram = json.loads(ps.stdout)
             ciphertexts += bytes.fromhex(ct_as_text)
 

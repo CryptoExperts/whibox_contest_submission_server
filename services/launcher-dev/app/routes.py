@@ -225,18 +225,16 @@ def compile_and_test_result(basename, nonce, ret):
         "Entering compile_and_test_result(basename=%s, nonce=%s, ret=%d)" %
         (basename, nonce, ret))
     if not utils.basename_and_nonce_are_valid(basename, nonce) or ret is None:
-        # Look for another program to compile and test
-        utils.console("Calling compile_and_test()... (0)")
-        compile_and_test()
+        utils.console("Exception takes place ... (0)")
         return ""
 
     program = Program.get(basename)
     if program.status != Program.Status.submitted:
         utils.console(
             "The program %s status is %s. No need to proceed for this program."
+            % (program.id, program.status)
         )
-        utils.console("Calling compile_and_test()... (1)")
-        compile_and_test()
+        utils.console("Exception takes place ... (1)")
         return ""
 
     # We (try to) remove the compilation directory
@@ -263,6 +261,16 @@ def compile_and_test_result(basename, nonce, ret):
     elif ret == ERR_CODE_LINK_FAILED:
         program.set_status_to_link_failed()
         utils.console('Link failed for file with basename %s' % str(basename))
+    elif ret == ERR_CODE_EXCEED_RAM_LIMAT:
+        program.set_status_to_execution_failed(
+            "Execution reach memory limitation of %dMB." % app.config['CHALLENGE_MAX_MEM_EXECUTION_IN_MB'])
+        utils.console(
+            'Code execution reach memory limit for file with basename %s' % str(basename))
+    elif ret == ERR_CODE_EXCEED_EXECUTION_TIME_LIMAT:
+        program.set_status_to_execution_failed(
+            "Execution reach time limitation of %ds." % app.config['CHALLENGE_MAX_TIME_EXECUTION_IN_SECS'])
+        utils.console(
+            'Code execution reach time limit for file with basename %s' % str(basename))
     elif ret == ERR_CODE_EXECUTION_FAILED:
         program.set_status_to_execution_failed()
         utils.console(
@@ -277,9 +285,7 @@ def compile_and_test_result(basename, nonce, ret):
     client = docker.from_env()
     utils.remove_compiler_service_for_basename(client, basename, app)
     if ret != CODE_SUCCESS:
-        # Look for another program to compile and test
-        utils.console("Calling compile_and_test()... (2)")
-        compile_and_test()
+        utils.console("Failed to compiling ... ")
         return ""
 
     # If we reach this point, the program was successfuly compiled,
@@ -300,9 +306,8 @@ def compile_and_test_result(basename, nonce, ret):
         program.error_message = error_message
         program.set_status_to_test_failed()
         db.session.commit()
-        # Look for another program to compile and test
-        utils.console("Calling compile_and_test()... (3)")
-        compile_and_test()
+
+        utils.console("Exception take place... (3)")
         return ""
 
     # If we reach this point, the ciphertexts stream has the appropriate length
@@ -328,9 +333,6 @@ def compile_and_test_result(basename, nonce, ret):
         error_message = "Could not compute the test vectors for the given key."
         program.set_status_to_test_failed(error_message)
         db.session.commit()
-        # Look for another program to compile and test
-        utils.console("Calling compile_and_test()... (4)")
-        compile_and_test()
         return ""
     for i in range(number_of_test_vectors):
         ciphertext = ciphertexts[16*i:16*(i+1)]
@@ -349,9 +351,6 @@ def compile_and_test_result(basename, nonce, ret):
                        binascii.hexlify(expected_ciphertext).decode())
             program.set_status_to_test_failed(error_message)
             db.session.commit()
-            # Look for another program to compile and test
-            utils.console("Calling compile_and_test()... (5)")
-            compile_and_test()
             return ""
 
     # If we reach this point, all the tests were successful.
@@ -377,9 +376,5 @@ def compile_and_test_result(basename, nonce, ret):
         utils.console("We removed the file %s" % path_to_plaintexts_file)
     except:
         utils.console("Could NOT remove the file %s" % path_to_plaintexts_file)
-
-    # Look for another program to compile and test
-    utils.console("Calling compile_and_test()... (6)")
-    compile_and_test()
 
     return ""
