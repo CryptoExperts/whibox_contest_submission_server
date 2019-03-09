@@ -13,13 +13,15 @@ from flask import request
 from .models.program import Program
 from .models.user import User
 
+
 CODE_SUCCESS = 0
-ERR_CODE_COMPILATION_FAILED = 1
-ERR_CODE_BIN_TOO_LARGE = 2
-ERR_CODE_LINK_FAILED = 3
-ERR_CODE_EXECUTION_FAILED = 4
-ERR_CODE_EXCEED_RAM_LIMAT = 5
-ERR_CODE_EXCEED_EXECUTION_TIME_LIMAT = 6
+ERR_CODE_CONTAININT_FORBIDDEN_STRING = 1
+ERR_CODE_COMPILATION_FAILED = 2
+ERR_CODE_BIN_TOO_LARGE = 3
+ERR_CODE_LINK_FAILED = 4
+ERR_CODE_EXECUTION_FAILED = 5
+ERR_CODE_EXECUTION_EXCEED_RAM_LIMIT = 6
+ERR_CODE_EXECUTION_EXCEED_TIME_LIMIT = 7
 
 
 def clean_programs_timeout_to_compile_or_test():
@@ -231,8 +233,8 @@ def compile_and_test_result(basename, nonce, ret):
     program = Program.get(basename)
     if program.status != Program.Status.submitted:
         utils.console(
-            "The program %s status is %s. No need to proceed for this program."
-            % (program.id, program.status)
+            "The program %d status is %s. No need to proceed for this program."
+            % (program._id, program.status)
         )
         utils.console("Exception takes place ... (1)")
         return ""
@@ -248,7 +250,10 @@ def compile_and_test_result(basename, nonce, ret):
                       str(path_for_compilations))
 
     # We process the ret code
-    if ret == ERR_CODE_COMPILATION_FAILED:
+    if ret == ERR_CODE_CONTAININT_FORBIDDEN_STRING:
+        program.set_status_to_preprocess_failed(
+            'The submitted program contains a forbidden string.')
+    elif ret == ERR_CODE_COMPILATION_FAILED:
         program.set_status_to_compilation_failed(
             'Compilation failed for unknown reason (may be due to an excessive memory usage).')
         utils.console(
@@ -261,14 +266,16 @@ def compile_and_test_result(basename, nonce, ret):
     elif ret == ERR_CODE_LINK_FAILED:
         program.set_status_to_link_failed()
         utils.console('Link failed for file with basename %s' % str(basename))
-    elif ret == ERR_CODE_EXCEED_RAM_LIMAT:
+    elif ret == ERR_CODE_EXECUTION_EXCEED_RAM_LIMIT:
+        postdata = request.get_json()
         program.set_status_to_execution_failed(
-            "Execution reach memory limitation of %dMB." % app.config['CHALLENGE_MAX_MEM_EXECUTION_IN_MB'])
+            "Execution reach memory limitation of %dMB. Memory consumption was %.2fMB." % (app.config['CHALLENGE_MAX_MEM_EXECUTION_IN_MB'], postdata['ram']))
         utils.console(
             'Code execution reach memory limit for file with basename %s' % str(basename))
-    elif ret == ERR_CODE_EXCEED_EXECUTION_TIME_LIMAT:
+    elif ret == ERR_CODE_EXECUTION_EXCEED_TIME_LIMIT:
+        postdata = request.get_json()
         program.set_status_to_execution_failed(
-            "Execution reach time limitation of %ds." % app.config['CHALLENGE_MAX_TIME_EXECUTION_IN_SECS'])
+            "Execution reach time limitation of %ds. Time used %.2fs" % (app.config['CHALLENGE_MAX_TIME_EXECUTION_IN_SECS'], postdata['cpu_time']))
         utils.console(
             'Code execution reach time limit for file with basename %s' % str(basename))
     elif ret == ERR_CODE_EXECUTION_FAILED:
@@ -282,8 +289,10 @@ def compile_and_test_result(basename, nonce, ret):
             "We received an unexpected return code (%s) for file with basename %s" % (str(ret), str(basename)))
     db.session.commit()
 
-    client = docker.from_env()
-    utils.remove_compiler_service_for_basename(client, basename, app)
+    if ret != ERR_CODE_EXECUTION_FAILED:
+        client = docker.from_env()
+        utils.remove_compiler_service_for_basename(client, basename, app)
+
     if ret != CODE_SUCCESS:
         utils.console("Failed to compiling ... ")
         return ""

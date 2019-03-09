@@ -37,7 +37,7 @@
         <td class="text-center">
           {% if program.is_broken %}
           <span class="text-danger">Broken!</span>
-          {% elif program.is_inverted %}
+          {% elif program.datetime_first_inversion %}
           <span class="text-warning">Inverted!</span>
           {% else %}
           <span class="text-success">Unbroken</span>
@@ -49,7 +49,7 @@
         <td class="text-center">
           {% if program.is_broken %}
           <span class="text-danger">{{ program.datetime_first_break }}</span>
-          {% elif program.is_inverted %}
+          {% elif program.datetime_first_inversion %}
           <span class="text-warning">{{ program.datetime_first_inversion }}</span>
           {% else %}
           -

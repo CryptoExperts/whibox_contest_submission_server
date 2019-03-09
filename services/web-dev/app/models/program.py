@@ -19,6 +19,7 @@ class Program(db.Model):
     @unique
     class Status(Enum):
         submitted = 'submitted'
+        preprocess_failed = 'preprocess_failed'
         compilation_failed = 'compilation_failed'
         link_failed = 'link_failed'
         execution_failed = 'execution_failed'
@@ -30,6 +31,8 @@ class Program(db.Model):
         def __str__(self):
             if self == self.submitted:
                 return 'Submitted'
+            elif self == self.preprocess_failed:
+                return 'Preprocess failed'
             elif self == self.compilation_failed:
                 return 'Compilation failed'
             elif self == self.link_failed:
@@ -50,6 +53,7 @@ class Program(db.Model):
         @staticmethod
         def authorized_status_change(current_status, new_status):
             all_authorized_status_change = [
+                (Program.Status.submitted, Program.Status.preprocess_failed),
                 (Program.Status.submitted, Program.Status.compilation_failed),
                 (Program.Status.submitted, Program.Status.link_failed),
                 (Program.Status.submitted, Program.Status.execution_failed),
@@ -278,7 +282,9 @@ class Program(db.Model):
             max_compile_time = app.config['CHALLENGE_MAX_TIME_COMPILATION_IN_SECS']
             max_exec_time = app.config['CHALLENGE_MAX_TIME_EXECUTION_IN_SECS'] * \
                 app.config['CHALLENGE_NUMBER_OF_TEST_VECTORS']
-            max_time = 10 + max_compile_time + max_exec_time
+            # buffer for forking processes
+            buffer_time_for_forking = 100
+            max_time = 10 + max_compile_time + max_exec_time + buffer_time_for_forking
             now = int(time.time())
             if now > p._timestamp_compilation_start + max_time:
                 p.set_status_to_execution_failed(
@@ -319,19 +325,18 @@ class Program(db.Model):
         if self.is_broken:
             if end_timestamp < self._timestamp_first_break:
                 return None
-            surviving_minutes = (
-                self._timestamp_first_break-self._timestamp_published
-            ) / 60
-            minutes_after_broken = (
-                end_timestamp - self._timestamp_first_break
-            ) / 60
+            surviving_minutes = int(
+                (self._timestamp_first_break-self._timestamp_published) / 60)
+            minutes_after_broken = int(
+                (end_timestamp - self._timestamp_first_break) / 60)
             if minutes_after_broken > surviving_minutes:
                 strawberries = 0
             else:
                 strawberries = (
                     (surviving_minutes-minutes_after_broken)/1440.0)**2
         else:
-            surviving_minutes = (end_timestamp-self._timestamp_published) / 60
+            surviving_minutes = int(
+                (end_timestamp-self._timestamp_published) / 60)
             strawberries = (surviving_minutes/1440.0) ** 2
         return strawberries * float(self._performance_factor)
 
@@ -342,20 +347,23 @@ class Program(db.Model):
         final_deadline = app.config['FINAL_DEADLINE']
         end_timestamp = min(end_timestamp, final_deadline)
 
-        if self.is_broken or self.is_inverted:
+        if self.is_broken or self._timestamp_first_inversion:
             peak_timestamp = end_timestamp
-            if self.is_inverted:
+            if self._timestamp_first_inversion:
                 peak_timestamp = self._timestamp_first_inversion
-            elif self.is_broken:
-                peak_timestamp = self._timestamp_first_break
-            surviving_minutes = (peak_timestamp-self._timestamp_published)/60
-            minutes_after_peak = (end_timestamp - peak_timestamp) / 60
+            if self.is_broken:
+                peak_timestamp = min(self._timestamp_first_break,
+                                     peak_timestamp)
+            surviving_minutes = int(
+                (peak_timestamp-self._timestamp_published)/60)
+            minutes_after_peak = int((end_timestamp - peak_timestamp) / 60)
             if minutes_after_peak > surviving_minutes:
                 carrots = 0
             else:
                 carrots = ((surviving_minutes-minutes_after_peak)/1440.0)**2
         else:
-            surviving_minutes = (end_timestamp-self._timestamp_published) / 60
+            surviving_minutes = int(
+                (end_timestamp-self._timestamp_published) / 60)
             carrots = (surviving_minutes/1440.0) ** 2
         return carrots * float(self._performance_factor) * 0.5
 
@@ -365,6 +373,15 @@ class Program(db.Model):
         if Program.Status.authorized_status_change(
                 self.status, Program.Status.compilation_failed):
             self._status = Program.Status.compilation_failed.value
+            if error_message is not None and type(error_message) == str:
+                self._error_message = error_message
+
+    def set_status_to_preprocess_failed(self, error_message=None):
+        utils.console(
+            "Setting the status to preprocess_failed for program with id %s" % str(self._id))
+        if Program.Status.authorized_status_change(
+                self.status, Program.Status.preprocess_failed):
+            self._status = Program.Status.preprocess_failed.value
             if error_message is not None and type(error_message) == str:
                 self._error_message = error_message
 
@@ -443,10 +460,6 @@ class Program(db.Model):
     @property
     def is_broken(self):
         return self._status == Program.Status.broken.value
-
-    @property
-    def is_inverted(self):
-        return self._status == Program.Status.inverted.value
 
     @staticmethod
     def create(user, basename, key, compiler):
@@ -566,7 +579,8 @@ class Program(db.Model):
     def get_user_rejected_programs(user):
         return Program.query.filter(
             Program._user_id == user._id,
-            or_(Program._status == Program.Status.compilation_failed.value,
+            or_(Program._status == Program.Status.preprocess_failed.value,
+                Program._status == Program.Status.compilation_failed.value,
                 Program._status == Program.Status.link_failed.value,
                 Program._status == Program.Status.execution_failed.value,
                 Program._status == Program.Status.test_failed.value)

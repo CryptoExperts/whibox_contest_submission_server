@@ -17,31 +17,14 @@ def console(s):
 def is_safe_url(request, target):
     ref_url = urlparse(request.host_url)
     test_url = urlparse(urljoin(request.host_url, target))
-    return test_url.scheme in ('http', 'https') and ref_url.netloc == test_url.netloc
+    return test_url.scheme in ('http', 'https') and \
+        ref_url.netloc == test_url.netloc
 
 
 def format_timestamp(timestamp):
     if timestamp is None:
         return None
     return time.strftime('%Y-%m-%d %H:%M UTC', time.gmtime(timestamp))
-
-
-def _contact_launcher(url):
-    retry_count = 0
-    while retry_count < 5:
-        try:
-            response = urllib.request.urlopen(url)
-            if response.getcode() < 400:
-                break
-        except:
-            pass
-        finally:
-            retry_count += 1
-
-
-def launch_compilation_and_test():
-    url = app.config['URL_COMPILE_AND_TEST']
-    threading.Thread(target=_contact_launcher, args=(url,)).start()
 
 
 def crx_flash(text_and_category_key, *args):

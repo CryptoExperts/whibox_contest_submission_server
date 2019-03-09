@@ -203,7 +203,6 @@ def submit_candidate():
                        compiler=compiler,
                        user=current_user)
         db.session.commit()
-        utils.launch_compilation_and_test()
         return redirect(url_for('submit_candidate_ok'))
 
 

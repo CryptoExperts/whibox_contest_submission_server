@@ -3,15 +3,9 @@ import os
 if 'DEBUG' in os.environ and os.environ['DEBUG'] == 'True':
     DEBUG = True
     TESTING = True
-    NBR_SECONDS_PER_MINUTE = int(os.environ['NBR_SECONDS_PER_MINUTE'])
-    NBR_SECONDS_PER_HOUR = int(os.environ['NBR_SECONDS_PER_HOUR'])
-    NBR_SECONDS_PER_DAY = int(os.environ['NBR_SECONDS_PER_DAY'])
 else:
     DEBUG = False
     TESTING = False
-    NBR_SECONDS_PER_MINUTE = 60
-    NBR_SECONDS_PER_HOUR = 3600
-    NBR_SECONDS_PER_DAY = 86400
 
 
 ####################

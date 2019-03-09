@@ -2,6 +2,7 @@
 
 import binascii
 import json
+import mmap
 import os
 import subprocess
 import sys
@@ -11,87 +12,104 @@ from urllib.parse import urljoin
 from statistics import mean
 
 CODE_SUCCESS = 0
-ERR_CODE_COMPILATION_FAILED = 1
-ERR_CODE_BIN_TOO_LARGE = 2
-ERR_CODE_LINK_FAILED = 3
-ERR_CODE_EXECUTION_FAILED = 4
-ERR_CODE_EXCEED_RAM_LIMAT = 5
-ERR_CODE_EXCEED_EXECUTION_TIME_LIMAT = 6
+ERR_CODE_CONTAININT_FORBIDDEN_STRING = 1
+ERR_CODE_COMPILATION_FAILED = 2
+ERR_CODE_BIN_TOO_LARGE = 3
+ERR_CODE_LINK_FAILED = 4
+ERR_CODE_EXECUTION_FAILED = 5
+ERR_CODE_EXECUTION_EXCEED_RAM_LIMIT = 6
+ERR_CODE_EXECUTION_EXCEED_TIME_LIMIT = 7
+
+forbidden_strings = [b'#include', b'external']
 
 
 def exit_after_notifying_launcher(code, post_data=None):
-    sys.stdout.flush()
     url_to_ping_back = os.environ['URL_TO_PING_BACK']
     url = urljoin(url_to_ping_back, './%d' % code)
-    print("Contacting %s" % url)
-    sys.stdout.flush()
+    print("Contacting %s" % url, flush=True)
+
+    # post data
     try:
+        if post_data:
+            post_data = json.dumps(post_data).encode('utf8')
+            print(post_data, flush=True)
         req = urllib.request.Request(
             url,
             data=post_data,
             headers={'content-type': 'application/json'}
         )
         urllib.request.urlopen(req)
+
+        if code == ERR_CODE_EXECUTION_FAILED:
+            os._exit(1)
+        else:
+            os._exit(0)
     except Exception as e:
         print(e)
-        print("!!! Could not contact %s" % url)
-        sys.exit(1)
-    sys.stdout.flush()
-    if code == ERR_CODE_EXECUTION_FAILED:
-        sys.exit(1)
-    sys.exit(0)
+        print("!!! Could not contact %s" % url, flush=True)
+        os._exit(1)
 
 
 def try_fetch_plaintexts():
     try:
         url = os.environ['URL_FOR_FETCHING_PLAINTEXTS']
-        print("Contacting %s" % url)
+        print("Contacting %s" % url, flush=True)
         sys.stdout.flush()
         return urllib.request.urlopen(url).read()
     except:
-        print("Could not fetch plaintexts")
-        sys.stdout.flush()
-        sys.exit(1)
+        print("Could not fetch plaintexts", flush=Truep)
+        os._exit(1)
+
+
+def preprocess(source):
+    with open(source, 'rb', 0) as f, \
+            mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ) as contents:
+        for string in forbidden_strings:
+            if contents.find(string) != -1:
+                print("Forbidden string %s found in %s." % (string, source))
+                return False
+    return True
 
 
 def compile(basename, compiler, source, obj):
     try:
-        max_ram = 5000 + 2**10 * \
-            int(os.environ['CHALLENGE_MAX_MEM_COMPILATION_IN_MB'])  # in kiB
-        max_cpu_time = 10 + \
-            int(os.environ['CHALLENGE_MAX_TIME_COMPILATION_IN_SECS'])
+        # max ram in KB
+        max_ram = int(os.environ['CHALLENGE_MAX_MEM_COMPILATION_IN_MB']) \
+            * (2**10) + 5000
+        max_cpu_time = int(
+            os.environ['CHALLENGE_MAX_TIME_COMPILATION_IN_SECS']) + 10
         cmd_ulimit_ram = 'ulimit -v %d' % (max_ram)
         cmd_ulimit_cpu_time = 'ulimit -t %d' % (max_cpu_time)
+
         # TODO: check tcc and gcc
         cmd_gcc = 'gcc -nostdinc -c %s -o %s' % (source, obj)
         cmd_tcc = 'tcc -c %s -o %s' % (source, obj)
         cmd_compiler = cmd_tcc if compiler == 'tcc' else cmd_gcc
         subprocess.run(
             '%s; %s; %s' % (cmd_ulimit_ram, cmd_ulimit_cpu_time, cmd_compiler),
-            check=True, shell=True)
-    except:
+            check=True, shell=True
+        )
+    except Exception as e:
         print("The compilation of file %s.c failed." % basename)
-        print("The compile command is:\t%s\t" % cmd_compiler)
+        print("The compile command is:\t%s\t" % cmd_compiler, flush=True)
         traceback.print_exc()
-        sys.stdout.flush()
         exit_after_notifying_launcher(ERR_CODE_COMPILATION_FAILED)
-    print("The compilation of the file with basename %s succeeded." % basename)
-    sys.stdout.flush()
+    print("The compilation of the file with basename %s succeeded." % basename,
+          flush=True)
 
 
 def link(basename, compiler, obj, executable):
     try:
-        # TODO: to update main object location
         subprocess.run(
             [compiler, '/main.o', obj, '-o', executable],
-            check=True)
+            check=True
+        )
     except:
-        print("The link of the file with basename %s failed." % basename)
-        sys.stdout.flush()
+        print("The link of the file with basename %s failed." % basename,
+              flush=True)
         exit_after_notifying_launcher(ERR_CODE_LINK_FAILED)
-    print("The link of the file with basename %s succeeded." % basename)
-    sys.stdout.flush()
-    pass
+    print("The link of the file with basename %s succeeded." % basename,
+          flush=True)
 
 
 def performance_measure(executable,
@@ -113,33 +131,39 @@ def performance_measure(executable,
             ps = subprocess.run(
                 cmd % (executable, current_pt_as_text, current_test_index),
                 check=True,
-                stdout=subprocess.PIPE, shell=True)
+                stdout=subprocess.PIPE,
+                shell=True)
             ct_as_text, cpu_time, ram = json.loads(ps.stdout)
-            ciphertexts += bytes.fromhex(ct_as_text)
+            current_ciphertext = bytes.fromhex(ct_as_text)
+            if len(current_ciphertext) != 16:
+                raise Exception("ciphertext is too short")
+            ciphertexts += current_ciphertext
 
             # check whether we reach the limitation
             if cpu_time > cpu_time_limit:
-                print("Reach memory limit")
-                sys.stdout.flush()
-                exit_after_notifying_launcher(ERR_CODE_EXCEED_RAM_LIMAT)
-            if ram > ram_limit:
-                print("Reach execution time limit")
-                sys.stdout.flush()
+                print("Execution reaches memory limit: %.2fs was used!" % cpu_time, flush=True)
+                post_data = {"cpu_time": cpu_time}
                 exit_after_notifying_launcher(
-                    ERR_CODE_EXCEED_EXECUTION_TIME_LIMAT)
+                    ERR_CODE_EXECUTION_EXCEED_TIME_LIMIT,
+                    post_data=post_data)
+            if ram > ram_limit:
+                print("Execution reaches time limit: %.2fMB" % (ram/1024.), flush=True)
+                post_data = {"ram": ram/1024.}
+                exit_after_notifying_launcher(
+                    ERR_CODE_EXECUTION_EXCEED_RAM_LIMIT,
+                    post_data=post_data)
 
             all_cpu_time.append(cpu_time)
             all_max_ram.append(ram)
             current_test_index += 1
-        except:
-            print("Execution failed")
-            sys.stdout.flush()
+        except Exception as e:
+            print("Execution failed", flush=True)
+            traceback.print_exc()
+            print("===========")
+            print(e, flush=True)
             exit_after_notifying_launcher(ERR_CODE_EXECUTION_FAILED)
 
-    if len(ciphertexts) != len(plaintexts):
-        raise
-    print("The execution succeeded and we retrieved the ciphertexts.")
-    sys.stdout.flush()
+    print("The execution succeeded and we retrieved the ciphertexts.", flush=True)
     all_cpu_time.sort()
     all_max_ram.sort()
     average_cpu_time = mean(all_cpu_time[5:-5])
@@ -157,6 +181,11 @@ def main():
     object_file = basename + '.o'
     path_to_source = os.path.join(upload_folder, source_file)
     path_to_object = os.path.join('/tmp', object_file)
+
+    # check forbidden string
+    if not preprocess(path_to_source):
+        exit_after_notifying_launcher(ERR_CODE_CONTAININT_FORBIDDEN_STRING)
+
     compile(basename, compiler, path_to_source, path_to_object)
 
     # Check the binary size
@@ -191,8 +220,6 @@ def main():
         "ram_factor": ram_factor,
         "time_factor": time_factor
     }
-    post_data = json.dumps(post_data).encode('utf8')
-    print(post_data)
     exit_after_notifying_launcher(CODE_SUCCESS, post_data=post_data)
 
 
