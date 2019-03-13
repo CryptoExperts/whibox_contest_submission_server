@@ -4,6 +4,7 @@ import binascii
 import json
 import mmap
 import os
+import re
 import subprocess
 import sys
 import traceback
@@ -20,7 +21,9 @@ ERR_CODE_EXECUTION_FAILED = 5
 ERR_CODE_EXECUTION_EXCEED_RAM_LIMIT = 6
 ERR_CODE_EXECUTION_EXCEED_TIME_LIMIT = 7
 
-forbidden_strings = [b'#include', b'external']
+forbidden_strings = [b'#include', b'extern', b'__FILE__', b'__DATE__',
+                     b'__TIME__', b'__STDC__', b'__asm__']
+forbidden_pattern = [re.compile(p) for p in [b'\sasm\W', ]]
 
 
 def exit_after_notifying_launcher(code, post_data=None):
@@ -66,9 +69,22 @@ def preprocess(source):
             mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ) as contents:
         for string in forbidden_strings:
             if contents.find(string) != -1:
-                print("Forbidden string %s found in %s." % (string, source))
-                return False
-    return True
+                error_message = "Forbidden string '%s' is found." % string.decode()
+                print(error_message, flush=True)
+                post_data = {"error_message": error_message}
+                exit_after_notifying_launcher(
+                    ERR_CODE_CONTAININT_FORBIDDEN_STRING, post_data
+                )
+
+        for pattern in forbidden_pattern:
+            match = re.search(pattern, contents)
+            if match is not None:
+                error_message = "The string '%s' in the source code matches forbidden pattern '%s'." % (
+                    match.group(0).decode(), pattern.pattern.decode())
+                print(error_message, flush=True)
+                post_data = {"error_message": error_message}
+                exit_after_notifying_launcher(
+                    ERR_CODE_CONTAININT_FORBIDDEN_STRING, post_data)
 
 
 def compile(basename, compiler, source, obj):
@@ -182,9 +198,8 @@ def main():
     path_to_source = os.path.join(upload_folder, source_file)
     path_to_object = os.path.join('/tmp', object_file)
 
-    # check forbidden string
-    if not preprocess(path_to_source):
-        exit_after_notifying_launcher(ERR_CODE_CONTAININT_FORBIDDEN_STRING)
+    # check forbidden string and pattern
+    preprocess(path_to_source)
 
     compile(basename, compiler, path_to_source, path_to_object)
 

@@ -251,8 +251,8 @@ def compile_and_test_result(basename, nonce, ret):
 
     # We process the ret code
     if ret == ERR_CODE_CONTAININT_FORBIDDEN_STRING:
-        program.set_status_to_preprocess_failed(
-            'The submitted program contains a forbidden string.')
+        postdata = request.get_json()
+        program.set_status_to_preprocess_failed(postdata['error_message'])
     elif ret == ERR_CODE_COMPILATION_FAILED:
         program.set_status_to_compilation_failed(
             'Compilation failed for unknown reason (may be due to an excessive memory usage).')
