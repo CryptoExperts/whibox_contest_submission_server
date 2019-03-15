@@ -21,8 +21,8 @@ ERR_CODE_EXECUTION_FAILED = 5
 ERR_CODE_EXECUTION_EXCEED_RAM_LIMIT = 6
 ERR_CODE_EXECUTION_EXCEED_TIME_LIMIT = 7
 
-forbidden_strings = [b'#include', b'extern', b'__FILE__', b'__DATE__',
-                     b'__TIME__', b'__STDC__', b'__asm__']
+forbidden_strings = [b'#include', b'extern', b'_FILE__', b'__DATE__',
+                     b'__TIME', b'__STDC_', b'__asm__']
 forbidden_pattern = [re.compile(p) for p in [b'\sasm\W', ]]
 
 
