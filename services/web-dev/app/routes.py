@@ -1,4 +1,5 @@
 import binascii
+from datetime import datetime
 import hashlib
 import os
 import random
@@ -21,6 +22,8 @@ from .models.program import Program
 from .models.whiteboxbreak import WhiteboxBreak
 from .models.whiteboxinvert import WhiteboxInvert
 from .utils import crx_flash, redirect
+
+from werkzeug.contrib.atom import AtomFeed
 
 
 def need_to_check(url_rule):
@@ -460,6 +463,33 @@ def rules():
         challenge_max_mem_execution_in_mb=app.config['CHALLENGE_MAX_MEM_EXECUTION_IN_MB'],
         challenge_max_time_execution_in_secs=app.config['CHALLENGE_MAX_TIME_EXECUTION_IN_SECS']
     )
+
+
+@app.route('/rss.xml', methods=['GET'])
+def recent_feed():
+    feed = AtomFeed('WhibOx 2nd Edition -- CHES 2019 CTF',
+                    feed_url=request.url, url=request.url_root,
+                    author="WhibOx organizing committee",
+                    subtitle="Submitted challenged order by published date descending"
+                    )
+    programs = Program.get_all_published_sorted_by_published_time()
+
+    for program in programs:
+        title = 'New challenge "<strong>%s</strong>" submitted' % program.funny_name
+        content = '<p>Download <strong>%s</strong> <a href="%sshow/candidate/%d.c">here</a>.</p>' % (
+            program.funny_name, str(request.url_root), program._id)
+        feed.add(id=str(program._id),
+                 title=title,
+                 title_type='html',
+                 published=datetime.fromtimestamp(
+                     program._timestamp_published),
+                 updated=datetime.fromtimestamp(program.timestamp_last_update),
+                 author=program.user.displayname,
+                 categories=[{'label': program.status}],
+                 content=content,
+                 content_type='html',
+                 )
+    return feed.get_response()
 
 
 def unauthorized_handler():

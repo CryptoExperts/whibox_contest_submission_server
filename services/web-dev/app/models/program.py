@@ -255,6 +255,17 @@ class Program(db.Model):
         else:
             return utils.format_timestamp(self._timestamp_first_inversion)
 
+    @property
+    def timestamp_last_update(self):
+        last_update = self._timestamp_published
+        if self._timestamp_first_break:
+            last_update = self._timestamp_first_break
+        if self._timestamp_first_inversion and \
+           last_update < self._timestamp_first_inversion:
+            last_update = self._timestamp_first_inversion
+
+        return last_update
+
     def update_strawberries(self, now):
         if not self.is_published:
             return
@@ -552,6 +563,15 @@ class Program(db.Model):
                 Program._status == Program.Status.inverted.value,
                 Program._status == Program.Status.broken.value
             )).order_by(Program._strawberries_ranking).all()
+        return programs
+
+    @staticmethod
+    def get_all_published_sorted_by_published_time():
+        programs = Program.query.filter(or_(
+            Program._status == Program.Status.unbroken.value,
+            Program._status == Program.Status.inverted.value,
+            Program._status == Program.Status.broken.value
+        )).order_by(Program._timestamp_published).all()
         return programs
 
     @staticmethod
