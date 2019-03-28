@@ -51,12 +51,15 @@
 
     <div class="row">
 
-      <div class="col-xs-12 col-lg-2">
+      <div class="col-xs-12 col-sm-10 col-md-8 col-lg-6">
 	<h3 id="bananas">Banana Ranking</h3>
 	{% include 'table_bananas_ranking.html' %}
       </div>
+    </div><!-- row -->
 
-      <div class="col-xs-12  col-lg-5">
+    <div class="row">
+
+      <div class="col-xs-12 col-sm-10 col-md-8 col-lg-6">
 	{% if programs %}
 	  {% if wb_breaks %}
 	    <h3 id="breaks">All Challenge Breaks</h3>
@@ -67,7 +70,7 @@
 	{% endif %}
       </div>
 
-      <div class="col-xs-12  col-lg-5">
+      <div class="col-xs-12 col-sm-10 col-md-8 col-lg-6">
 	{% if programs %}
 	  {% if wb_breaks %}
 	    <h3 id="breaks">All Challenge Inversions </h3>

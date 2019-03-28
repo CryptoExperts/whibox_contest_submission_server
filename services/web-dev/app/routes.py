@@ -478,13 +478,16 @@ def recent_feed():
         title = 'New challenge "<strong>%s</strong>" submitted' % program.funny_name
         content = '<p>Download <strong>%s</strong> <a href="%sshow/candidate/%d.c">here</a>.</p>' % (
             program.funny_name, str(request.url_root), program._id)
+        author = program.user.displayname
+        if not author or not author.strip():
+            author = program.user.username
         feed.add(id=str(program._id),
                  title=title,
                  title_type='html',
                  published=datetime.fromtimestamp(
                      program._timestamp_published),
                  updated=datetime.fromtimestamp(program.timestamp_last_update),
-                 author=program.user.displayname,
+                 author=author,
                  categories=[{'label': program.status}],
                  content=content,
                  content_type='html',
