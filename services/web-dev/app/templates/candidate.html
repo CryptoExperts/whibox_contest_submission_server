@@ -1,0 +1,105 @@
+<html lang="en">
+  <head>
+    <link href="/static/css/bootstrap.min.css" rel="stylesheet">
+  </head>
+
+  <body>
+
+    <div class="table-responsive">
+      <table class="table table-striped table-bordered data-table table-hover">
+	<thead>
+	  <tr class="text-center">
+            <th class='text-center'>Rank</th>
+            <th class='text-center'>id</th>
+            {% if not feed %}
+            <th class='text-center'></th>
+	    {% endif %}
+            <th class='text-center'>Name (click to download)</th>
+            {% if not feed %}
+            <th data-type="fruit" class='text-center'> 🍓 / 🥕 Peak</th>
+	    {% endif %}
+            <th class='text-center'>User</th>
+            {% if not feed %}
+            <th class='text-center'>Status</th>
+	    {% endif %}
+            <th class='text-center'>Compiler</th>
+            <th class='text-center'>Performance</th>
+            <th class='text-center'>Publication Date</th>
+            {% if not feed %}
+            <th class='text-center'>First Break / Inversion</th>
+            <th data-type="fruit" class='text-center'>Current  🍓 / 🥕</th>
+            {% if current_user.is_authenticated %}
+            <th></th>
+            {% endif %}
+	    {% endif %}
+	  </tr>
+	</thead>
+	<tbody>
+	  <tr>
+            <th class="text-center" scope="row">{{ program.strawberries_ranking }}</th>
+            <td class="text-center">{{ program._id }}</td>
+            {% if not feed %}
+            <td><div style="width: 1em; height: 1em; background-color: {{ program.hsl_color }}"></div></td>
+	    {% endif %}
+            <td class="text-center"><a href='/show/candidate/{{ program._id }}.c'>{{ program.funny_name }}</a></td>
+            {% if not feed %}
+            <td class="text-center">{{ program.strawberries_peak | round(2) }} 🍓 / {{ program.carrots_peak | round(2) }} 🥕</td>
+	    {% endif %}
+            <td class="ellipsable text-center">
+              {% if current_user.is_authenticated and current_user == program.user %}
+              <span class="badge badge-primary">You!</span>
+              {% else %}
+              {{ program.user.displayname|trim or program.user.username}}
+              {% endif %}
+            </td>
+            {% if not feed %}
+            <td class="text-center">
+              {% if program.is_broken %}
+              <span class="text-danger">Broken!</span>
+              {% elif program.datetime_first_inversion %}
+              <span class="text-warning">Inverted!</span>
+              {% else %}
+              <span class="text-success">Standing</span>
+              {% endif %}
+            </td>
+	    {% endif %}
+            <td class="compiler text-center">{{ program.compiler }}</td>
+            <td class="text-center">{{ program.performance_factor | round(2) }}</td>
+            <td class="text-center">{{ program.datetime_published }}</td>
+            {% if not feed %}
+            <td class="text-center">
+              {% if program.is_broken %}
+              <span class="text-danger">{{ program.datetime_first_break }}</span>
+              {% elif program.datetime_first_inversion %}
+              <span class="text-warning">{{ program.datetime_first_inversion }}</span>
+              {% else %}
+              -
+              {% endif %}
+	    </td>
+            <td class="text-center">{{ program.strawberries_last | round(2) }} 🍓 / {{ program.carrots_last | round(2) }} 🥕</td>
+            {% if current_user.is_authenticated %}
+            <td class="nowrap">
+	      {% if program.user == current_user %}
+              <span class="badge badge-primary">Yours!</span>
+              {% elif program in programs_broken_by_current_user %}
+              <span class="badge badge-success">Broken by you!</span>
+              {% if program in programs_inverted_by_current_user %}
+	      <span class="badge badge-info">Inverted by you!</span>
+              {% endif %}
+              {% elif program in programs_inverted_by_current_user %}
+              <a href="/break/candidate/{{ program._id }}" class="btn btn-danger btn-sm">Break</a>
+              <span class="badge badge-info">Inverted by you!</span>
+              {% else %}
+              <a href="/break/candidate/{{ program._id }}" class="btn btn-danger btn-sm">Break</a>
+              <a href="/invert/candidate/{{ program._id }}" class="btn btn-warning btn-sm">Invert</a>
+              {% endif %}
+            </td>
+            {% endif %}
+	    {% endif %}
+	  </tr>
+	</tbody>
+      </table>
+    </div>
+
+  </body>
+</html>

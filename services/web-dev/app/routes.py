@@ -236,6 +236,25 @@ def show_candidate(identifier):
     return send_from_directory(upload_folder, program.filename)
 
 
+@app.route('/candidate/<int:identifier>', methods=['GET'])
+def candidate(identifier):
+    program = Program.get_by_id(identifier)
+    if program is None:
+        return redirect(url_for('index'))
+    do_show = False
+    if program.is_published:
+        do_show = True
+    if current_user is not None and \
+       current_user.is_authenticated and \
+       current_user == program.user:
+        do_show = True
+    if not do_show:
+        return redirect(url_for('index'))
+
+    # If we reach this point, we can show the source code
+    return render_template('candidate.html', program=program)
+
+
 @app.route('/show/candidate/<int:identifier>/testvectors', methods=['GET'])
 def show_candidate_sample(identifier):
     program = Program.get_by_id(identifier)
@@ -475,20 +494,21 @@ def recent_feed():
     programs = Program.get_all_published_sorted_by_published_time()
 
     for program in programs:
+        item_url = "%scandidate/%d" % (
+            request.url_root, program._id)
         title = 'New challenge "<strong>%s</strong>" submitted' % program.funny_name
-        content = '<p>Download <strong>%s</strong> <a href="%sshow/candidate/%d.c">here</a>.</p>' % (
-            program.funny_name, str(request.url_root), program._id)
         author = program.user.displayname
+        content = render_template('candidate.html', program=program, feed=True)
+
         if not author or not author.strip():
             author = program.user.username
-        feed.add(id=str(program._id),
+        feed.add(id=item_url,
                  title=title,
                  title_type='html',
-                 published=datetime.fromtimestamp(
-                     program._timestamp_published),
-                 updated=datetime.fromtimestamp(program.timestamp_last_update),
+                 updated=datetime.fromtimestamp(program._timestamp_published),
                  author=author,
-                 categories=[{'label': program.status}],
+                 url=item_url,
+                 categories=[{'term': program.status}],
                  content=content,
                  content_type='html',
                  )
