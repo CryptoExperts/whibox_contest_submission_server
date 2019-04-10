@@ -1,9 +1,9 @@
 jQuery.extend( jQuery.fn.dataTableExt.oSort, {
     "fruit-pre": function ( a ) {
-        if (a.endsWith(' 🍓') || a.endsWith(' 🍌')) {
-            a = a.substring(a, a.length - 2);
+        if (a.endsWith('&nbsp;🍓') || a.endsWith('&nbsp;🍌') || a.endsWith('&nbsp;🥕')) {
+            a = a.substring(a, a.length - 8);
         }
-        return parseInt( a );
+        return parseFloat(a);
     },
 } );
 

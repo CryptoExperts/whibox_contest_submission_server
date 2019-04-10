@@ -1,6 +1,7 @@
 <html lang="en">
   <head>
     <link href="/static/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/static/css/perso.css" rel="stylesheet">
   </head>
 
   <body>
@@ -9,11 +10,10 @@
       <table class="table table-striped table-bordered data-table table-hover">
 	<thead>
 	  <tr class="text-center">
-            <th class='text-center'>Rank</th>
-            <th class='text-center'>id</th>
             {% if not feed %}
-            <th class='text-center'></th>
+            <th class='text-center'>Rank</th>
 	    {% endif %}
+            <th class='text-center'>id</th>
             <th class='text-center'>Name (click to download)</th>
             {% if not feed %}
             <th data-type="fruit" class='text-center'> 🍓 / 🥕 Peak</th>
@@ -23,7 +23,7 @@
             <th class='text-center'>Status</th>
 	    {% endif %}
             <th class='text-center'>Compiler</th>
-            <th class='text-center'>Performance</th>
+            <th data-type="float" class='text-center'>Performance</th>
             <th class='text-center'>Publication Date</th>
             {% if not feed %}
             <th class='text-center'>First Break / Inversion</th>
@@ -36,11 +36,10 @@
 	</thead>
 	<tbody>
 	  <tr>
-            <th class="text-center" scope="row">{{ program.strawberries_ranking }}</th>
-            <td class="text-center">{{ program._id }}</td>
             {% if not feed %}
-            <td><div style="width: 1em; height: 1em; background-color: {{ program.hsl_color }}"></div></td>
+            <th class="text-center" scope="row">{{ program.strawberries_ranking }}</th>
 	    {% endif %}
+            <td class="text-center">{{ program._id }}</td>
             <td class="text-center"><a href='/show/candidate/{{ program._id }}.c'>{{ program.funny_name }}</a></td>
             {% if not feed %}
             <td class="text-center">{{ program.strawberries_peak | round(2) }} 🍓 / {{ program.carrots_peak | round(2) }} 🥕</td>
