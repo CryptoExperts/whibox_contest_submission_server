@@ -7,7 +7,7 @@ services:
         networks:
             - front_network
         ports:
-            - 5000:5000
+            - 5000:5000 # The first number is the external port and can be changed, e.g., to 80:5000 (the second number must not be changed)
         volumes:
             - /services/web-dev/static:/app/static
             - /services/web-dev/app:/app # must be mounted here, because of the location of run_dev.py

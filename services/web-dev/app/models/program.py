@@ -1,7 +1,6 @@
 import time
 import random
 import string
-from decimal import Decimal
 from math import log
 from enum import Enum, unique
 from app import app

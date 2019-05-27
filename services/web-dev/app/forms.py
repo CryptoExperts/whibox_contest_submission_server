@@ -16,7 +16,7 @@ class LoginForm(FlaskForm):
 class UserCreationForm(FlaskForm):
     username = StringField('username', validators=[
                            DataRequired(), Length(min=3, max=32)])
-    displayname = StringField('displayname', validators=[Length(max=10)])
+    displayname = StringField('displayname', validators=[Length(max=20)])
     email1 = EmailField('email1', validators=[DataRequired(), Email()])
     email2 = EmailField('email2', validators=[DataRequired(), Email(), EqualTo(
         'email1', message=flash_texts_and_categories['EMAIL_MUST_MATCH'][0])])
@@ -27,7 +27,7 @@ class UserCreationForm(FlaskForm):
 
 
 class UserUpdateForm(FlaskForm):
-    displayname = StringField('displayname', validators=[Length(max=10)])
+    displayname = StringField('displayname', validators=[Length(max=20)])
     recaptcha = RecaptchaField()
 
 

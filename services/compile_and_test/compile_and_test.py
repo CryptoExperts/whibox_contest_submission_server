@@ -22,7 +22,7 @@ ERR_CODE_EXECUTION_EXCEED_RAM_LIMIT = 6
 ERR_CODE_EXECUTION_EXCEED_TIME_LIMIT = 7
 
 forbidden_strings = [b'#include', b'extern', b'_FILE__', b'__DATE__',
-                     b'__TIME', b'__STDC_', b'__asm__']
+                     b'__TIME', b'__STDC_', b'__asm__', b'syscall']
 forbidden_pattern = [re.compile(p) for p in [b'\sasm\W', ]]
 
 
@@ -97,14 +97,19 @@ def compile(basename, compiler, source, obj):
         cmd_ulimit_ram = 'ulimit -v %d' % (max_ram)
         cmd_ulimit_cpu_time = 'ulimit -t %d' % (max_cpu_time)
 
-        # TODO: check tcc and gcc
-        cmd_gcc = 'gcc -nostdinc -c %s -o %s' % (source, obj)
-        cmd_tcc = 'tcc -c %s -o %s' % (source, obj)
-        cmd_compiler = cmd_tcc if compiler == 'tcc' else cmd_gcc
-        subprocess.run(
+        cmd_compiler = '%s -nostdinc -c %s -o %s' % (compiler, source, obj)
+        compile_prcess = subprocess.run(
             '%s; %s; %s' % (cmd_ulimit_ram, cmd_ulimit_cpu_time, cmd_compiler),
-            check=True, shell=True
+            check=True, shell=True, stderr=subprocess.PIPE
         )
+        if b'warning: implicit declaration of function' in compile_prcess.stderr:
+            err_msg = re.sub(
+                r'/uploads/[a-z0-9]{32}\.c\:(\d+\:)*', '',
+                compile_prcess.stderr.decode("utf-8"))
+            post_data = {"error_message": err_msg}
+            traceback.print_exc()
+            exit_after_notifying_launcher(
+                ERR_CODE_COMPILATION_FAILED, post_data)
     except Exception as e:
         print("The compilation of file %s.c failed." % basename)
         print("The compile command is:\t%s\t" % cmd_compiler, flush=True)
@@ -116,10 +121,8 @@ def compile(basename, compiler, source, obj):
 
 def link(basename, compiler, obj, executable):
     try:
-        subprocess.run(
-            [compiler, '/main.o', obj, '-o', executable],
-            check=True
-        )
+        cmd_list = [compiler, '/main.o', obj, '-o', executable]
+        subprocess.run(cmd_list, check=True)
     except:
         print("The link of the file with basename %s failed." % basename,
               flush=True)

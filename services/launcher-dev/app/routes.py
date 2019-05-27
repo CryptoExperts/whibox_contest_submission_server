@@ -254,8 +254,12 @@ def compile_and_test_result(basename, nonce, ret):
         postdata = request.get_json()
         program.set_status_to_preprocess_failed(postdata['error_message'])
     elif ret == ERR_CODE_COMPILATION_FAILED:
-        program.set_status_to_compilation_failed(
-            'Compilation failed for unknown reason (may be due to an excessive memory usage).')
+        postdata = request.get_json()
+        if postdata:
+            program.set_status_to_compilation_failed(postdata['error_message'])
+        else:
+            program.set_status_to_compilation_failed(
+                'Compilation failed for unknown reason (may be due to an excessive memory usage).')
         utils.console(
             'Compilation failed for file with basename %s' % str(basename))
     elif ret == ERR_CODE_BIN_TOO_LARGE:

@@ -145,6 +145,7 @@ build-dev: copy-vendors-files-dev copy-common-app-dev-files
 	docker build -t crx/nginx services/nginx/
 	docker build -t crx/web-dev services/web-dev/dockerfile/
 	docker build -t crx/launcher-dev services/launcher-dev/dockerfile/
+	/bin/bash scripts/on_node-sandbox.sh docker build -t crx/alpine_with_compilers services/alpine_with_compilers/
 	/bin/bash scripts/on_node-sandbox.sh docker build -t crx/compile_and_test services/compile_and_test/
 
 build-dev-no-cache: copy-vendors-files-dev copy-common-app-dev-files
@@ -152,6 +153,7 @@ build-dev-no-cache: copy-vendors-files-dev copy-common-app-dev-files
 	docker build --no-cache -t crx/nginx services/nginx/
 	docker build --no-cache -t crx/web-dev services/web-dev/dockerfile/
 	docker build --no-cache -t crx/launcher-dev services/launcher-dev/dockerfile/
+	/bin/bash scripts/on_node-sandbox.sh docker build --no-cache -t crx/alpine_with_compilers services/alpine_with_compilers/
 	/bin/bash scripts/on_node-sandbox.sh docker build --no-cache -t crx/compile_and_test services/compile_and_test/
 
 stack-deploy-dev: copy-vendors-files-dev copy-common-app-dev-files
@@ -190,6 +192,7 @@ build-prod: copy-files-from-dev-to-prod
 	docker build -t crx/nginx services/nginx/
 	docker build -t crx/web-prod services/web-prod/
 	docker build -t crx/launcher-prod services/launcher-prod/
+	/bin/bash scripts/on_node-sandbox.sh docker build -t crx/alpine_with_compilers services/alpine_with_compilers/
 	/bin/bash scripts/on_node-sandbox.sh docker build -t crx/compile_and_test services/compile_and_test/
 
 backup-images:
@@ -214,6 +217,7 @@ build-prod-no-cache: copy-files-from-dev-to-prod
 	docker build --no-cache -t crx/nginx services/nginx/
 	docker build --no-cache -t crx/web-prod services/web-prod/
 	docker build --no-cache -t crx/launcher-prod services/launcher-prod/
+	/bin/bash scripts/on_node-sandbox.sh docker build --no-cache -t crx/alpine_with_compilers services/alpine_with_compilers/
 	/bin/bash scripts/on_node-sandbox.sh docker build --no-cache -t crx/compile_and_test services/compile_and_test/
 
 stack-deploy-prod:
