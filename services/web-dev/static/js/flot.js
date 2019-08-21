@@ -15,6 +15,8 @@ $(function() {
 
     function getData() {
 	var now = Math.floor(Date.now() / 1000);
+	var deadline = Math.floor(new Date('2019-08-21T12:00:00Z').getTime() / 1000);
+	now = Math.min(now, deadline);
 	var strawberries = [];
 	var carrots = [];
 	programs.forEach(function(p) {
@@ -59,7 +61,7 @@ $(function() {
     }
 
     // Set up the control widget
-    var updateInterval = 60000;
+    var updateInterval = 600000; // 10 min
     var data = getData();
     var plotStrawberry = $.plot("#strawberryholder", data[0] , {
 	series: {shadowSize: 0},
