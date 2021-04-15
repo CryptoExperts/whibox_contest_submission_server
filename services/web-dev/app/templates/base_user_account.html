@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block body %}
+
+<body class="bg-gradient-primary">
+
+  <div class="container">
+
+    <!-- Outer Row -->
+    <div class="row justify-content-center">
+
+      <div class="col-xl-10 col-lg-12 col-md-9">
+
+        <div class="card o-hidden border-0 shadow-lg my-5">
+          <div class="card-body p-0">
+            <!-- Nested Row within Card Body -->
+            <div class="row">
+
+              {% block form %} {% endblock %}
+
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=True) %}
+    {% if messages %}
+    <div class="alerts-container">
+      {% for message in messages %}
+      <div class="alert alert-{{ message[0] }} fade in" role="alert">
+        <span>{{ message[1] }}</span>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+
+  </div>
+
+  {% include 'js.html' %}
+
+</body>
+
+{% endblock %}

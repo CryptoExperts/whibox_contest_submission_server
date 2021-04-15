@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+{% extends "base_user_account.html" %}
+
+{% block title %}Login{% endblock %}
+
+{% block form %}
+
+{% import 'form_element.html' as formidable %}
+
+<div class="col-lg-6 offset-lg-3">
+  <div class="p-5">
+    <div class="text-center">
+      <h1 class="h4 text-gray-900 mb-4">Welcome Back!</h1>
+    </div>
+    <form class="user" method="post">
+      {{ form.hidden_tag() }}
+      <fieldset>
+
+        {{ formidable.input(form.username, 'Username', autofocus=true) }}
+        {{ formidable.input(form.password, 'Password') }}
+
+        {{ formidable.recaptcha(form.recaptcha, testing) }}
+
+        <button class="btn btn-lg btn-primary btn-user btn-block" type="submit">Sign in</button>
+
+      </fieldset>
+    </form>
+    <hr>
+    <div class="text-center">
+      <a class="small" href="register">Create an Account!</a>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

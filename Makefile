@@ -46,82 +46,56 @@ clean-volumes:
 # Dev targets
 #############
 
+define copy-single-vendors-file-dev
+	@printf "copy from $(1) to $(2)\n"
+	@-chmod 644 $(2)
+	@cp $(1) $(2)
+	@chmod 444 $(2)
+endef
+
 copy-vendors-files-dev:
-	-chmod 644 services/web-dev/static/css/bootstrap.min.css
-	cp vendors/bootstrap/css/bootstrap.min.css services/web-dev/static/css/bootstrap.min.css
-	chmod 444 services/web-dev/static/css/bootstrap.min.css
-	-chmod 644 services/web-dev/static/css/font-awesome.min.css
-	cp vendors/font-awesome/css/font-awesome.min.css services/web-dev/static/css/font-awesome.min.css
-	chmod 444 services/web-dev/static/css/font-awesome.min.css
-	-chmod 644 services/web-dev/static/css/metisMenu.min.css
-	cp vendors/metisMenu/metisMenu.min.css services/web-dev/static/css/metisMenu.min.css
-	chmod 444 services/web-dev/static/css/metisMenu.min.css
-	-chmod 644 services/web-dev/static/css/sb-admin-2.min.css
-	cp vendors/startbootstrap-sb-admin-2-gh-pages/dist/css/sb-admin-2.min.css services/web-dev/static/css/sb-admin-2.min.css
-	chmod 444 services/web-dev/static/css/sb-admin-2.min.css
-	-chmod 644 services/web-dev/static/fonts/fontawesome-webfont.eot
-	cp vendors/font-awesome/fonts/fontawesome-webfont.eot services/web-dev/static/fonts/fontawesome-webfont.eot
-	chmod 444 services/web-dev/static/fonts/fontawesome-webfont.eot
-	-chmod 644 services/web-dev/static/fonts/fontawesome-webfont.svg
-	cp vendors/font-awesome/fonts/fontawesome-webfont.svg services/web-dev/static/fonts/fontawesome-webfont.svg
-	chmod 444 services/web-dev/static/fonts/fontawesome-webfont.svg
-	-chmod 644 services/web-dev/static/fonts/fontawesome-webfont.ttf
-	cp vendors/font-awesome/fonts/fontawesome-webfont.ttf services/web-dev/static/fonts/fontawesome-webfont.ttf
-	chmod 444 services/web-dev/static/fonts/fontawesome-webfont.ttf
-	-chmod 644 services/web-dev/static/fonts/fontawesome-webfont.woff
-	cp vendors/font-awesome/fonts/fontawesome-webfont.woff services/web-dev/static/fonts/fontawesome-webfont.woff
-	chmod 444 services/web-dev/static/fonts/fontawesome-webfont.woff
-	-chmod 644 services/web-dev/static/fonts/fontawesome-webfont.woff2
-	cp vendors/font-awesome/fonts/fontawesome-webfont.woff2 services/web-dev/static/fonts/fontawesome-webfont.woff2
-	chmod 444 services/web-dev/static/fonts/fontawesome-webfont.woff2
-	-chmod 644 services/web-dev/static/fonts/glyphicons-halflings-regular.eot
-	cp vendors/bootstrap/fonts/glyphicons-halflings-regular.eot services/web-dev/static/fonts/glyphicons-halflings-regular.eot
-	chmod 444 services/web-dev/static/fonts/glyphicons-halflings-regular.eot
-	-chmod 644 services/web-dev/static/fonts/glyphicons-halflings-regular.svg
-	cp vendors/bootstrap/fonts/glyphicons-halflings-regular.svg services/web-dev/static/fonts/glyphicons-halflings-regular.svg
-	chmod 444 services/web-dev/static/fonts/glyphicons-halflings-regular.svg
-	-chmod 644 services/web-dev/static/fonts/glyphicons-halflings-regular.ttf
-	cp vendors/bootstrap/fonts/glyphicons-halflings-regular.ttf services/web-dev/static/fonts/glyphicons-halflings-regular.ttf
-	chmod 444 services/web-dev/static/fonts/glyphicons-halflings-regular.ttf
-	-chmod 644 services/web-dev/static/fonts/glyphicons-halflings-regular.woff
-	cp vendors/bootstrap/fonts/glyphicons-halflings-regular.woff services/web-dev/static/fonts/glyphicons-halflings-regular.woff
-	chmod 444 services/web-dev/static/fonts/glyphicons-halflings-regular.woff
-	-chmod 644 services/web-dev/static/fonts/glyphicons-halflings-regular.woff2
-	cp vendors/bootstrap/fonts/glyphicons-halflings-regular.woff2 services/web-dev/static/fonts/glyphicons-halflings-regular.woff2
-	chmod 444 services/web-dev/static/fonts/glyphicons-halflings-regular.woff2
-	-chmod 644 services/web-dev/static/js/bootstrap.min.js
-	cp vendors/bootstrap/js/bootstrap.min.js services/web-dev/static/js/bootstrap.min.js
-	chmod 444 services/web-dev/static/js/bootstrap.min.js
-	-chmod 644 services/web-dev/static/js/dataTables.bootstrap.min.js
-	cp vendors/datatables-plugins/dataTables.bootstrap.min.js services/web-dev/static/js/dataTables.bootstrap.min.js
-	chmod 444 services/web-dev/static/js/dataTables.bootstrap.min.js
-	-chmod 644 services/web-dev/static/js/dataTables.responsive.js
-	cp vendors/datatables-responsive/dataTables.responsive.js services/web-dev/static/js/dataTables.responsive.js
-	chmod 444 services/web-dev/static/js/dataTables.responsive.js
-	-chmod 644 services/web-dev/static/js/excanvas.min.js
-	cp vendors/flot/excanvas.min.js services/web-dev/static/js/excanvas.min.js
-	chmod 444 services/web-dev/static/js/excanvas.min.js
-	-chmod 644 services/web-dev/static/js/jquery.dataTables.min.js
-	cp vendors/datatables/js/jquery.dataTables.min.js services/web-dev/static/js/jquery.dataTables.min.js
-	chmod 444 services/web-dev/static/js/jquery.dataTables.min.js
-	-chmod 644 services/web-dev/static/js/jquery.flot.js
-	cp vendors/flot/jquery.flot.js services/web-dev/static/js/jquery.flot.js
-	chmod 444 services/web-dev/static/js/jquery.flot.js
-	-chmod 644 services/web-dev/static/js/jquery.flot.resize.js
-	cp vendors/flot/jquery.flot.resize.js services/web-dev/static/js/jquery.flot.resize.js
-	chmod 444 services/web-dev/static/js/jquery.flot.resize.js
-	-chmod 644 services/web-dev/static/js/jquery.flot.time.js
-	cp vendors/flot/jquery.flot.time.js services/web-dev/static/js/jquery.flot.time.js
-	chmod 444 services/web-dev/static/js/jquery.flot.time.js
-	-chmod 644 services/web-dev/static/js/jquery.min.js
-	cp vendors/jquery/jquery.min.js services/web-dev/static/js/jquery.min.js
-	chmod 444 services/web-dev/static/js/jquery.min.js
-	-chmod 644 services/web-dev/static/js/metisMenu.min.js
-	cp vendors/metisMenu/metisMenu.min.js services/web-dev/static/js/metisMenu.min.js
-	chmod 444 services/web-dev/static/js/metisMenu.min.js
-	-chmod 644 services/web-dev/static/js/sb-admin-2.min.js
-	cp vendors/startbootstrap-sb-admin-2-gh-pages/dist/js/sb-admin-2.min.js services/web-dev/static/js/sb-admin-2.min.js
-	chmod 444 services/web-dev/static/js/sb-admin-2.min.js
+# copy fonts
+# $(call copy-single-vendors-file-dev,vendors/startbootstrap-sb-admin-2-gh-pages/vendor/fontawesome-free/css/fontawesome.min.css,services/web-dev/static/css/fontawesome.min.css)
+	$(call copy-single-vendors-file-dev,vendors/startbootstrap-sb-admin-2-gh-pages/vendor/fontawesome-free/css/all.min.css,services/web-dev/static/css/fontawesome.all.min.css)
+	$(call copy-single-vendors-file-dev,vendors/startbootstrap-sb-admin-2-gh-pages/vendor/fontawesome-free/webfonts/fa-solid-900.ttf,services/web-dev/static/webfonts/fa-solid-900.ttf)
+	$(call copy-single-vendors-file-dev,vendors/startbootstrap-sb-admin-2-gh-pages/vendor/fontawesome-free/webfonts/fa-solid-900.woff,services/web-dev/static/webfonts/fa-solid-900.woff)
+	$(call copy-single-vendors-file-dev,vendors/startbootstrap-sb-admin-2-gh-pages/vendor/fontawesome-free/webfonts/fa-solid-900.woff2,services/web-dev/static/webfonts/fa-solid-900.woff2)
+
+# copy css
+	$(call copy-single-vendors-file-dev,vendors/startbootstrap-sb-admin-2-gh-pages/css/sb-admin-2.min.css,services/web-dev/static/css/sb-admin-2.min.css)
+
+# copy js
+	$(call copy-single-vendors-file-dev,vendors/startbootstrap-sb-admin-2-gh-pages/js/sb-admin-2.min.js,services/web-dev/static/js/sb-admin-2.min.js)
+	$(call copy-single-vendors-file-dev,vendors/startbootstrap-sb-admin-2-gh-pages/vendor/bootstrap/js/bootstrap.bundle.min.js,services/web-dev/static/js/bootstrap.bundle.min.js)
+	$(call copy-single-vendors-file-dev,vendors/startbootstrap-sb-admin-2-gh-pages/vendor/bootstrap/js/bootstrap.bundle.min.js.map,services/web-dev/static/js/bootstrap.bundle.min.js.map)
+	$(call copy-single-vendors-file-dev,vendors/startbootstrap-sb-admin-2-gh-pages/vendor/jquery/jquery.min.js,services/web-dev/static/js/jquery.min.js)
+	$(call copy-single-vendors-file-dev,vendors/startbootstrap-sb-admin-2-gh-pages/vendor/jquery-easing/jquery.easing.min.js,services/web-dev/static/js/jquery.easing.min.js)
+
+# copy images
+	$(call copy-single-vendors-file-dev,vendors/startbootstrap-sb-admin-2-gh-pages/img/undraw_profile.svg,services/web-dev/static/images/undraw_profile.svg)
+
+	# cp vendors/bootstrap/css/bootstrap.min.css services/web-dev/static/css/bootstrap.min.css
+	# cp vendors/metisMenu/metisMenu.min.css services/web-dev/static/css/metisMenu.min.css
+	# cp vendors/font-awesome/fonts/fontawesome-webfont.eot services/web-dev/static/fonts/fontawesome-webfont.eot
+	# cp vendors/font-awesome/fonts/fontawesome-webfont.svg services/web-dev/static/fonts/fontawesome-webfont.svg
+	# cp vendors/font-awesome/fonts/fontawesome-webfont.ttf services/web-dev/static/fonts/fontawesome-webfont.ttf
+	# cp vendors/font-awesome/fonts/fontawesome-webfont.woff services/web-dev/static/fonts/fontawesome-webfont.woff
+	# cp vendors/font-awesome/fonts/fontawesome-webfont.woff2 services/web-dev/static/fonts/fontawesome-webfont.woff2
+	# cp vendors/bootstrap/fonts/glyphicons-halflings-regular.eot services/web-dev/static/fonts/glyphicons-halflings-regular.eot
+	# cp vendors/bootstrap/fonts/glyphicons-halflings-regular.svg services/web-dev/static/fonts/glyphicons-halflings-regular.svg
+	# cp vendors/bootstrap/fonts/glyphicons-halflings-regular.ttf services/web-dev/static/fonts/glyphicons-halflings-regular.ttf
+	# cp vendors/bootstrap/fonts/glyphicons-halflings-regular.woff services/web-dev/static/fonts/glyphicons-halflings-regular.woff
+	# cp vendors/bootstrap/fonts/glyphicons-halflings-regular.woff2 services/web-dev/static/fonts/glyphicons-halflings-regular.woff2
+	# cp vendors/bootstrap/js/bootstrap.min.js services/web-dev/static/js/bootstrap.min.js
+	# cp vendors/datatables-plugins/dataTables.bootstrap.min.js services/web-dev/static/js/dataTables.bootstrap.min.js
+	# cp vendors/datatables-responsive/dataTables.responsive.js services/web-dev/static/js/dataTables.responsive.js
+	# cp vendors/flot/excanvas.min.js services/web-dev/static/js/excanvas.min.js
+	# cp vendors/datatables/js/jquery.dataTables.min.js services/web-dev/static/js/jquery.dataTables.min.js
+	# cp vendors/flot/jquery.flot.js services/web-dev/static/js/jquery.flot.js
+	# cp vendors/flot/jquery.flot.resize.js services/web-dev/static/js/jquery.flot.resize.js
+	# cp vendors/flot/jquery.flot.time.js services/web-dev/static/js/jquery.flot.time.js
+	# cp vendors/metisMenu/metisMenu.min.js services/web-dev/static/js/metisMenu.min.js
+	# cp vendors/startbootstrap-sb-admin-2-gh-pages/dist/js/sb-admin-2.min.js services/web-dev/static/js/sb-admin-2.min.js
 
 copy-common-app-dev-files:
 	-chmod 644 services/launcher-dev/app/models/program.py

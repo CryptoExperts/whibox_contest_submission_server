@@ -1,11 +1,8 @@
 import sys
 import time
-import urllib.request
-import threading
 import flask
 from urllib.parse import urlparse, urljoin
 from flask import flash
-from app import app
 from app.text_contents import flash_texts_and_categories
 
 

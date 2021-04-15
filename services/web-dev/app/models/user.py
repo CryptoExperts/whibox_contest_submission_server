@@ -8,9 +8,9 @@ from passlib.hash import pbkdf2_sha256
 class User(db.Model):
 
     _id = db.Column(db.Integer, primary_key=True)
-    _email = db.Column(db.Text, nullable=False)
+    _email = db.Column(db.String(64), nullable=False, unique=True)
     _username = db.Column(db.String(64), index=True, unique=True)
-    _displayname = db.Column(db.String(64), index=True, default=None)
+    _nickname = db.Column(db.String(64), index=True, default=None, unique=True)
     _password_hash = db.Column(db.String(256))
     _bananas = db.Column(mysql.DOUBLE, default=None)
     _bananas_ranking = db.Column(db.BigInteger, default=None)
@@ -43,12 +43,12 @@ class User(db.Model):
         return self._username
 
     @property
-    def displayname(self):
-        return self._displayname
+    def nickname(self):
+        return self._nickname
 
-    @displayname.setter
-    def displayname(self, displayname):
-        self._displayname = displayname
+    @nickname.setter
+    def nickname(self, nickname):
+        self._nickname = nickname
         db.session.commit()
 
     # The following properties are required by LoginManager
@@ -117,10 +117,10 @@ class User(db.Model):
 
     # User creation and password verification
     @staticmethod
-    def create(username, displayname, password, email):
+    def create(username, nickname, password, email):
         password_hash = pbkdf2_sha256.hash(password)
         user = User(_username=username,
-                    _displayname=displayname,
+                    _nickname=nickname,
                     _password_hash=password_hash,
                     _email=email)
         db.session.add(user)

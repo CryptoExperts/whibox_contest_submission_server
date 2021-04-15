@@ -9,7 +9,6 @@ flash_texts_and_categories = {
     'BAD_USERNAME_OR_PWD': ('Bad username or password', flash_categories['danger']),
     'WELCOME_BACK': ('Welcome back %s', flash_categories['success']),
     'SIGNOUT': ('You have signed out', flash_categories['info']),
-    'ERROR_USER_EXISTS': ('An error occurred. The username might already exist.', flash_categories['danger']),
     'ACCOUNT_CREATED': ('A new account was created for the user %s!', flash_categories['info']),
     'ONLY_EXT_IS_C': ('The only allowed file extension is ".c"', flash_categories['warning']),
     'CHALLENGE_SUBMITTED': ('Your challenge has been submitted!', flash_categories['info']),
@@ -22,4 +21,6 @@ flash_texts_and_categories = {
     'CANNOT_INVERT_TWICE': ('You cannot invert the same candidate twice.', flash_categories['warning']),
     'CORRECT_KEY': ('Your key is correct !', flash_categories['success']),
     'PLEASE_SIGN_IN': ('Please sign in to access this page', flash_categories['warning']),
+    'ERROR_USER_EXISTS': ('An error occurred. The username/nickname/email might be already taken.', flash_categories['danger']),
+    'ERROR_UNKNOWN': ('An error occurred. Please consider notify the orgnizing committee.', flash_categories['danger']),
 }

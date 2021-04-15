@@ -7,8 +7,9 @@ RUN apk add --no-cache 'build-base'
 
 RUN pip --version
 RUN pip install --upgrade pip
-RUN pip install Flask==1.0.2 Flask-WTF==0.14.2 Flask-SQLAlchemy==2.3.2 Flask-Login==0.4.1
-RUN pip install passlib==1.7.1 blinker==1.4 PyMySQL==0.9.3
+RUN pip install Flask==1.1.2 Flask-WTF==0.14.3 Flask-SQLAlchemy==2.5.1 Flask-Login==0.5.0
+RUN pip install passlib==1.7.4 blinker==1.4 PyMySQL==1.0.2
+RUN pip install email_validator
 
 
 COPY docker-entrypoint.sh /usr/local/bin/

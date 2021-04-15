@@ -43,11 +43,11 @@ For Mac users, note that Docker Machine is included by default when installing [
 
 This software was tested on [macOS Sierra][sierra] and on a [Gentoo Linux][gentoo].
 
-## Production vs. Developement
+## Production vs. Development
 
 There are two ways this server can be deployed:
 
-* In **developement** mode, for testing, updating the code on the fly and immediately seing the result;
+* In **development** mode, for testing, updating the code on the fly and immediately seing the result;
 * In **production** mode.
 
 ### Running the server in Production mode

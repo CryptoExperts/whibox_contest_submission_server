@@ -1,0 +1,82 @@
+{% extends "base_user_account.html" %}
+
+{% block title %}Login{% endblock %}
+
+{% block form %}
+
+{% import 'form_element.html' as formidable %}
+
+<div class="col-lg-8 offset-lg-2">
+  <div class="p-5">
+    <div class="text-center">
+      <h1 class="h4 text-gray-900 mb-4">Create an Account!</h1>
+    </div>
+    <form class="user", method="post">
+      {{ form.hidden_tag() }}
+      <fieldset>
+
+        {{ formidable.input(form.username, 'Username', autofocus=true) }}
+
+        <p>An <strong>optional</strong> nickname can be chosen to personalize your name in the dashboard.</p>
+
+        {{ formidable.input(form.nickname, 'Nickname', autofocus=true) }}
+
+        <p>An email address is required in case the organizing committee needs to contact you. This email address will <strong>not</strong> be shown to other participants. Please note that you will <strong>not</strong> be able to modify it and that the existence of this address will <strong>not</strong> be checked.</p>
+
+        {{ formidable.input(form.email1, 'Email address') }}
+        {{ formidable.input(form.email2, 'Re-type email address') }}
+
+        <p>Please choose your password carefully as you will <strong>not</strong> be able to modify it. If you forget it, you will lose access to your account and will <strong>not</strong> be able to claim your prize/glory!</p>
+
+        {{ formidable.input(form.password1, 'Password') }}
+        {{ formidable.input(form.password2, 'Re-type password') }}
+
+
+        {{ formidable.recaptcha(form.recaptcha, testing) }}
+
+        <button class="btn btn-lg btn-primary btn-user btn-block" type="submit">Create your Account</button>
+
+      </fieldset>
+            <!-- {{ form.hidden_tag() }}
+
+                 <div class="form-group row">
+                 <div class="col-sm-6 mb-3 mb-sm-0">
+                 {{ formidable.input(form.username, 'Username', autofocus=true) }}
+                 </div>
+                 <div class="col-sm-6">
+                 {{ formidable.input(form.nickname, 'Nickname', autofocus=true) }}
+                 </div>
+                 </div>
+                 <div class="form-group">
+                 {{ formidable.input(form.email1, 'Email address') }}
+                 </div>
+                 <div class="form-group">
+                 {{ formidable.input(form.email2, 'Re-type email address') }}
+                 </div>
+                 <div class="form-group row">
+                 <div class="col-sm-6 mb-3 mb-sm-0">
+                 {{ formidable.input(form.password1, 'Password') }}
+                 </div>
+                 <div class="col-sm-6">
+                 {{ formidable.input(form.password2, 'Re-type password') }}
+                 </div>
+
+                 </div>
+                 <div class="form-group row" style="min-height: 80px;">
+                 <div class="d-flex justify-content-center">
+                 {{ formidable.recaptcha(form.recaptcha, testing) }}
+                 </div>
+                 </div>
+                 <button class="btn btn-primary btn-user btn-block">
+                 Register Account
+                 </button> -->
+
+    </form>
+    <hr>
+    <div class="text-center">
+      <a class="small" href="login">Already have an account? Login!</a>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

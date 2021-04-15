@@ -80,7 +80,8 @@ services:
 
 
     mysql:
-        image: "crx/mysql:${MYSQL_VERSION}"
+        image: "mysql:8.0.23"
+        user: "1000:50"
         command: "--innodb-use-native-aio=0 --default-authentication-plugin=mysql_native_password --mysqlx=0"
         networks:
             - front_network
