@@ -1,94 +1,82 @@
 <div class="row">
 
-  <div class="col-lg-3 col-md-6">
-    <div class="panel panel-primary">
-      <div class="panel-heading">
-        <div class="row">
-          <div class="col-xs-3">
-            <i class="fa fa-users fa-5x"></i>
+  <!-- Users -->
+  <div class="col-xl-3 col-md-6 mb-4 mt-4">
+    <div class="card border-left-primary shadow h-100 py-2">
+      <div class="card-body">
+        <div class="row no-gutters align-items-center">
+          <div class="col mr-2">
+            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Registered Users</div>
+            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_number_of_users }}</div>
           </div>
-          <div class="col-xs-offset-1 col-xs-8 text-right">
-            <div class="huge">{{ total_number_of_users }}</div>
-            <div>User{% if total_number_of_users > 1 %}s{% endif %}!</div>
+          <div class="col-auto">
+            <i class="fas fa-users fa-2x text-primary"></i>
           </div>
         </div>
       </div>
-      <a href="#bananas">
-        <div class="panel-footer">
-          <span class="pull-left">Scroll to Details</span>
-          <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
-          <div class="clearfix"></div>
-        </div>
-      </a>
     </div>
   </div>
 
-  <div class="col-lg-3 col-md-6">
-    <div class="panel panel-yellow">
-      <div class="panel-heading">
-        <div class="row">
-          <div class="col-xs-3">
-            <i class="fa fa-file-text-o fa-5x"></i>
+  <!-- Challenges -->
+  <div class="col-xl-3 col-md-6 mb-4 mt-4">
+    <div class="card border-left-success shadow h-100 py-2">
+      <div class="card-body">
+        <div class="row no-gutters align-items-center">
+          <div class="col mr-2">
+            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Challenges</div>
+            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ programs | length }}</div>
           </div>
-          <div class="col-xs-offset-1 col-xs-8 text-right">
-            <div class="huge">{{ programs|length }}</div>
-	    <div>Challenge{% if programs|length > 1 %}s{% endif %}!</div>
+          <div class="col-auto">
+            <i class="fas fa-clipboard-list fa-2x text-success"></i>
           </div>
         </div>
       </div>
-      <a href="#challenges">
-        <div class="panel-footer">
-          <span class="pull-left">Scroll to Details</span>
-          <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
-          <div class="clearfix"></div>
-        </div>
-      </a>
     </div>
   </div>
 
-  <div class="col-lg-3 col-md-6">
-    <div class="panel panel-green">
-      <div class="panel-heading">
-        <div class="row">
-          <div class="col-xs-3">
-            <i class="fa fa-check-circle fa-5x"></i>
+  <!-- Unbroken -->
+  <div class="col-xl-3 col-md-6 mb-4 mt-4">
+    <div class="card border-left-warning shadow h-100 py-2">
+      <div class="card-body">
+        <div class="row no-gutters align-items-center">
+          <div class="col mr-2">
+            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+              <span class="text-danger">Broken!</span> / <span class="text-success">Unbroken!</span>
+            </div>
+            <div class="row no-gutters align-items-center">
+              <div class="col-auto">
+                <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800">{{ number_of_unbroken_programs }}/{{ number_of_unbroken_programs }}</div>
+              </div>
+              <div class="col">
+                <div class="progress progress-sm mr-2" style="height: 1.5em">
+                  <div class="progress-bar progress-bar-striped bg-danger" role="progressbar" style="width: 50%" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100">50%</div>
+                  <div class="progress-bar bg-success" role="progressbar" style="width: 50%" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100">50%</div>
+                </div>
+              </div>
+            </div>
           </div>
-          <div class="col-xs-9 text-right">
-            <div class="huge">{{ number_of_unbroken_programs }} / {{ number_of_uninverted_programs }}</div>
-	    <div>Unbroken! / Uninverted!</div>
+          <div class="col-auto">
+            <i class="fas fa-spinner fa-2x text-warning"></i>
           </div>
         </div>
       </div>
-      <a href="#challenges">
-        <div class="panel-footer">
-          <span class="pull-left">Scroll to Details</span>
-          <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
-          <div class="clearfix"></div>
-        </div>
-      </a>
     </div>
   </div>
 
-  <div class="col-lg-3 col-md-6">
-    <div class="panel panel-red">
-      <div class="panel-heading">
-        <div class="row">
-          <div class="col-xs-3">
-            <i class="fa fa-crosshairs fa-5x"></i>
+  <!-- Breaks -->
+  <div class="col-xl-3 col-md-6 mb-4 mt-4">
+    <div class="card border-left-danger shadow h-100 py-2">
+      <div class="card-body">
+        <div class="row no-gutters align-items-center">
+          <div class="col mr-2">
+            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">Break!</div>
+            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ wb_breaks|length }}</div>
           </div>
-          <div class="col-xs-9 text-right">
-            <div class="huge">{{ wb_breaks|length }} / {{ wb_inversions|length }}</div>
-            <div>Break{% if wb_breaks|length > 1 %}s{% endif %}! / Inversion{% if wb_inversions|length > 1 %}s{% endif %}!</div>
+          <div class="col-auto">
+            <i class="fas fa-crosshairs fa-2x text-danger"></i>
           </div>
         </div>
       </div>
-      <a href="#breaks">
-        <div class="panel-footer">
-          <span class="pull-left">Scroll to Details</span>
-          <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
-          <div class="clearfix"></div>
-        </div>
-      </a>
     </div>
   </div>
 

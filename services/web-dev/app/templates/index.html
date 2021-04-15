@@ -1,18 +1,39 @@
-{% extends "base.html" %}
+{% extends "base_decorated.html" %}
 
 {% block title %}Dashboard{% endblock %}
 
 {% block content %}
 
-  {% include 'index_boxes.html' %}
+<hr>
+<!-- Content Boxes -->
+{% include 'index_boxes.html' %}
 
-  <hr>
+<hr>
 
-  <div class="row">
-    <div class="col-xs-12">
-      <h2>Challenges</h2>
-    </div>
+<div class="row">
+  <div class="col-12 mb-2">
+    <h3 class="text-gray-800">Challenges</h3>
   </div>
+</div>
+
+<div class="row">
+  <div class="col-12">
+
+    {% if programs %}
+    <h3 id="challenges">Challenges Ranking by Strawberry Scores</h3>
+    {% include 'table_challenges.html' %}
+    {% else %}
+    <p class="lead">
+      There aren't any challenges submitted yet.
+      Be the first to submit one by clicking on the <mark>Submit a Challenge</mark> link in the menu bar.
+    </p>
+    <div class="text-center">
+      <img class="img-fluid px-3 px-sm-4 mt-3 mb-4" style="width: 25rem;"
+           src="/static/images/undraw_uploading.svg" alt="">
+    </div>
+    {% endif %}
+  </div>
+</div><!-- row -->
 
   <div class="row">
     <div class="col-xs-12">
