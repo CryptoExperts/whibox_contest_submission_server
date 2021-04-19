@@ -17,17 +17,13 @@
   <ul class="navbar-nav ml-auto">
 
     <!-- Nav Item - User Information -->
+    {% if current_user.is_authenticated %}
     <li class="nav-item dropdown no-arrow">
       <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
          data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-        {% if current_user.is_authenticated %}
         <div>
-        <span class="d-none d-lg-inline text-gray-600 small">Welcome back, {{ current_user.username }}</span>
+          <span class="d-none d-lg-inline text-gray-600 small">Welcome back, {{ current_user.username }}</span>
         </div>
-        {% else %}
-        test
-        {% endif %}
-        xxx
         <img class="img-profile rounded-circle" src="/static/images/undraw_profile.svg">
       </a>
       <!-- Dropdown - User Information -->
@@ -38,6 +34,25 @@
         </a>
       </div>
     </li>
+
+    {% else %}
+
+    <li class="nav-item dropdown no-arrow">
+      <a class="nav-link dropdown-toggle" href="/user/login" id="userDropdown" role="button" aria-haspopup="true" aria-expanded="false">
+        <div>
+          <span class="d-none d-lg-inline text-gray-600 small">Please login</span>&nbsp;
+        </div>
+        <img class="img-profile rounded-circle" src="/static/images/undraw_profile.svg">
+      </a>
+      <!-- Dropdown - User Information -->
+      <!-- <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="userDropdown">
+           <a class="dropdown-item" href="#" data-toggle="modal" data-target="#logoutModal">
+           <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
+           Logout
+           </a>
+           </div> -->
+    </li>
+    {% endif %}
 
   </ul>
 

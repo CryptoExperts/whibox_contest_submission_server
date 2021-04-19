@@ -35,92 +35,80 @@
   </div>
 </div><!-- row -->
 
-  <div class="row">
-    <div class="col-xs-12">
+{% if programs_to_plot %}
+<div class="row">
+  <div class="col-xs-12">
+    <h3>Strawberry scores over time</h3>
+    <div id="strawberryholder" style="height: 500px;"></div>
+  </div>
 
-      {% if programs %}
-	<h3 id="challenges">Challenges Ranking by Strawberry Scores</h3>
-	{% include 'table_challenges.html' %}
-      {% else %}
-	<p class="lead">There aren't any challenges submitted yet. Be the first to submit one by clicking on the <mark>Submit a Challenge</mark> link in the menu bar.</p>
-      {% endif %}
-    </div>
-  </div><!-- row -->
+  <div class="col-xs-12">
+    <h3>Carrots scores over time</h3>
+    <div id="carrotholder" style="height: 500px;"></div>
+  </div>
+</div>
+{% endif %}
 
-  {% if programs_to_plot %}
-    <div class="row">
-      <div class="col-xs-12">
-	<h3>Strawberry scores over time</h3>
-	<div id="strawberryholder" style="height: 500px;"></div>
-      </div>
+<hr />
+{% if users %}
 
-      <div class="col-xs-12">
-	<h3>Carrots scores over time</h3>
-	<div id="carrotholder" style="height: 500px;"></div>
-      </div>
-    </div>
-  {% endif %}
+<div class="row">
+  <div class="col-xs-12">
+    <h2>Banana Scores</h2>
+  </div>
+</div>
 
-    <hr />
-  {% if users %}
+<div class="row">
 
-    <div class="row">
-      <div class="col-xs-12">
-	<h2>Banana Scores</h2>
-      </div>
-    </div>
+  <div class="col-xs-12 col-sm-10 col-md-8 col-lg-6">
+    <h3 id="bananas">Banana Ranking</h3>
+    {% include 'table_bananas_ranking.html' %}
+  </div>
+</div><!-- row -->
 
-    <div class="row">
+<div class="row">
 
-      <div class="col-xs-12 col-sm-10 col-md-8 col-lg-6">
-	<h3 id="bananas">Banana Ranking</h3>
-	{% include 'table_bananas_ranking.html' %}
-      </div>
-    </div><!-- row -->
+  <div class="col-xs-12 col-sm-10 col-md-8 col-lg-6">
+    {% if programs %}
+    {% if wb_breaks %}
+    <h3 id="breaks">All Challenge Breaks</h3>
+    {% include 'table_breaks.html' %}
+    {% else %}
+    <h2>No Challenge break Yet!</h2>
+    {% endif %}
+    {% endif %}
+  </div>
 
-    <div class="row">
+  <div class="col-xs-12 col-sm-10 col-md-8 col-lg-6">
+    {% if programs %}
+    {% if wb_breaks %}
+    <h3 id="breaks">All Challenge Inversions </h3>
+    {% include 'table_inverts.html' %}
+    {% else %}
+    <h2>No Challenge Inversion Yet!</h2>
+    {% endif %}
+    {% endif %}
+  </div>
 
-      <div class="col-xs-12 col-sm-10 col-md-8 col-lg-6">
-	{% if programs %}
-	  {% if wb_breaks %}
-	    <h3 id="breaks">All Challenge Breaks</h3>
-	    {% include 'table_breaks.html' %}
-	  {% else %}
-	    <h2>No Challenge break Yet!</h2>
-	  {% endif %}
-	{% endif %}
-      </div>
+</div><!-- row -->
 
-      <div class="col-xs-12 col-sm-10 col-md-8 col-lg-6">
-	{% if programs %}
-	  {% if wb_breaks %}
-	    <h3 id="breaks">All Challenge Inversions </h3>
-	    {% include 'table_inverts.html' %}
-	  {% else %}
-	    <h2>No Challenge Inversion Yet!</h2>
-	  {% endif %}
-	{% endif %}
-      </div>
-
-    </div><!-- row -->
-
-  {% endif %}
+{% endif %}
 
 {% endblock %}
 
 {% block javascript %}
-    <!-- Plotting -->
-    <script src="/static/js/excanvas.min.js"></script>
-    <script src="/static/js/jquery.flot.js"></script>
-    <script src="/static/js/jquery.flot.resize.js"></script>
-    <script src="/static/js/jquery.flot.time.js"></script>
+<!-- Plotting -->
+<script src="/static/js/excanvas.min.js"></script>
+<script src="/static/js/jquery.flot.js"></script>
+<script src="/static/js/jquery.flot.resize.js"></script>
+<script src="/static/js/jquery.flot.time.js"></script>
 
-    <script type="text/javascript">
-      function getProgramsToPlot() {
-	  var programs = [{% if programs_to_plot %} {% for program in programs_to_plot %}{id:{{ program._id }},name:"{{ program._funny_name }}",ts_publish:{{program._timestamp_published}},ts_break:{{program._timestamp_first_break or -1}},ts_invert:{{ program._timestamp_first_inversion or -1 }},performance:{{ program._performance_factor }},color:"{{ program.hsl_color }}"}, {% endfor %} {% endif %}];
-	  return programs;
-      }
-    </script>
+<script type="text/javascript">
+ function getProgramsToPlot() {
+   var programs = [{% if programs_to_plot %} {% for program in programs_to_plot %}{id:{{ program._id }},name:"{{ program._funny_name }}",ts_publish:{{program._timestamp_published}},ts_break:{{program._timestamp_first_break or -1}},ts_invert:{{ program._timestamp_first_inversion or -1 }},performance:{{ program._performance_factor }},color:"{{ program.hsl_color }}"}, {% endfor %} {% endif %}];
+   return programs;
+ }
+</script>
 
-    <script src="/static/js/flot.js"></script>
+<script src="/static/js/flot.js"></script>
 {% endblock %}

@@ -9,13 +9,13 @@
           </div>
           <div class="col-xs-offset-1 col-xs-8 text-right">
             <div class="huge">
-	      {% if current_user.strawberries_ranking %}
-		#{{ current_user.strawberries_ranking }}
-	      {% else %}
-		-
-	      {% endif %}
-	    </div>
-	    <div>Strawberries Ranking</div>
+              {% if current_user.strawberries_ranking %}
+              #{{ current_user.strawberries_ranking }}
+              {% else %}
+              -
+              {% endif %}
+            </div>
+            <div>Strawberries Ranking</div>
           </div>
         </div>
       </div>
@@ -31,13 +31,13 @@
           </div>
           <div class="col-xs-offset-1 col-xs-8 text-right">
             <div class="huge">
-	      {% if current_user.bananas_ranking %}
-		#{{ current_user.bananas_ranking }}
-	      {% else %}
-		-
-	      {% endif %}
-	    </div>
-	    <div>Bananas Ranking</div>
+              {% if current_user.bananas_ranking %}
+              #{{ current_user.bananas_ranking }}
+              {% else %}
+              -
+              {% endif %}
+            </div>
+            <div>Bananas Ranking</div>
           </div>
         </div>
       </div>
@@ -53,7 +53,7 @@
           </div>
           <div class="col-xs-9 text-right">
             <div class="huge">{{ programs_queued|length }}</div>
-	    <div>Challenge{% if programs_queued|length > 1 %}s{% endif %} Pending Validation</div>
+            <div>Challenge{% if programs_queued|length > 1 %}s{% endif %} Pending Validation</div>
           </div>
         </div>
       </div>

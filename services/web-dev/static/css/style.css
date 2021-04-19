@@ -169,3 +169,7 @@ form.user .form-control-user {
   background-size: 80%;
   background-repeat: no-repeat;
 }
+
+.fa-pulse {
+  animation-duration: 5s;
+}

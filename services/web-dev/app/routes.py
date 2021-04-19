@@ -70,21 +70,12 @@ def index():
         max_rank=app.config['MAX_RANK_OF_PLOTED_CHALLENGES'])
     programs = Program.get_all_published_sorted_by_ranking()
     number_of_unbroken_programs = Program.get_number_of_unbroken_programs()
-    number_of_uninverted_programs = number_of_unbroken_programs - \
-        Program.get_number_of_inverted_programs()
     wb_breaks = WhiteboxBreak.get_all()
-    wb_inversions = WhiteboxInvert.get_all()
     programs_broken_by_current_user = None
-    programs_inverted_by_current_user = None
     if current_user and current_user.is_authenticated:
         wb_breaks_by_current_user = WhiteboxBreak.get_all_by_user(current_user)
         programs_broken_by_current_user = [
             wb_break.program for wb_break in wb_breaks_by_current_user]
-        wb_inversions_by_current_user = WhiteboxInvert.get_all_by_user(
-            current_user)
-        programs_inverted_by_current_user = [
-            wb_inversion.program for wb_inversion in wb_inversions_by_current_user
-        ]
 
     return render_template(
         'index.html',
@@ -93,29 +84,26 @@ def index():
         total_number_of_users=total_number_of_users,
         programs=programs,
         wb_breaks=wb_breaks,
-        wb_inversions=wb_inversions,
         programs_broken_by_current_user=programs_broken_by_current_user,
-        programs_inverted_by_current_user=programs_inverted_by_current_user,
         number_of_unbroken_programs=number_of_unbroken_programs,
-        number_of_uninverted_programs=number_of_uninverted_programs,
         programs_to_plot=programs_to_plot
     )
 
 
-@app.route('/user/signin', methods=['GET', 'POST'])
-def user_signin():
+@app.route('/user/login', methods=['GET', 'POST'])
+def user_login():
     if current_user.is_authenticated:
         return redirect(url_for('user_show'))
     form = LoginForm()
     if not form.validate_on_submit():
-        return render_template('signin.html', form=form, active_page='user_signin', testing=app.testing)
+        return render_template('login.html', form=form, testing=app.testing)
     else:
         username = form.username.data
         password = form.password.data
         user = User.validate(username, password)
         if user is None:
             crx_flash('BAD_USERNAME_OR_PWD')
-            return render_template('signin.html', form=form, active_page='user_signin', testing=app.testing)
+            return render_template('login.html', form=form, testing=app.testing)
         else:
             login_user(user, remember=False)
             crx_flash('WELCOME_BACK', user.username)
@@ -126,54 +114,37 @@ def user_signin():
                 return redirect(url_for('user_show'))
 
 
-@app.route('/user/signout', methods=['GET'])
-def signout():
+@app.route('/user/logout', methods=['GET'])
+def logout():
     logout_user()
-    crx_flash('SIGNOUT')
+    crx_flash('LOGOUT')
     return redirect(url_for('index'))
 
 
-@app.route('/user/create', methods=['GET', 'POST'])
-def user_create():
+@app.route('/user/register', methods=['GET', 'POST'])
+def user_register():
     if current_user.is_authenticated:
         return redirect(url_for('index'))
-    form = UserCreationForm()
+    form = UserRegisterForm()
     if not form.validate_on_submit():
-        return render_template('create.html', form=form, active_page='user_create', testing=app.testing)
+        return render_template('register.html', form=form, testing=app.testing)
     else:
         username = form.username.data
-        displayname = form.displayname.data
+        nickname = form.nickname.data
         password = form.password1.data
         email = form.email1.data
+        print(username, nickname, password, email, flush=True)
         try:
-            User.create(username=username, displayname=displayname,
+            User.create(username=username, nickname=nickname,
                         password=password, email=email)
-        except:
+        except IntegrityError as e:
+            app.logger.warning(f"IntegrityError: {e}")
             crx_flash('ERROR_USER_EXISTS')
-            return redirect(url_for('user_create'))
-        crx_flash('ACCOUNT_CREATED', username)
-        return redirect(url_for('user_signin'))
-
-
-@app.route('/user/update', methods=['GET', 'POST'])
-def user_update():
-    if not current_user.is_authenticated:
-        return redirect(url_for('index'))
-    form = UserUpdateForm()
-    if not form.validate_on_submit():
-        return render_template('update.html', form=form, active_page='update_update', testing=app.testing)
-    else:
-        displayname = form.displayname.data
-        import sys
-        print(displayname, file=sys.stderr)
-        try:
-            current_user.displayname = displayname
-        except:
-            crx_flash('ACCOUNT_UPDATE_FAILED')
-            return redirect(url_for('index'))
-        crx_flash('ACCOUNT_UPDATED')
-        return redirect(url_for('index'))
-
+            return redirect(url_for('user_register'))
+        except Exception as e:
+            app.logger.warning(f"UnknownError: {e}")
+            crx_flash('ERROR_UNKNOWN')
+            return redirect(url_for('user_register'))
 
 @app.route('/submit/candidate', methods=['GET', 'POST'])
 @login_required
@@ -497,7 +468,8 @@ def rules():
             'CHALLENGE_MAX_TIME_COMPILATION_IN_SECS'],
         challenge_max_binary_size_in_mb=app.config['CHALLENGE_MAX_BINARY_SIZE_IN_MB'],
         challenge_max_mem_execution_in_mb=app.config['CHALLENGE_MAX_MEM_EXECUTION_IN_MB'],
-        challenge_max_time_execution_in_secs=app.config['CHALLENGE_MAX_TIME_EXECUTION_IN_SECS']
+        challenge_max_time_execution_in_secs=app.config['CHALLENGE_MAX_TIME_EXECUTION_IN_SECS'],
+        use_math=True,
     )
 
 
