@@ -51,13 +51,3 @@ class WhiteboxBreakForm(FlaskForm):
     def validate_key(self, key):
         if re.fullmatch('^[0-9a-fA-F]{32}$', key.data) is None:
             raise ValidationError(flash_texts_and_categories['INVALID_KEY'][0])
-
-
-class WhiteboxInvertForm(FlaskForm):
-    plaintext = StringField('plaintext', validators=[DataRequired()])
-    ciphertext = StringField('ciphertext', validators=[DataRequired()])
-    recaptcha = RecaptchaField()
-
-    def validate_key(self, key):
-        if re.fullmatch('^[0-9a-fA-F]{32}$', plaintext.data) is None:
-            raise ValidationError(flash_texts_and_categories['INVALID_KEY'][0])

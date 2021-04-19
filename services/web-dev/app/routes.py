@@ -1,65 +1,65 @@
-import binascii
-from datetime import datetime
-import hashlib
-import os
+# import binascii
+# import hashlib
+# import os
 import random
 import string
 import time
 
-from Crypto.Cipher import AES
-from traceback import print_exc
-from flask import render_template, url_for, request, send_from_directory, \
-    request_started, jsonify
+# from Crypto.Cipher import AES
+# from traceback import print_exc
+from flask import (render_template, url_for, request, send_from_directory,
+                   request_started, jsonify)
 from flask_login import login_user, logout_user, login_required, current_user
+from sqlalchemy.exc import IntegrityError
+
 from app import app
 from app import login_manager
 from app import utils
 from app import db
 from .forms import (LoginForm, UserRegisterForm, WhiteboxSubmissionForm,
-                    WhiteboxBreakForm, WhiteboxInvertForm, UserUpdateForm)
+                    WhiteboxBreakForm, UserUpdateForm)
 from .models.user import User
 from .models.program import Program
 from .models.whiteboxbreak import WhiteboxBreak
-from .models.whiteboxinvert import WhiteboxInvert
 from .utils import crx_flash, redirect
 
-from werkzeug.contrib.atom import AtomFeed
+# from werkzeug.contrib.atom import AtomFeed
 
 
-def need_to_check(url_rule):
-    if url_rule.startswith('/static/') \
-       or (url_rule.startswith('/user/') and url_rule != "/user/show") \
-       or url_rule == '/rules' \
-       or url_rule == '/submit/candidate':
-        return False
-    return True
+# def need_to_check(url_rule):
+#     if url_rule.startswith('/static/') \
+#        or (url_rule.startswith('/user/') and url_rule != "/user/show") \
+#        or url_rule == '/rules' \
+#        or url_rule == '/submit/candidate':
+#         return False
+#     return True
 
 
-def update_strawberries_and_carrots(sender, **extra):
-    url_rule = str(request.url_rule)
-    if not need_to_check(url_rule):
-        return
+# def update_strawberries_and_carrots(sender, **extra):
+#     url_rule = str(request.url_rule)
+#     if not need_to_check(url_rule):
+#         return
 
-    now = int(time.time())
-    try:
-        programs = Program.get_programs_requiring_update(now)
+#     now = int(time.time())
+#     try:
+#         programs = Program.get_programs_requiring_update(now)
 
-        # update the strawberries and carrots for each program
-        for program in programs:
-            program.update_strawberries(now)
-            program.update_carrots(now)
+#         # update the strawberries and carrots for each program
+#         for program in programs:
+#             program.update_strawberries(now)
+#             program.update_carrots(now)
 
-        # refresh program and user ranking
-        Program.refresh_all_strawberry_rankings()
-        User.refresh_all_strawberry_rankings()
+#         # refresh program and user ranking
+#         Program.refresh_all_strawberry_rankings()
+#         User.refresh_all_strawberry_rankings()
 
-        db.session.commit()
-    except:
-        db.session.rollback()
-        print_exc()
+#         db.session.commit()
+#     except:
+#         db.session.rollback()
+#         print_exc()
 
 
-request_started.connect(update_strawberries_and_carrots, app)
+# request_started.connect(update_strawberries_and_carrots, app)
 
 
 @app.route('/', methods=['GET'])
@@ -146,6 +146,11 @@ def user_register():
             crx_flash('ERROR_UNKNOWN')
             return redirect(url_for('user_register'))
 
+        app.logger.info(f"User created: {username}, {nickname}, {email}")
+        crx_flash('ACCOUNT_CREATED', username)
+        return redirect(url_for('user_login'))
+
+
 @app.route('/submit/candidate', methods=['GET', 'POST'])
 @login_required
 def submit_candidate():
@@ -180,91 +185,91 @@ def submit_candidate():
         return redirect(url_for('submit_candidate_ok'))
 
 
-# This route is called directly when the user has js activated (see file-progress.js)
-@app.route('/submit/candidate/ok', methods=['GET'])
-@login_required
-def submit_candidate_ok():
-    crx_flash('CHALLENGE_SUBMITTED')
-    return redirect(url_for('user_show'))
+# # This route is called directly when the user has js activated (see file-progress.js)
+# @app.route('/submit/candidate/ok', methods=['GET'])
+# @login_required
+# def submit_candidate_ok():
+#     crx_flash('CHALLENGE_SUBMITTED')
+#     return redirect(url_for('user_show'))
 
 
-@app.route('/show/candidate/<int:identifier>.c', methods=['GET'])
-def show_candidate(identifier):
-    program = Program.get_by_id(identifier)
-    if program is None:
-        return redirect(url_for('index'))
-    do_show = False
-    if program.is_published:
-        do_show = True
-    if current_user is not None and \
-       current_user.is_authenticated and \
-       current_user == program.user:
-        do_show = True
-    if not do_show:
-        return redirect(url_for('index'))
-    # If we reach this point, we can show the source code
-    upload_folder = app.config['UPLOAD_FOLDER']
-    return send_from_directory(upload_folder, program.filename)
+# @app.route('/show/candidate/<int:identifier>.c', methods=['GET'])
+# def show_candidate(identifier):
+#     program = Program.get_by_id(identifier)
+#     if program is None:
+#         return redirect(url_for('index'))
+#     do_show = False
+#     if program.is_published:
+#         do_show = True
+#     if current_user is not None and \
+#        current_user.is_authenticated and \
+#        current_user == program.user:
+#         do_show = True
+#     if not do_show:
+#         return redirect(url_for('index'))
+#     # If we reach this point, we can show the source code
+#     upload_folder = app.config['UPLOAD_FOLDER']
+#     return send_from_directory(upload_folder, program.filename)
 
 
-@app.route('/candidate/<int:identifier>', methods=['GET'])
-def candidate(identifier):
-    program = Program.get_by_id(identifier)
-    if program is None:
-        return redirect(url_for('index'))
-    do_show = False
-    if program.is_published:
-        do_show = True
-    if current_user is not None and \
-       current_user.is_authenticated and \
-       current_user == program.user:
-        do_show = True
-    if not do_show:
-        return redirect(url_for('index'))
+# @app.route('/candidate/<int:identifier>', methods=['GET'])
+# def candidate(identifier):
+#     program = Program.get_by_id(identifier)
+#     if program is None:
+#         return redirect(url_for('index'))
+#     do_show = False
+#     if program.is_published:
+#         do_show = True
+#     if current_user is not None and \
+#        current_user.is_authenticated and \
+#        current_user == program.user:
+#         do_show = True
+#     if not do_show:
+#         return redirect(url_for('index'))
 
-    programs_broken_by_current_user = None
-    programs_inverted_by_current_user = None
-    if current_user and current_user.is_authenticated:
-        wb_breaks_by_current_user = WhiteboxBreak.get_all_by_user(current_user)
-        programs_broken_by_current_user = [
-            wb_break.program for wb_break in wb_breaks_by_current_user]
-        wb_inversions_by_current_user = WhiteboxInvert.get_all_by_user(
-            current_user)
-        programs_inverted_by_current_user = [
-            wb_inversion.program for wb_inversion in wb_inversions_by_current_user
-        ]
+#     programs_broken_by_current_user = None
+#     programs_inverted_by_current_user = None
+#     if current_user and current_user.is_authenticated:
+#         wb_breaks_by_current_user = WhiteboxBreak.get_all_by_user(current_user)
+#         programs_broken_by_current_user = [
+#             wb_break.program for wb_break in wb_breaks_by_current_user]
+#         wb_inversions_by_current_user = WhiteboxInvert.get_all_by_user(
+#             current_user)
+#         programs_inverted_by_current_user = [
+#             wb_inversion.program for wb_inversion in wb_inversions_by_current_user
+#         ]
 
-    # If we reach this point, we can show the source code
-    return render_template(
-        'candidate.html',
-        program=program,
-        programs_broken_by_current_user=programs_broken_by_current_user,
-        programs_inverted_by_current_user=programs_inverted_by_current_user,
-    )
+#     # If we reach this point, we can show the source code
+#     return render_template(
+#         'candidate.html',
+#         program=program,
+#         programs_broken_by_current_user=programs_broken_by_current_user,
+#         programs_inverted_by_current_user=programs_inverted_by_current_user,
+#     )
 
 
-@app.route('/show/candidate/<int:identifier>/testvectors', methods=['GET'])
-def show_candidate_sample(identifier):
-    program = Program.get_by_id(identifier)
-    if program is None or not program.is_published:
-        return redirect(url_for('index'))
+# @app.route('/show/candidate/<int:identifier>/testvectors', methods=['GET'])
+# def show_candidate_sample(identifier):
+#     program = Program.get_by_id(identifier)
+#     if program is None or not program.is_published:
+#         return redirect(url_for('index'))
 
-    number_of_test_vectors = int(len(program.plaintexts) / 16)
-    test_vectors = list()
-    for i in range(number_of_test_vectors):
-        test_vectors.append({
-            "plaintext": binascii.hexlify(
-                program.plaintexts[i*16:(i+1)*16]).decode(),
-            "ciphertext": binascii.hexlify(
-                program.ciphertexts[i*16:(i+1)*16]).decode()
-        })
+#     number_of_test_vectors = int(len(program.plaintexts) / 16)
+#     test_vectors = list()
+#     for i in range(number_of_test_vectors):
+#         test_vectors.append({
+#             "plaintext": binascii.hexlify(
+#                 program.plaintexts[i*16:(i+1)*16]).decode(),
+#             "ciphertext": binascii.hexlify(
+#                 program.ciphertexts[i*16:(i+1)*16]).decode()
+#         })
 
-    res = {
-        "id": program._id,
-        "test_vectors": test_vectors
-    }
+#     res = {
+#         "id": program._id,
+#         "test_vectors": test_vectors
+#     }
 
-    return jsonify(res)
+#     return jsonify(res)
 
 
 @app.route('/user/show', methods=['GET'])
@@ -274,7 +279,6 @@ def user_show():
     programs_queued = Program.get_user_queued_programs(current_user)
     programs_rejected = Program.get_user_rejected_programs(current_user)
     wb_breaks = WhiteboxBreak.get_all_by_user(current_user)
-    wb_inversions = WhiteboxInvert.get_all_by_user(current_user)
     return render_template('user_show.html',
                            active_page='user_show',
                            user=current_user,
@@ -507,7 +511,7 @@ def recent_feed():
 def unauthorized_handler():
     crx_flash('PLEASE_SIGN_IN')
     try:
-        return redirect(url_for('user_signin', next=url_for(request.endpoint)))
+        return redirect(url_for('user_login', next=url_for(request.endpoint)))
     except:
         return redirect(url_for('index'))
 

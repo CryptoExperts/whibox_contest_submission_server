@@ -10,7 +10,6 @@ from app.funny_name_generator import get_funny_name
 from sqlalchemy import or_, and_
 from sqlalchemy.dialects import mysql
 from .whiteboxbreak import WhiteboxBreak
-from .whiteboxinvert import WhiteboxInvert
 
 
 class Program(db.Model):
@@ -25,7 +24,6 @@ class Program(db.Model):
         test_failed = 'test_failed'
         unbroken = 'unbroken'
         broken = 'broken'
-        inverted = 'inverted'
 
         def __str__(self):
             if self == self.submitted:
@@ -42,8 +40,6 @@ class Program(db.Model):
                 return 'Test failed'
             elif self == self.unbroken:
                 return 'Unbroken'
-            elif self == self.inverted:
-                return 'Inverted'
             elif self == self.broken:
                 return 'Broken'
             else:
@@ -59,9 +55,6 @@ class Program(db.Model):
                 (Program.Status.submitted, Program.Status.test_failed),
                 (Program.Status.submitted, Program.Status.unbroken),
                 (Program.Status.unbroken, Program.Status.broken),
-                (Program.Status.unbroken, Program.Status.inverted),
-                (Program.Status.inverted, Program.Status.inverted),
-                (Program.Status.inverted, Program.Status.broken),
                 (Program.Status.broken, Program.Status.broken)
             ]
             return (current_status, new_status) in all_authorized_status_change
@@ -91,8 +84,6 @@ class Program(db.Model):
     _error_message = db.Column(db.Text, default=None)
     _plaintexts = db.Column(db.LargeBinary, default=None)
     _ciphertexts = db.Column(db.LargeBinary, default=None)
-    _plaintext_sha256_for_inverting = db.Column(db.String(64), default=None)
-    _ciphertext_for_inverting = db.Column(db.LargeBinary, default=None)
     # First set when the program is published
     _strawberries_peak = db.Column(mysql.DOUBLE, default=0)
     _strawberries_last = db.Column(mysql.DOUBLE, default=0)
@@ -212,15 +203,6 @@ class Program(db.Model):
             self._plaintexts = val
 
     @property
-    def plaintext_sha256_for_inverting(self):
-        return self._plaintext_sha256_for_inverting
-
-    @plaintext_sha256_for_inverting.setter
-    def plaintext_sha256_for_inverting(self, val):
-        if self._plaintext_sha256_for_inverting is None:
-            self._plaintext_sha256_for_inverting = val
-
-    @property
     def ciphertexts(self):
         return self._ciphertexts
 
@@ -229,16 +211,6 @@ class Program(db.Model):
         assert type(val) == bytes
         if self._ciphertexts is None:
             self._ciphertexts = val
-
-    @property
-    def ciphertext_for_inverting(self):
-        return self._ciphertext_for_inverting
-
-    @ciphertext_for_inverting.setter
-    def ciphertext_for_inverting(self, val):
-        assert type(val) == bytes
-        if self._ciphertext_for_inverting is None:
-            self._ciphertext_for_inverting = val
 
     @property
     def datetime_first_break(self):
@@ -308,7 +280,6 @@ class Program(db.Model):
     def refresh_all_strawberry_rankings():
         programs = Program.query.filter(or_(
             Program._status == Program.Status.unbroken.value,
-            Program._status == Program.Status.inverted.value,
             Program._status == Program.Status.broken.value)
         ).order_by(Program._strawberries_peak.desc()).all()
         if len(programs) == 0:
@@ -445,26 +416,9 @@ class Program(db.Model):
             user, self, now, self._strawberries_last)
         db.session.add(whitebox_break)
 
-    def set_status_to_inverted(self, user, now):
-        if now > app.config['FINAL_DEADLINE']:
-            return
-        if Program.Status.authorized_status_change(self.status,
-                                                   Program.Status.inverted):
-            self._status = Program.Status.inverted.value
-        else:
-            utils.console("Could NOT set status to inverted")
-
-        if self._timestamp_first_inversion is None:
-            self._timestamp_first_inversion = now
-
-        whitebox_inversion = WhiteboxInvert.create(
-            user, self, now, self._carrots_last)
-        db.session.add(whitebox_inversion)
-
     @property
     def is_published(self):
         return (self._status == Program.Status.unbroken.value) or \
-            (self._status == Program.Status.inverted.value) or \
             (self._status == Program.Status.broken.value)
 
     @property
@@ -500,15 +454,8 @@ class Program(db.Model):
 
     @staticmethod
     def get_number_of_unbroken_programs():
-        return Program.query.filter(or_(
-            Program._status == Program.Status.unbroken.value,
-            Program._status == Program.Status.inverted.value,
-        )).count()
-
-    @staticmethod
-    def get_number_of_inverted_programs():
         return Program.query.filter(
-            Program._status == Program.Status.inverted.value,
+            Program._status == Program.Status.unbroken.value,
         ).count()
 
     @staticmethod
@@ -531,27 +478,25 @@ class Program(db.Model):
         program = Program.query.filter(Program._id == _id).first()
         if program.status in [
                 Program.Status.unbroken,
-                Program.Status.inverted,
                 Program.Status.broken
         ]:
             return program
         else:
             return None
 
-    @staticmethod
-    def get_inverted_or_broken_by_id(_id):
-        program = Program.query.filter(Program._id == _id).first()
-        if program.status in [Program.Status.inverted, Program.Status.broken]:
-            return program
-        else:
-            return None
+    # @staticmethod
+    # def get_inverted_or_broken_by_id(_id):
+    #     program = Program.query.filter(Program._id == _id).first()
+    #     if program.status in [Program.Status.inverted, Program.Status.broken]:
+    #         return program
+    #     else:
+    #         return None
 
     @staticmethod
     def get_all_published_sorted_by_ranking(max_rank=None):
         if max_rank is not None:
             programs = Program.query.filter(or_(
                 Program._status == Program.Status.unbroken.value,
-                Program._status == Program.Status.inverted.value,
                 Program._status == Program.Status.broken.value
             )).filter(
                 Program._strawberries_ranking <= max_rank
@@ -559,7 +504,6 @@ class Program(db.Model):
         else:
             programs = Program.query.filter(or_(
                 Program._status == Program.Status.unbroken.value,
-                Program._status == Program.Status.inverted.value,
                 Program._status == Program.Status.broken.value
             )).order_by(Program._strawberries_ranking).all()
         return programs
@@ -568,7 +512,6 @@ class Program(db.Model):
     def get_all_published_sorted_by_published_time():
         programs = Program.query.filter(or_(
             Program._status == Program.Status.unbroken.value,
-            Program._status == Program.Status.inverted.value,
             Program._status == Program.Status.broken.value
         )).order_by(Program._timestamp_published).all()
         return programs
@@ -610,7 +553,6 @@ class Program(db.Model):
         return Program.query.filter(
             Program._user_id == user._id,
             or_(Program._status == Program.Status.unbroken.value,
-                Program._status == Program.Status.inverted.value,
                 Program._status == Program.Status.broken.value)
         ).order_by(Program._timestamp_submitted).all()
 
@@ -631,13 +573,11 @@ class Program(db.Model):
         if strawberries_peak is None:
             return 1 + Program.query.filter(
                 or_(Program._status == Program.Status.unbroken.value,
-                    Program._status == Program.Status.inverted.value,
                     Program._status == Program.Status.broken.value)
             ).count()
         else:
             return 1 + Program.query.filter(
                 or_(Program._status == Program.Status.unbroken.value,
-                    Program._status == Program.Status.inverted.value,
                     Program._status == Program.Status.broken.value),
                 Program._strawberries_peak > strawberries_peak
             ).count()
