@@ -11,8 +11,6 @@
 
     <title>WhibOx Contest Edition 3 - CHES 2021 Challenge - {% block title %}{% endblock %}</title>
 
-    <!-- MetisMenu CSS -->
-    <link href="/static/css/metisMenu.min.css" rel="stylesheet">
     <!-- Custom fonts for this template-->
     <link href="/static/css/fontawesome.all.min.css" rel="stylesheet" type="text/css">
     <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
@@ -25,70 +23,6 @@
 
   </head>
 
-  <body>
+  {% block body %}{% endblock %}
 
-    <div id="wrapper">
-
-      {% include 'navigation.html' %}
-
-      <!-- Page Content -->
-      <div id="page-wrapper">
-
-	<div class="row">
-          <div class="col-lg-12">
-            <h1 class="page-header">{% block title %}{% endblock %}</h1>
-          </div>
-          <!-- /.col-lg-12 -->
-        </div>
-
-
-	{% with messages = get_flashed_messages(with_categories=True) %}
-	  {% if messages %}
-	    <div class="alerts-container">
-	      {% for message in messages %}
-		<div class="alert alert-{{ message[0] }} fade in" role="alert">
-		  <span>{{ message[1] }}</span>
-		</div>
-	      {% endfor %}
-	    </div>
-	  {% endif %}
-	{% endwith %}
-
-	{% block content %}{% endblock %}
-
-      </div><!-- /#page-wrapper -->
-
-
-    </div><!-- #wrapper -->
-
-
-    <!-- jQuery -->
-    <script src="/static/js/jquery.min.js"></script>
-
-    <!-- Bootstrap Core JavaScript -->
-    <script src="/static/js/bootstrap.min.js"></script>
-
-    <!-- Metis Menu Plugin JavaScript -->
-    <script src="/static/js/metisMenu.min.js"></script>
-
-    <!-- Custom Theme JavaScript -->
-    <script src="/static/js/sb-admin-2.min.js"></script>
-
-    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
-
-    <script src="/static/js/ie10-viewport-bug-workaround.js"></script>
-
-
-    <!-- Data tables -->
-    <!-- DataTables JavaScript -->
-    <script src="/static/js/jquery.dataTables.min.js"></script>
-    <script src="/static/js/dataTables.bootstrap.min.js"></script>
-    <script src="/static/js/dataTables.responsive.js"></script>
-    <script src="/static/js/data-table.js"></script>
-
-    <!-- Custom js for notifications -->
-    <script src="/static/js/notify-crx.js"></script>
-
-    {% block javascript %}{% endblock %}
-  </body>
 </html>

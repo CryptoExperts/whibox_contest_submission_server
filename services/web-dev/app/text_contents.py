@@ -8,7 +8,7 @@ flash_texts_and_categories = {
     'ACCOUNT_UPDATED': ('Display name updated.', flash_categories['success']),
     'BAD_USERNAME_OR_PWD': ('Bad username or password', flash_categories['danger']),
     'WELCOME_BACK': ('Welcome back %s', flash_categories['success']),
-    'SIGNOUT': ('You have signed out', flash_categories['info']),
+    'LOGOUT': ('You have logged out', flash_categories['info']),
     'ACCOUNT_CREATED': ('A new account was created for the user %s!', flash_categories['info']),
     'ONLY_EXT_IS_C': ('The only allowed file extension is ".c"', flash_categories['warning']),
     'CHALLENGE_SUBMITTED': ('Your challenge has been submitted!', flash_categories['info']),

@@ -15,8 +15,8 @@ from app import app
 from app import login_manager
 from app import utils
 from app import db
-from .forms import LoginForm, UserCreationForm, WhiteboxSubmissionForm, \
-    WhiteboxBreakForm, WhiteboxInvertForm, UserUpdateForm
+from .forms import (LoginForm, UserRegisterForm, WhiteboxSubmissionForm,
+                    WhiteboxBreakForm, WhiteboxInvertForm, UserUpdateForm)
 from .models.user import User
 from .models.program import Program
 from .models.whiteboxbreak import WhiteboxBreak

@@ -2,14 +2,14 @@
   {% if form_field.errors %}
     <div class="form-group has-error has-feedback">
       {% for error in form_field.errors %}
-	<label class="control-label" for="{{ form_field.name }}">{{ error }}</label>
+      <label class="control-label" for="{{ form_field.name }}">{{ error }}</label>
       {% endfor %}
       <span class="glyphicon glyphicon-remove form-control-feedback" aria-hidden="true"></span>
       {{ form_field(class_='form-control form-control-warning', placeholder=placeholder) }}
     </div>
   {% else %}
     <div class="form-group">
-      {{ form_field(class_='form-control', placeholder=placeholder, autofocus=autofocus) }}
+      {{ form_field(class_='form-control form-control-user', placeholder=placeholder, autofocus=autofocus) }}
     </div>
   {% endif %}
 {%- endmacro %}
@@ -18,7 +18,7 @@
   {% if form_recaptcha_field.errors %}
     <div class="form-group has-error has-feedback">
       {% for error in form_recaptcha_field.errors %}
-	<label class="control-label" for="{{ form_recaptcha_field.name }}">{{ error }}</label>
+      <label class="control-label" for="{{ form_recaptcha_field.name }}">{{ error }}</label>
       {% endfor %}
       {{ form_recaptcha_field(class_='form-control form-control-warning') }}
     </div>
