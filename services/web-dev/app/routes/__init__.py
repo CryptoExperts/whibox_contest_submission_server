@@ -18,7 +18,7 @@ from app.models.program import Program
 from app.models.whiteboxbreak import WhiteboxBreak
 from app.utils import crx_flash, redirect
 
-from . import user, submit   # noqa
+from . import user, submit, challenge   # noqa
 
 # from werkzeug.contrib.atom import AtomFeed
 
@@ -85,25 +85,6 @@ def index():
         number_of_unbroken_programs=number_of_unbroken_programs,
         programs_to_plot=programs_to_plot
     )
-
-
-# @app.route('/show/candidate/<int:identifier>.c', methods=['GET'])
-# def show_candidate(identifier):
-#     program = Program.get_by_id(identifier)
-#     if program is None:
-#         return redirect(url_for('index'))
-#     do_show = False
-#     if program.is_published:
-#         do_show = True
-#     if current_user is not None and \
-#        current_user.is_authenticated and \
-#        current_user == program.user:
-#         do_show = True
-#     if not do_show:
-#         return redirect(url_for('index'))
-#     # If we reach this point, we can show the source code
-#     upload_folder = app.config['UPLOAD_FOLDER']
-#     return send_from_directory(upload_folder, program.filename)
 
 
 # @app.route('/candidate/<int:identifier>', methods=['GET'])

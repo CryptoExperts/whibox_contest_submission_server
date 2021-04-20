@@ -54,23 +54,23 @@
           {% else %}
           -
           {% endif %}
-	</td>
+        </td>
         <td class="text-center">{{ program.strawberries_last | round(2) }} 🍓 / {{ program.carrots_last | round(2) }} 🥕</td>
         {% if current_user.is_authenticated %}
         <td class="nowrap">
-	  {% if program.user == current_user %}
-            <span class="badge badge-primary">Yours!</span>
+          {% if program.user == current_user %}
+          <span class="badge badge-primary">Yours!</span>
           {% elif program in programs_broken_by_current_user %}
-            <span class="badge badge-success">Broken by you!</span>
-            {% if program in programs_inverted_by_current_user %}
-	      <span class="badge badge-info">Inverted by you!</span>
-            {% endif %}
+          <span class="badge badge-success">Broken by you!</span>
+          {% if program in programs_inverted_by_current_user %}
+          <span class="badge badge-info">Inverted by you!</span>
+          {% endif %}
           {% elif program in programs_inverted_by_current_user %}
-            <a href="/break/candidate/{{ program._id }}" class="btn btn-danger btn-sm">Break</a>
-            <span class="badge badge-info">Inverted by you!</span>
+          <a href="/break/candidate/{{ program._id }}" class="btn btn-danger btn-sm">Break</a>
+          <span class="badge badge-info">Inverted by you!</span>
           {% else %}
-            <a href="/break/candidate/{{ program._id }}" class="btn btn-danger btn-sm">Break</a>
-            <a href="/invert/candidate/{{ program._id }}" class="btn btn-warning btn-sm">Invert</a>
+          <a href="/break/candidate/{{ program._id }}" class="btn btn-danger btn-sm">Break</a>
+          <a href="/invert/candidate/{{ program._id }}" class="btn btn-warning btn-sm">Invert</a>
           {% endif %}
         </td>
         {% endif %}
