@@ -22,9 +22,9 @@ services:
             - MYSQL_PORT=3306
             - UPLOAD_FOLDER=/uploads
             - URL_COMPILE_AND_TEST=http://launcher:5000/compile_and_test
-            - STARTING_DATE=1552867200    # In seconds since EPOCH. Must be identical in the launcher service. 18/03/2019 00:00 UTC is 1552867200
-            - POSTING_DEADLINE=1564617600 # In seconds since EPOCH. Must be identical in the launcher service. 01/08/2019 00:00 UTC is 1564617600
-            - FINAL_DEADLINE=1566388800   # In seconds since EPOCH. Must be identical in the launcher service. 21/08/2019 12:00 UTC is 1566345600
+            - STARTING_DATE=1621209600                   # In seconds since EPOCH. Must be identical in the web service. 18/03/2019 00:00 UTC is 1621209600
+            - POSTING_DEADLINE=1629590400                # In seconds since EPOCH. Must be identical in the web service. 01/08/2019 00:00 UTC is 1629590400  
+            - FINAL_DEADLINE=1631318400                  # In seconds since EPOCH. Must be identical in the web service. 21/08/2019 00:00 UTC is 1631318400
             - CHALLENGE_MAX_SOURCE_SIZE_IN_MB=50         # In MB. Must be identical in the launcher service. Must be 50 in production.
             - CHALLENGE_MAX_MEM_COMPILATION_IN_MB=500    # In MB. Must be identical in the launcher service. Must be 500 in production.
             - CHALLENGE_MAX_TIME_COMPILATION_IN_SECS=100 # In seconds. Must be identical in the launcher service. Must be 100 in production.
@@ -56,9 +56,9 @@ services:
             - SOCK=unix:///var/run/docker.sock
             - NAME_OF_COMPILE_AND_TEST_SERVICE=prod_compile_and_test
             - COMPILE_AND_TEST_SERVICE_NETWORK=prod_back_network
-            - STARTING_DATE=1552867200    # In seconds since EPOCH. Must be identical in the web service. 18/03/2019 00:00 UTC is 1552867200
-            - POSTING_DEADLINE=1564617600 # In seconds since EPOCH. Must be identical in the web service. 01/08/2019 00:00 UTC is 1564617600
-            - FINAL_DEADLINE=1566388800   # In seconds since EPOCH. Must be identical in the web service. 21/08/2019 12:00 UTC is 1566345600
+            - STARTING_DATE=1621209600                   # In seconds since EPOCH. Must be identical in the web service. 18/03/2019 00:00 UTC is 1621209600
+            - POSTING_DEADLINE=1629590400                # In seconds since EPOCH. Must be identical in the web service. 01/08/2019 00:00 UTC is 1629590400  
+            - FINAL_DEADLINE=1631318400                  # In seconds since EPOCH. Must be identical in the web service. 21/08/2019 00:00 UTC is 1631318400
             - CHALLENGE_MAX_SOURCE_SIZE_IN_MB=50         # In MB. Must be identical in the web service. Must be 50 in production.
             - CHALLENGE_MAX_MEM_COMPILATION_IN_MB=500    # In MB. Must be identical in the web service. Must be 500 in production.
             - CHALLENGE_MAX_TIME_COMPILATION_IN_SECS=100 # In seconds. Must be identical in the web service. Must be 100 in production.

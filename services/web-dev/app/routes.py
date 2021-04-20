@@ -17,7 +17,7 @@ from app import login_manager
 from app import utils
 from app import db
 from .forms import (LoginForm, UserRegisterForm, WhiteboxSubmissionForm,
-                    WhiteboxBreakForm, UserUpdateForm)
+                    WhiteboxBreakForm)
 from .models.user import User
 from .models.program import Program
 from .models.whiteboxbreak import WhiteboxBreak
@@ -285,9 +285,7 @@ def user_show():
                            programs=programs,
                            programs_queued=programs_queued,
                            programs_rejected=programs_rejected,
-                           wb_breaks=wb_breaks,
-                           wb_inversions=wb_inversions
-                           )
+                           wb_breaks=wb_breaks)
 
 
 @app.route('/break/candidate/<int:identifier>', methods=['GET', 'POST'])

@@ -107,9 +107,6 @@ copy-common-app-dev-files:
 	-chmod 644 services/launcher-dev/app/models/whiteboxbreak.py
 	cp services/web-dev/app/models/whiteboxbreak.py services/launcher-dev/app/models/whiteboxbreak.py
 	chmod 400 services/launcher-dev/app/models/whiteboxbreak.py
-	-chmod 644 services/launcher-dev/app/models/whiteboxinvert.py
-	cp services/web-dev/app/models/whiteboxinvert.py services/launcher-dev/app/models/whiteboxinvert.py
-	chmod 400 services/launcher-dev/app/models/whiteboxinvert.py
 	-chmod 644 services/launcher-dev/app/funny_name_generator.py
 	cp services/web-dev/app/funny_name_generator.py services/launcher-dev/app/funny_name_generator.py
 	chmod 400 services/launcher-dev/app/funny_name_generator.py
