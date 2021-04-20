@@ -13,14 +13,14 @@
   <hr class="sidebar-divider my-0">
 
   <!-- Nav Item - Dashboard -->
-  <li class="nav-item active">
+  <li class="nav-item {% if active_page == 'index' %} active{% endif %}">
     <a class="nav-link" href="/">
       <i class="fas fa-fw fa-tachometer-alt"></i>
       <span>Dashboard</span></a>
   </li>
 
   <!-- Nav Item - Competition rules -->
-  <li class="nav-item active">
+  <li class="nav-item {% if active_page == 'rules' %} active{% endif %}">
     <a class="nav-link" href="/rules">
       <i class="fas fa-fw fa-book"></i>
       <span>Rules</span></a>
@@ -31,11 +31,15 @@
 
 
   <!-- Nav Item - Competition rules -->
-  <li class="nav-item active">
+  <li class="nav-item {% if active_page == 'submit_candidate' %} active{% endif %}">
     <a class="nav-link" href="/submit/candidate">
       <i class="fas fa-fw fa-upload"></i>
       <span>Submit a challenge</span></a>
   </li>
+
+  <!-- Divider -->
+  <hr class="sidebar-divider d-none d-md-block">
+
 
   <!-- Sidebar Toggler (Sidebar) -->
   <div class="text-center d-none d-md-inline">

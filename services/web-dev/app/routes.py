@@ -156,13 +156,15 @@ def user_register():
 def submit_candidate():
     now = int(time.time())
     if now < app.config['STARTING_DATE']:
-        return render_template('submit_candidate_before_starting_date.html',
-                               active_page='submit_candidate',
-                               starting_date=utils.format_timestamp(app.config['STARTING_DATE']))
+        return render_template(
+            'submit_candidate_before_starting_date.html',
+            active_page='submit_candidate',
+            starting_date=utils.format_timestamp(app.config['STARTING_DATE']))
     if now > app.config['POSTING_DEADLINE']:
-        return render_template('submit_candidate_deadline_exceeded.html',
-                               active_page='submit_candidate',
-                               posting_deadline=utils.format_timestamp(app.config['POSTING_DEADLINE']))
+        return render_template(
+            'submit_candidate_deadline_exceeded.html',
+            active_page='submit_candidate',
+            posting_deadline=utils.format_timestamp(app.config['POSTING_DEADLINE']))
     form = WhiteboxSubmissionForm()
     if request.method != 'POST':
         return render_template('submit_candidate.html', form=form, active_page='submit_candidate', testing=app.testing)

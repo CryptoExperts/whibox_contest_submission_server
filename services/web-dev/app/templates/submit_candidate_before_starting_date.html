@@ -4,6 +4,19 @@
 
 {% block content %}
 
-  <p class="lead">The STARTING DATE is set to {{ starting_date }}. It is not yet possible to submit your challenge.</p>
+<div class="col-lg-6 mb-4">
+  <div class="card shadow mb-4">
+    <div class="card-body">
+      <div class="text-center">
+        <img class="img-fluid px-3 px-sm-4 mt-3 mb-4" src="/static/images/undraw_runner_start.svg" alt="">
+      </div>
+      <p class="lead">
+        The <span class="text-dark">STARTING DATE</span> is set to <span class="text-success">{{ starting_date }}</span>.
+        It is not yet possible to submit your challenge.
+      </p>
+      <a target="_blank" rel="nofollow" href="/rules">Checkout rules &rarr;</a>
+    </div>
+  </div>
+</div>
 
 {% endblock %}
