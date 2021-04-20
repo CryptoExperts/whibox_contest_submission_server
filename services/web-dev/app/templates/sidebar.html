@@ -30,10 +30,12 @@
   <hr class="sidebar-divider d-none d-md-block">
 
 
+  {% if current_user.is_authenticated %}
+
   <!-- Nav Item - Competition rules -->
   <li class="nav-item {% if active_page == 'user_show' %} active{% endif %}">
     <a class="nav-link" href="/user/show">
-      <i class="fas fa-fw fa-upload"></i>
+      <i class="fas fa-fw fa-user-ninja"></i>
       <span>Your space</span></a>
   </li>
 
@@ -42,6 +44,14 @@
       <i class="fas fa-fw fa-upload"></i>
       <span>Submit a challenge</span></a>
   </li>
+
+  {% else %}
+  <li class="nav-item {% if active_page == 'user_show' %} active{% endif %}">
+    <a class="nav-link" href="/user/show">
+      <i class="fas fa-fw fa-sign-in-alt"></i>
+      <span>Login</span></a>
+  </li>
+  {% endif %}
 
   <!-- Divider -->
   <hr class="sidebar-divider d-none d-md-block">
