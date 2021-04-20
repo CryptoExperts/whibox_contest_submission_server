@@ -10,7 +10,7 @@ from app import app
 from app import db
 from app.forms import WhiteboxSubmissionForm
 from app.models.program import Program
-from app.utils import format_timestamp, redirect
+from app.utils import crx_flash, format_timestamp, redirect
 
 
 @app.route('/submit/candidate', methods=['GET', 'POST'])
@@ -53,3 +53,11 @@ def submit_candidate():
                        user=current_user)
         db.session.commit()
         return redirect(url_for('submit_candidate_ok'))
+
+
+@app.route('/submit/candidate/ok', methods=['GET'])
+@login_required
+def submit_candidate_ok():
+    """ This route is called directly when the user has js activated (see file-progress.js)"""
+    crx_flash('CHALLENGE_SUBMITTED')
+    return redirect(url_for('user_show'))

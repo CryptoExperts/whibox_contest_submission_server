@@ -1,9 +1,5 @@
 # import binascii
 # import hashlib
-import os
-import random
-import string
-import time
 
 # from Crypto.Cipher import AES
 # from traceback import print_exc
@@ -16,14 +12,13 @@ from app import app
 from app import login_manager
 from app import utils
 from app import db
-from app.forms import (LoginForm, UserRegisterForm, WhiteboxSubmissionForm,
-                       WhiteboxBreakForm)
+from app.forms import LoginForm, UserRegisterForm, WhiteboxBreakForm
 from app.models.user import User
 from app.models.program import Program
 from app.models.whiteboxbreak import WhiteboxBreak
 from app.utils import crx_flash, redirect
 
-from .submit import submit_candidate
+from . import submit   # noqa
 
 # from werkzeug.contrib.atom import AtomFeed
 
@@ -151,14 +146,6 @@ def user_register():
         app.logger.info(f"User created: {username}, {nickname}, {email}")
         crx_flash('ACCOUNT_CREATED', username)
         return redirect(url_for('user_login'))
-
-
-# # This route is called directly when the user has js activated (see file-progress.js)
-# @app.route('/submit/candidate/ok', methods=['GET'])
-# @login_required
-# def submit_candidate_ok():
-#     crx_flash('CHALLENGE_SUBMITTED')
-#     return redirect(url_for('user_show'))
 
 
 # @app.route('/show/candidate/<int:identifier>.c', methods=['GET'])

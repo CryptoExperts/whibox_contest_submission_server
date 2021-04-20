@@ -31,6 +31,12 @@
 
 
   <!-- Nav Item - Competition rules -->
+  <li class="nav-item {% if active_page == 'user_show' %} active{% endif %}">
+    <a class="nav-link" href="/user/show">
+      <i class="fas fa-fw fa-upload"></i>
+      <span>Your space</span></a>
+  </li>
+
   <li class="nav-item {% if active_page == 'submit_candidate' %} active{% endif %}">
     <a class="nav-link" href="/submit/candidate">
       <i class="fas fa-fw fa-upload"></i>
