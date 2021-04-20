@@ -22,16 +22,22 @@ def submit_candidate():
             'submit_candidate_before_starting_date.html',
             active_page='submit_candidate',
             starting_date=format_timestamp(app.config['STARTING_DATE']))
+
     if now > app.config['POSTING_DEADLINE']:
         return render_template(
             'submit_candidate_deadline_exceeded.html',
             active_page='submit_candidate',
             posting_deadline=format_timestamp(app.config['POSTING_DEADLINE']))
+
     form = WhiteboxSubmissionForm()
     if request.method != 'POST':
-        return render_template('submit_candidate.html', form=form, active_page='submit_candidate', testing=app.testing)
+        return render_template('submit_candidate.html', form=form,
+                               active_page='submit_candidate',
+                               testing=app.testing)
     elif not form.validate_on_submit():
-        return render_template('submit_candidate.html', form=form, active_page='submit_candidate', testing=app.testing), 400
+        return render_template('submit_candidate.html', form=form,
+                               active_page='submit_candidate',
+                               testing=app.testing), 400
     else:
         upload_folder = app.config['UPLOAD_FOLDER']
         basename = ''.join(random.SystemRandom().choice(
