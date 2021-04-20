@@ -347,6 +347,7 @@ def user_show():
 def rules():
     return render_template(
         'rules.html',
+        active_page="rules",
         challenge_max_source_size_in_mb=app.config['CHALLENGE_MAX_SOURCE_SIZE_IN_MB'],
         challenge_max_mem_for_compilation_in_mb=app.config['CHALLENGE_MAX_MEM_COMPILATION_IN_MB'],
         challenge_max_time_for_compilation_in_secs=app.config[
