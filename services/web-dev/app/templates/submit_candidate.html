@@ -15,7 +15,7 @@
           {{ form.hidden_tag() }}
           <fieldset>
 
-            <div class="form-group{% if form.key.errors %} has-error has-feedback{% endif %}" id="file-form-group">
+            <div class="form-group{% if form.pubkey.errors %} has-error has-feedback{% endif %}" id="file-form-group">
               {% for error in form.program.errors %}
               <label class="control-label" for="program">{{ error }}</label>
               {% endfor %}
@@ -44,12 +44,18 @@
               </div>
             </div>
 
-            <div class="form-group{% if form.key.errors %} has-error has-feedback{% endif %}" id="key-form-group">
-              <label class="control-label" id="key-ko"> </label>
-              {% for error in form.key.errors %}
-              <label class="control-label" for="key">{{ error }}</label>
+            <div class="form-group{% if form.pubkey.errors %} has-error has-feedback{% endif %}" id="key-form-group">
+              <label class="control-label" id="key-ko">Public-key</label>
+              {% for error in form.pubkey.errors %}
+              <label class="control-label" for="pubkey">{{ error }}</label>
               {% endfor %}
-              <input type="text" name="key" id="key" class="form-control{% if form.key.errors %} form-control-warning{% endif %}" placeholder="Key" value="{% if form.key.data %}{{ form.key.data }}{% endif %}" oninput="window.crx_wb.keyChanged(this)" autocomplete="off" style="transition: border-color, 0.4s;">
+              <textarea type="text" name="pubkey" id="pubkey"
+                        class="form-control{% if form.pubkey.errors %} form-control-warning{% endif %}"
+                        placeholder="Public key (in the format of 130 hexdecimal digits)"
+                        value="{% if form.pubkey.data %}{{ form.pubkey.data }}{% endif %}"
+                        oninput="window.crx_wb.keyChanged(this)"
+                        autocomplete="off">
+              </textarea>
             </div>
 
             {{ formidable.recaptcha(form.recaptcha, testing) }}

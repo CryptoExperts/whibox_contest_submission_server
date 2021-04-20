@@ -35,6 +35,7 @@ def submit_candidate():
                                active_page='submit_candidate',
                                testing=app.testing)
     elif not form.validate_on_submit():
+        crx_flash("CHALLENGE_INVALID")
         return render_template('submit_candidate.html', form=form,
                                active_page='submit_candidate',
                                testing=app.testing), 400
@@ -43,12 +44,12 @@ def submit_candidate():
         basename = ''.join(random.SystemRandom().choice(
             string.ascii_lowercase + string.digits) for _ in range(32))
         filename = basename + '.c'
-        key = form.key.data
+        pubkey = form.pubkey.data
         compiler = form.compiler.data
         form_data = form.program.data
         form_data.save(os.path.join(upload_folder, filename))
         Program.create(basename=basename,
-                       key=key,
+                       pubkey=pubkey,
                        compiler=compiler,
                        user=current_user)
         db.session.commit()

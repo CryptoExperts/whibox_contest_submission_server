@@ -71,7 +71,7 @@ class Program(db.Model):
     _timestamp_published = db.Column(db.BigInteger, default=None)
     _timestamp_first_break = db.Column(db.BigInteger, default=None)
     _status = db.Column(db.String(100), default=Status.submitted.value)
-    _key = db.Column(db.String(32), default=None)
+    _pubkey = db.Column(db.String(130), default=None)
     _compiler = db.Column(db.String(16), default='gcc')
     _performance_factor = db.Column(mysql.DOUBLE, default=1.0)
     _size_factor = db.Column(mysql.DOUBLE, default=1.0)
@@ -165,8 +165,8 @@ class Program(db.Model):
         return Program.Status(self._status)
 
     @property
-    def key(self):
-        return self._key
+    def pubkey(self):
+        return self._pubkey
 
     @property
     def performance_factor(self):
@@ -395,7 +395,7 @@ class Program(db.Model):
                     "Submission rejected after final deadline")
                 return
             self._status = Program.Status.unbroken.value
-            self._key = None
+            self._pubkey = None
             if self._timestamp_published is None:
                 self._timestamp_published = now
             self.update_strawberries(now)
@@ -426,9 +426,9 @@ class Program(db.Model):
         return self._status == Program.Status.broken.value
 
     @staticmethod
-    def create(user, basename, key, compiler):
+    def create(user, basename, pubkey, compiler):
         program = Program(_basename=basename,
-                          _key=key,
+                          _pubkey=pubkey,
                           _compiler=compiler,
                           _user_id=user._id)
         db.session.add(program)

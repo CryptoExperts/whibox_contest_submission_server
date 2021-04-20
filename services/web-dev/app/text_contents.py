@@ -11,6 +11,7 @@ flash_texts_and_categories = {
     'LOGOUT': ('You have logged out', flash_categories['info']),
     'ACCOUNT_CREATED': ('A new account was created for the user %s!', flash_categories['info']),
     'ONLY_EXT_IS_C': ('The only allowed file extension is ".c"', flash_categories['warning']),
+    'CHALLENGE_INVALID': ('Your submission was invalid!', flash_categories['warning']),
     'CHALLENGE_SUBMITTED': ('Your challenge has been submitted!', flash_categories['info']),
     'INVALID_KEY': ('The key must be a 32-character string of hexadecimal digits.', flash_categories['warning']),
     'EMAIL_MUST_MATCH': ('Emails must match', flash_categories['warning']),

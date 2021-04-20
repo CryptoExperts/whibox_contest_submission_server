@@ -25,7 +25,7 @@
     }
 
     document.addEventListener("DOMContentLoaded", function(event) {
-        window.crx_wb.keyChanged(document.getElementById('key'))
+        window.crx_wb.keyChanged(document.getElementById('pubkey'))
     });
 
     crx_wb.bytesToSize = function(bytes) {
@@ -63,14 +63,14 @@
             document.getElementById('key-ko').textContent = ' ';
             document.getElementById('key-form-group').classList.remove('has-warning');
         } else {
-            var re = /^[0-9a-fA-F]{32}$/;
+            var re = /^[0-9a-fA-F]{130}$/;
             if (element.value.match(re)) {
                 crx_wb.formElementsValidated[1] = true;
                 document.getElementById('key-ko').textContent = ' ';
                 document.getElementById('key-form-group').classList.remove('has-warning');
             } else {
                 crx_wb.formElementsValidated[1] = false;
-                document.getElementById('key-ko').textContent = 'This key should be a string of 32 hexadecimal digits';
+                document.getElementById('key-ko').textContent = 'The public key should be a string of 130 hexadecimal digits';
                 document.getElementById('key-form-group').classList.add('has-warning');
             }
         }

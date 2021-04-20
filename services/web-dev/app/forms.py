@@ -29,20 +29,20 @@ class UserRegisterForm(FlaskForm):
 class WhiteboxSubmissionForm(FlaskForm):
     program = FileField(validators=[FileRequired(), FileAllowed(
         ['c'], flash_texts_and_categories['ONLY_EXT_IS_C'][0])])
-    key = StringField('key', validators=[DataRequired()])
+    pubkey = StringField('pubkey', validators=[DataRequired()])
     compiler = StringField('compiler',
                            validators=[DataRequired(), AnyOf(['gcc', 'tcc'])])
     recaptcha = RecaptchaField()
 
-    def validate_key(self, key):
-        if re.fullmatch('^[0-9a-fA-F]{32}$', key.data) is None:
+    def validate_pubkey(self, pubkey):
+        if re.fullmatch('^[0-9a-fA-F]{130}$', pubkey.data) is None:
             raise ValidationError(flash_texts_and_categories['INVALID_KEY'][0])
 
 
 class WhiteboxBreakForm(FlaskForm):
-    key = StringField('key', validators=[DataRequired()])
+    prikey = StringField('prikey', validators=[DataRequired()])
     recaptcha = RecaptchaField()
 
-    def validate_key(self, key):
-        if re.fullmatch('^[0-9a-fA-F]{32}$', key.data) is None:
+    def validate_prikey(self, key):
+        if re.fullmatch('^[0-9a-fA-F]{128}$', key.data) is None:
             raise ValidationError(flash_texts_and_categories['INVALID_KEY'][0])
