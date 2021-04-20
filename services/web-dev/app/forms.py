@@ -26,11 +26,6 @@ class UserRegisterForm(FlaskForm):
     recaptcha = RecaptchaField()
 
 
-class UserUpdateForm(FlaskForm):
-    displayname = StringField('displayname', validators=[Length(max=20)])
-    recaptcha = RecaptchaField()
-
-
 class WhiteboxSubmissionForm(FlaskForm):
     program = FileField(validators=[FileRequired(), FileAllowed(
         ['c'], flash_texts_and_categories['ONLY_EXT_IS_C'][0])])
