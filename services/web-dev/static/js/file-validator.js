@@ -60,18 +60,38 @@
     crx_wb.keyChanged = function(element) {
         if (element.value.length == 0) {
             crx_wb.formElementsValidated[1] = false;
-            document.getElementById('key-ko').textContent = ' ';
-            document.getElementById('key-form-group').classList.remove('has-warning');
+            document.getElementById('pubkey-ko').textContent = ' ';
+            document.getElementById('pubkey-form-group').classList.remove('has-warning');
         } else {
-            var re = /^[0-9a-fA-F]{130}$/;
+            var re = /^[0-9a-fA-F]{128}$/;
             if (element.value.match(re)) {
                 crx_wb.formElementsValidated[1] = true;
-                document.getElementById('key-ko').textContent = ' ';
-                document.getElementById('key-form-group').classList.remove('has-warning');
+                document.getElementById('pubkey-ko').textContent = ' ';
+                document.getElementById('pubkey-form-group').classList.remove('has-warning');
             } else {
                 crx_wb.formElementsValidated[1] = false;
-                document.getElementById('key-ko').textContent = 'The public key should be a string of 130 hexadecimal digits';
-                document.getElementById('key-form-group').classList.add('has-warning');
+                document.getElementById('pubkey-ko').textContent = 'The public key should be a string of 128 hexadecimal digits';
+                document.getElementById('pubkey-form-group').classList.add('has-warning');
+            }
+        }
+        crx_wb.tryActivateButton();
+    }
+
+    crx_wb.proofOfKnowledgeChanged = function(element) {
+        if (element.value.length == 0) {
+            crx_wb.formElementsValidated[1] = false;
+            document.getElementById('proof-of-knowledge-ko').textContent = ' ';
+            document.getElementById('proof-of-knowledge-form-group').classList.remove('has-warning');
+        } else {
+            var re = /^[0-9a-fA-F]{128}$/;
+            if (element.value.match(re)) {
+                crx_wb.formElementsValidated[1] = true;
+                document.getElementById('proof-of-knowledge-ko').textContent = ' ';
+                document.getElementById('proof-of-knowledge-form-group').classList.remove('has-warning');
+            } else {
+                crx_wb.formElementsValidated[1] = false;
+                document.getElementById('proof-of-knowledge-ko').textContent = 'The proof of knowledge should be a string of 128 hexadecimal digits';
+                document.getElementById('proof-of-knowledge-form-group').classList.add('has-warning');
             }
         }
         crx_wb.tryActivateButton();

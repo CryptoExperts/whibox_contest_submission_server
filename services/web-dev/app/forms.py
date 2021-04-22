@@ -30,13 +30,18 @@ class WhiteboxSubmissionForm(FlaskForm):
     program = FileField(validators=[FileRequired(), FileAllowed(
         ['c'], flash_texts_and_categories['ONLY_EXT_IS_C'][0])])
     pubkey = StringField('pubkey', validators=[DataRequired()])
-    compiler = StringField('compiler',
-                           validators=[DataRequired(), AnyOf(['gcc', 'tcc'])])
+    proof_of_knowledge = StringField(
+        'proof_of_knowledge', validators=[DataRequired()])
     recaptcha = RecaptchaField()
 
     def validate_pubkey(self, pubkey):
-        if re.fullmatch('^[0-9a-fA-F]{130}$', pubkey.data) is None:
+        if re.fullmatch('^[0-9a-fA-F]{128}$', pubkey.data) is None:
             raise ValidationError(flash_texts_and_categories['INVALID_KEY'][0])
+
+    def validate_proof_of_knowledge(self, proof_of_knowledge):
+        if re.fullmatch('^[0-9a-fA-F]{128}$', proof_of_knowledge.data) is None:
+            raise ValidationError(
+                flash_texts_and_categories['INVALID_PROOF_OF_KNOWLEDGE'][0])
 
 
 class WhiteboxBreakForm(FlaskForm):

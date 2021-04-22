@@ -1,14 +1,16 @@
-import time
 import random
 import string
-from math import log
+import time
+
 from enum import Enum, unique
+from math import log
+from sqlalchemy import or_, and_
+from sqlalchemy.dialects import mysql
+
 from app import app
 from app import db
 from app import utils
 from app.funny_name_generator import get_funny_name
-from sqlalchemy import or_, and_
-from sqlalchemy.dialects import mysql
 from .whiteboxbreak import WhiteboxBreak
 
 
@@ -71,8 +73,8 @@ class Program(db.Model):
     _timestamp_published = db.Column(db.BigInteger, default=None)
     _timestamp_first_break = db.Column(db.BigInteger, default=None)
     _status = db.Column(db.String(100), default=Status.submitted.value)
-    _pubkey = db.Column(db.String(130), default=None)
-    _compiler = db.Column(db.String(16), default='gcc')
+    _pubkey = db.Column(db.String(128), default=None)
+    _proof_of_knowledge = db.Column(db.String(128), default=None)
     _performance_factor = db.Column(mysql.DOUBLE, default=1.0)
     _size_factor = db.Column(mysql.DOUBLE, default=1.0)
     _ram_factor = db.Column(mysql.DOUBLE, default=1.0)
@@ -82,14 +84,11 @@ class Program(db.Model):
     _timestamp_compilation_start = db.Column(db.BigInteger, default=None)
     _timestamp_compilation_finished = db.Column(db.BigInteger, default=None)
     _error_message = db.Column(db.Text, default=None)
-    _plaintexts = db.Column(db.LargeBinary, default=None)
-    _ciphertexts = db.Column(db.LargeBinary, default=None)
+    _hashes = db.Column(db.LargeBinary, default=None)
     # First set when the program is published
     _strawberries_peak = db.Column(mysql.DOUBLE, default=0)
     _strawberries_last = db.Column(mysql.DOUBLE, default=0)
     _strawberries_ranking = db.Column(db.BigInteger, default=None)
-    _carrots_peak = db.Column(mysql.DOUBLE, default=0)
-    _carrots_last = db.Column(mysql.DOUBLE, default=0)
     _timestamp_first_inversion = db.Column(db.BigInteger, default=None)
 
     @property
@@ -135,14 +134,6 @@ class Program(db.Model):
         return self._strawberries_ranking
 
     @property
-    def carrots_peak(self):
-        return self._carrots_peak
-
-    @property
-    def carrots_last(self):
-        return self._carrots_last
-
-    @property
     def hsl_color(self):
         return 'hsl(%d, 100%%, %d%%)' % \
             (self._timestamp_submitted % 360,
@@ -185,22 +176,22 @@ class Program(db.Model):
         return self._time_factor
 
     @property
-    def compiler(self):
-        return self._compiler
+    def proof_of_knowledge(self):
+        return self._proof_of_knowledge
 
     @property
     def error_message(self):
         return self._error_message
 
     @property
-    def plaintexts(self):
-        return self._plaintexts
+    def hashes(self):
+        return self._hashes
 
-    @plaintexts.setter
-    def plaintexts(self, val):
+    @hashes.setter
+    def hashes(self, val):
         assert type(val) == bytes
-        if self._plaintexts is None:
-            self._plaintexts = val
+        if self._hashes is None:
+            self._hashes = val
 
     @property
     def ciphertexts(self):
@@ -245,15 +236,6 @@ class Program(db.Model):
         self._strawberries_last = strawberries
         if self._strawberries_peak < strawberries:
             self._strawberries_peak = strawberries
-
-    def update_carrots(self, now):
-        if not self.is_published:
-            return
-
-        carrots = self.current_carrots(now)
-        self._carrots_last = carrots
-        if self._carrots_peak < carrots:
-            self._carrots_peak = carrots
 
     @staticmethod
     def clean_programs_which_timeout_to_compile_or_test():
@@ -320,33 +302,6 @@ class Program(db.Model):
                 (end_timestamp-self._timestamp_published) / 60)
             strawberries = (surviving_minutes/1440.0) ** 2
         return strawberries * float(self._performance_factor)
-
-    def current_carrots(self, end_timestamp):
-        if not self.is_published:
-            return None
-
-        final_deadline = app.config['FINAL_DEADLINE']
-        end_timestamp = min(end_timestamp, final_deadline)
-
-        if self.is_broken or self._timestamp_first_inversion:
-            peak_timestamp = end_timestamp
-            if self._timestamp_first_inversion:
-                peak_timestamp = self._timestamp_first_inversion
-            if self.is_broken:
-                peak_timestamp = min(self._timestamp_first_break,
-                                     peak_timestamp)
-            surviving_minutes = int(
-                (peak_timestamp-self._timestamp_published)/60)
-            minutes_after_peak = int((end_timestamp - peak_timestamp) / 60)
-            if minutes_after_peak > surviving_minutes:
-                carrots = 0
-            else:
-                carrots = ((surviving_minutes-minutes_after_peak)/1440.0)**2
-        else:
-            surviving_minutes = int(
-                (end_timestamp-self._timestamp_published) / 60)
-            carrots = (surviving_minutes/1440.0) ** 2
-        return carrots * float(self._performance_factor) * 0.5
 
     def set_status_to_compilation_failed(self, error_message=None):
         utils.console(
@@ -426,11 +381,12 @@ class Program(db.Model):
         return self._status == Program.Status.broken.value
 
     @staticmethod
-    def create(user, basename, pubkey, compiler):
+    def create(user, basename, pubkey, proof_of_knowledge):
         program = Program(_basename=basename,
                           _pubkey=pubkey,
-                          _compiler=compiler,
+                          _proof_of_knowledge=proof_of_knowledge,
                           _user_id=user._id)
+        print(program, flush=True)
         db.session.add(program)
 
     def generate_nonce(self):
@@ -596,38 +552,24 @@ class Program(db.Model):
             Program._task_id.isnot(None)
         ).order_by(Program._timestamp_compilation_start.desc()).all()
 
-    def __str__(self):
-        s = '[Program %d]\n' % (self._id)
-        s += '\t funny_name:                         %s\n' % (
-            str(self._funny_name))
-        s += '\t basename:                           %s\n' % (
-            str(self._basename))
-        s += '\t user_id:                            %s\n' % (
-            str(self._user_id))
-        s += '\t nonce:                              %s\n' % (str(self._nonce))
-        s += '\t timestamp_submitted:                %s\n' % (
-            str(self._timestamp_submitted))
-        s += '\t timestamp_published:                %s\n' % (
-            str(self._timestamp_published))
-        s += '\t timestamp_first_break:              %s\n' % (
-            str(self._timestamp_first_break))
-        s += '\t status:                             %s\n' % (
-            str(self._status))
-        s += '\t key:                                %s\n' % (str(self._key))
-        s += '\t compiler:                           %s\n' % (
-            str(self._compiler))
-        s += '\t task_id:                            %s\n' % (
-            str(self._task_id))
-        s += '\t timestamp_compilation_start:        %s\n' % (
-            str(self._timestamp_compilation_start))
-        s += '\t error_message:                      %s\n' % (
-            str(self._error_message))
-        s += '\t plaintexts:                         %s...\n' % (
-            str(self._plaintexts)[0:32])
-        s += '\t ciphertexts:                        %s...\n' % (
-            str(self._ciphertexts)[0:32])
-        s += '\t strawberries_peak:                  %s\n' % (
-            str(self._strawberries_peak))
-        s += '\t strawberries_last:                  %s\n' % (
-            str(self._strawberries_last))
+    def __repr__(self):
+        s = (
+            f'[Program {self._id}]\n'
+            f'\t funny_name:              {self._funny_name}\n'
+            f'\t basename:                {self._basename}\n'
+            f'\t user_id:                 {self._user_id}\n'
+            f'\t nonce:                   {self._nonce}\n'
+            f'\t timestamp_submitted:     {self._timestamp_submitted}\n'
+            f'\t timestamp_published:     {self._timestamp_published}\n'
+            f'\t timestamp_first_break:   {self._timestamp_first_break}\n'
+            f'\t status:                  {self._status}\n'
+            f'\t pubkey:                  {self._pubkey}\n'
+            f'\t proof_of_knowledge:      {self._proof_of_knowledge}\n'
+            f'\t task_id:                 {self._task_id}\n'
+            f'\t ts_compilation_start:    {self._timestamp_compilation_start}\n'
+            f'\t error_message:           {self._error_message}\n'
+            f'\t hashes:                  {self._hashes}\n'
+            f'\t strawberries_peak:       {self._strawberries_peak}\n'
+            f'\t strawberries_last:       {self._strawberries_last}\n'
+        )
         return s

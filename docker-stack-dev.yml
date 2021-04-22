@@ -49,7 +49,6 @@ services:
             placement:
                 constraints: [node.labels.vm == node-manager]
 
-
     launcher:
         image: crx/launcher-dev
         networks:
@@ -107,22 +106,17 @@ services:
             placement:
                 constraints: [node.labels.vm == node-manager]
 
-
-
-    # visualizer:
-    #     image: manomarks/visualizer
-    #     networks:
-    #         - main_network
-    #     ports:
-    #         - 8080:8080
-    #     volumes:
-    #         - /var/run/docker.sock:/var/run/docker.sock
-    #     deploy:
-    #         placement:
-    #             constraints: [node.labels.vm == node-manager]
-
-
-
+    visualizer:
+        image: dockersamples/visualizer
+        networks:
+            - front_network
+        ports:
+            - 8080:8080
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock
+        deploy:
+            placement:
+                constraints: [node.labels.vm == node-manager]
 
 networks:
     front_network:

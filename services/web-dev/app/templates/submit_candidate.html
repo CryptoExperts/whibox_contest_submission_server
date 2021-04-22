@@ -16,49 +16,51 @@
           <fieldset>
 
             <div class="form-group{% if form.pubkey.errors %} has-error has-feedback{% endif %}" id="file-form-group">
-              {% for error in form.program.errors %}
-              <label class="control-label" for="program">{{ error }}</label>
-              {% endfor %}
+              <label class="h5 control-label" for="program">
+                C source code
+                {% for error in form.program.errors %}
+                <label class="h3 control-label" for="program">{{ error }}</label>
+                {% endfor %}
+              </label>
               <div class="input-group">
                 <label class="input-group-btn">
                   <span class="btn btn-primary">
                     Browse&hellip; <input type="file" id="file" class="custom-file-input" name="program" onchange="window.crx_wb.fileSelected(this, {{ config.MAX_CONTENT_LENGTH }})" style="display: none;">
                   </span>
                 </label>
-                <input type="text" class="form-control" id="filename" readonly>
+                <input type="text" class="form-control" id="filename" readonly >
+
               </div>
               <div class="small">Maximum file size is {{ config.CHALLENGE_MAX_SOURCE_SIZE_IN_MB }} MB</div>
-              <div id="fileSize-ok"></div>
+              <div id="fileSize-ok" class="text-success"></div>
               <div id="fileSize-ko" class="text-danger"> </div>
             </div>
 
-            <div class="form-group row mt-2 col-md-12" id="compiler-form-group">
-              <div class="col-auto mt-2">
-                <label for="compiler-select" class="control-label">Choose your compiler:</label>
-              </div>
-              <div class="col-auto">
-                <select id="compiler-select" class="form-control input-sm" name="compiler">
-                  <option value="gcc">GCC</option>
-                  <option value="tcc">TCC</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="form-group{% if form.pubkey.errors %} has-error has-feedback{% endif %}" id="key-form-group">
-              <label class="control-label" id="key-ko">Public-key</label>
-              {% for error in form.pubkey.errors %}
-              <label class="control-label" for="pubkey">{{ error }}</label>
-              {% endfor %}
+            <div class="form-group{% if form.pubkey.errors %} has-error has-feedback{% endif %}" id="pubkey-form-group">
+              <label class="h5 control-label">Public-key</label>
               <textarea type="text" name="pubkey" id="pubkey"
                         class="form-control{% if form.pubkey.errors %} form-control-warning{% endif %}"
-                        placeholder="Public key (in the format of 130 hexdecimal digits)"
+                        placeholder="Public key (in the format of 128 hexdecimal digits)"
                         value="{% if form.pubkey.data %}{{ form.pubkey.data }}{% endif %}"
                         oninput="window.crx_wb.keyChanged(this)"
-                        autocomplete="off">
-              </textarea>
+                        autocomplete="off"></textarea>
+              <div id="pubkey-ko" class="text-danger"></div>
             </div>
 
-            {{ formidable.recaptcha(form.recaptcha, testing) }}
+            <div class="form-group{% if form.proof_of_knowledge.errors %} has-error has-feedback{% endif %}" id="proof-of-knowledge-form-group">
+              <label class="h5 control-label">Proof of knowledge</label>
+              <textarea type="text" name="proof_of_knowledge" id="proof_of_knowledge"
+                        class="form-control{% if form.proof_of_knowledge.errors %} form-control-warning{% endif %}"
+                        placeholder="Proof of knowledge (in the format of 128 hexdecimal digits)"
+                        value="{% if form.proof_of_knowledge.data %}{{ form.proof_of_knowledge.data }}{% endif %}"
+                        oninput="window.crx_wb.proofOfKnowledgeChanged(this)"
+                        autocomplete="off"></textarea>
+              <div id="proof-of-knowledge-ko" class="text-danger"></div>
+            </div>
+
+            <div>
+              {{ formidable.recaptcha(form.recaptcha, testing) }}
+            </div>
 
             <button class="btn btn-lg btn-primary btn-block" id="submitButton">Submit your Challenge!</button>
 

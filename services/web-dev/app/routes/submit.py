@@ -45,12 +45,12 @@ def submit_candidate():
             string.ascii_lowercase + string.digits) for _ in range(32))
         filename = basename + '.c'
         pubkey = form.pubkey.data
-        compiler = form.compiler.data
+        proof_of_knowledge = form.proof_of_knowledge.data
         form_data = form.program.data
         form_data.save(os.path.join(upload_folder, filename))
         Program.create(basename=basename,
                        pubkey=pubkey,
-                       compiler=compiler,
+                       proof_of_knowledge=proof_of_knowledge,
                        user=current_user)
         db.session.commit()
         return redirect(url_for('submit_candidate_ok'))
