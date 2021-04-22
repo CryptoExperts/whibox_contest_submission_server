@@ -8,6 +8,7 @@
         <th class="text-center">Compiler</th>
         <th class="text-center">Position in the compile queue</th>
         <th class="text-center">Publi Key</th>
+        <th class="text-center">Proof of knowledge</th>
         <th class="text-center">Source</th>
       </tr>
     </thead>
@@ -52,6 +53,41 @@
           </div>
 
         </td>
+
+        <td>
+          <div class="d-none">
+            <input type="text" value="{{ program.proof_of_knowledge }}" id="proof-of-knowledge-{{ program._id }}">
+          </div>
+          <!-- <div class="d-none d-lg-block">
+               <button class="btn btn-primary btn-icon-split btn-sm" onclick="copyPubkey('pub-key-{{ program._id }}')">
+               <span class="icon text-white-50">
+               <i class="fas fa-copy"></i>
+               </span>
+               <span class="text">Copy</span>
+               </button>
+               </div>
+               <div class="d-lg-none">
+               <a href="/candidate/{{ program._id }}/source.c" class="btn btn-primary btn-circle btn-sm">
+               <i class="fas fa-copy"></i>
+               </a>
+               </div> -->
+
+          <div class="d-none d-lg-block">
+            <a href="/candidate/{{ program._id }}/proof-of-knowledge" class="btn btn-primary btn-icon-split btn-sm">
+              <span class="icon text-white-50">
+                <i class="fas fa-eye"></i>
+              </span>
+              <span class="text">View</span>
+            </a>
+          </div>
+          <div class="d-lg-none">
+            <a href="/candidate/{{ program._id }}/proof-of-knowledge" class="btn btn-primary btn-circle btn-sm">
+              <i class="fas fa-eye"></i>
+            </a>
+          </div>
+
+        </td>
+
         <td>
           <div class="d-none d-lg-block">
             <a href="/candidate/{{ program._id }}/source.c" class="btn btn-primary btn-icon-split btn-sm">

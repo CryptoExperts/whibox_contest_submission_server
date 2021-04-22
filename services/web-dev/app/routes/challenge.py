@@ -44,3 +44,22 @@ def get_candidate_pubkey(identifier):
         return redirect(url_for('index'))
 
     return program.pubkey
+
+
+@app.route('/candidate/<int:identifier>/proof-of-knowledge', methods=['GET'])
+def get_candidate_proof_of_knowledge(identifier):
+    program = Program.get_by_id(identifier)
+    if program is None:
+        return redirect(url_for('index'))
+
+    do_show = False
+    if program.is_published:
+        do_show = True
+    if current_user is not None and \
+       current_user.is_authenticated and \
+       current_user == program.user:
+        do_show = True
+    if not do_show:
+        return redirect(url_for('index'))
+
+    return program.proof_of_knowledge
