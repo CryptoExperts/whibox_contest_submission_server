@@ -6,14 +6,16 @@
         <th class='text-center'>id</th>
         <th class='text-center'></th>
         <th class='text-center'>Name (click to download)</th>
-        <th data-type="fruit" class='text-center'> 🍓 / 🥕 Peak</th>
+        <th data-type="fruit" class='text-center'> 🍓 Peak</th>
         <th class='text-center'>User</th>
         <th class='text-center'>Status</th>
-        <th class='text-center'>Compiler</th>
         <th class='text-center'>Performance</th>
+        <th class="text-center">Publi Key</th>
+        <th class="text-center">Proof of knowledge</th>
+        <th class="text-center">Source</th>
         <th class='text-center'>Publication Date</th>
-        <th class='text-center'>First Break / Inversion</th>
-        <th data-type="fruit" class='text-center'>Current  🍓 / 🥕</th>
+        <th class='text-center'>First Break</th>
+        <th data-type="fruit" class='text-center'>Current  🍓 </th>
         {% if current_user.is_authenticated %}
         <th></th>
         {% endif %}
@@ -26,7 +28,7 @@
         <td class="text-center">{{ program._id }}</td>
         <td><div style="width: 1em; height: 1em; background-color: {{ program.hsl_color }}"></div></td>
         <td class="text-center"><a href='/show/candidate/{{ program._id }}.c'>{{ program.funny_name }}</a></td>
-        <td class="text-center">{{ program.strawberries_peak | round(2) }} 🍓 / {{ program.carrots_peak | round(2) }} 🥕</td>
+        <td class="text-center">{{ program.strawberries_peak | round(2) }} 🍓 </td>
         <td class="ellipsable text-center">
           {% if current_user.is_authenticated and current_user == program.user %}
           <span class="badge badge-primary">You!</span>
@@ -37,40 +39,84 @@
         <td class="text-center">
           {% if program.is_broken %}
           <span class="text-danger">Broken!</span>
-          {% elif program.datetime_first_inversion %}
-          <span class="text-warning">Inverted!</span>
           {% else %}
           <span class="text-success">Standing</span>
           {% endif %}
         </td>
-        <td class="compiler text-center">{{ program.compiler }}</td>
         <td class="text-center">{{ program.performance_factor | round(2) }}</td>
+
+        <td>
+          <div class="d-none">
+            <input type="text" value="{{ program.pubkey }}" id="pub-key-{{ program._id }}">
+          </div>
+          <div class="d-none d-lg-block">
+            <a href="/candidate/{{ program._id }}/pubkey" class="btn btn-primary btn-icon-split btn-sm">
+              <span class="icon text-white-50">
+                <i class="fas fa-eye"></i>
+              </span>
+              <span class="text">View</span>
+            </a>
+          </div>
+          <div class="d-lg-none">
+            <a href="/candidate/{{ program._id }}/pubkey" class="btn btn-primary btn-circle btn-sm">
+              <i class="fas fa-eye"></i>
+            </a>
+          </div>
+
+        </td>
+
+        <td>
+          <div class="d-none">
+            <input type="text" value="{{ program.proof_of_knowledge }}" id="proof-of-knowledge-{{ program._id }}">
+          </div>
+          <div class="d-none d-lg-block">
+            <a href="/candidate/{{ program._id }}/proof-of-knowledge" class="btn btn-primary btn-icon-split btn-sm">
+              <span class="icon text-white-50">
+                <i class="fas fa-eye"></i>
+              </span>
+              <span class="text">View</span>
+            </a>
+          </div>
+          <div class="d-lg-none">
+            <a href="/candidate/{{ program._id }}/proof-of-knowledge" class="btn btn-primary btn-circle btn-sm">
+              <i class="fas fa-eye"></i>
+            </a>
+          </div>
+
+        </td>
+
+        <td>
+          <div class="d-none d-lg-block">
+            <a href="/candidate/{{ program._id }}/source.c" class="btn btn-primary btn-icon-split btn-sm">
+              <span class="icon text-white-50">
+                <i class="fas fa-save"></i>
+              </span>
+              <span class="text">Save</span>
+            </a>
+          </div>
+          <div class="d-lg-none">
+            <a href="/candidate/{{ program._id }}/source.c" class="btn btn-primary btn-circle btn-sm">
+              <i class="fas fa-save"></i>
+            </a>
+          </div>
+        </td>
         <td class="text-center">{{ program.datetime_published }}</td>
         <td class="text-center">
           {% if program.is_broken %}
           <span class="text-danger">{{ program.datetime_first_break }}</span>
-          {% elif program.datetime_first_inversion %}
-          <span class="text-warning">{{ program.datetime_first_inversion }}</span>
           {% else %}
           -
           {% endif %}
         </td>
-        <td class="text-center">{{ program.strawberries_last | round(2) }} 🍓 / {{ program.carrots_last | round(2) }} 🥕</td>
+        <td class="text-center">{{ program.strawberries_last | round(2) }} 🍓 </td>
         {% if current_user.is_authenticated %}
         <td class="nowrap">
           {% if program.user == current_user %}
           <span class="badge badge-primary">Yours!</span>
           {% elif program in programs_broken_by_current_user %}
           <span class="badge badge-success">Broken by you!</span>
-          {% if program in programs_inverted_by_current_user %}
-          <span class="badge badge-info">Inverted by you!</span>
-          {% endif %}
-          {% elif program in programs_inverted_by_current_user %}
-          <a href="/break/candidate/{{ program._id }}" class="btn btn-danger btn-sm">Break</a>
-          <span class="badge badge-info">Inverted by you!</span>
           {% else %}
           <a href="/break/candidate/{{ program._id }}" class="btn btn-danger btn-sm">Break</a>
-          <a href="/invert/candidate/{{ program._id }}" class="btn btn-warning btn-sm">Invert</a>
           {% endif %}
         </td>
         {% endif %}

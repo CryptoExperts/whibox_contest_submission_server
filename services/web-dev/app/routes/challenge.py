@@ -43,7 +43,10 @@ def get_candidate_pubkey(identifier):
     if not do_show:
         return redirect(url_for('index'))
 
-    return program.pubkey
+    if not program.pubkey:
+        return "Public key was erased for some reason, contact administrator."
+    else:
+        return program.pubkey
 
 
 @app.route('/candidate/<int:identifier>/proof-of-knowledge', methods=['GET'])

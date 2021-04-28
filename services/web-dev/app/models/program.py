@@ -350,7 +350,6 @@ class Program(db.Model):
                     "Submission rejected after final deadline")
                 return
             self._status = Program.Status.unbroken.value
-            self._pubkey = None
             if self._timestamp_published is None:
                 self._timestamp_published = now
             self.update_strawberries(now)
