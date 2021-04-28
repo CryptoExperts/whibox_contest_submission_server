@@ -386,7 +386,7 @@ class Program(db.Model):
                           _pubkey=pubkey,
                           _proof_of_knowledge=proof_of_knowledge,
                           _user_id=user._id)
-        print(program, flush=True)
+        app.logger.info(f"New submission received: {program}")
         db.session.add(program)
 
     def generate_nonce(self):
@@ -439,14 +439,6 @@ class Program(db.Model):
             return program
         else:
             return None
-
-    # @staticmethod
-    # def get_inverted_or_broken_by_id(_id):
-    #     program = Program.query.filter(Program._id == _id).first()
-    #     if program.status in [Program.Status.inverted, Program.Status.broken]:
-    #         return program
-    #     else:
-    #         return None
 
     @staticmethod
     def get_all_published_sorted_by_ranking(max_rank=None):
@@ -517,7 +509,6 @@ class Program(db.Model):
         return Program.query.filter(
             or_(
                 Program._status == Program.Status.unbroken.value,
-                Program._status == Program.Status.inverted.value,
                 and_(
                     Program._status == Program.Status.broken.value,
                     Program._strawberries_last > 0

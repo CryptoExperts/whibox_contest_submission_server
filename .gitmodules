@@ -1,0 +1,3 @@
+[submodule "services/compile_and_test/whibox-contest-2021_supplementary-materials"]
+	path = services/compile_and_test/whibox-contest-2021_supplementary-materials
+	url = git@github.com:whibox/whibox-contest-2021_supplementary-materials.git

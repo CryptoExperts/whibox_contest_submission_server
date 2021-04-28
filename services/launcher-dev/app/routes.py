@@ -12,6 +12,7 @@ from app import utils
 from flask import request
 from .models.program import Program
 from .models.user import User
+from commands import ecdsa_verify_str
 
 
 CODE_SUCCESS = 0
@@ -34,7 +35,7 @@ def clean_programs_timeout_to_compile_or_test():
             db.session.commit()
             return True
         except:
-            utils.console('Exception catched, trying again in 2sec')
+            utils.console('Exception caught, trying again in 2sec')
             print_exc()
             time.sleep(2)
 
@@ -66,7 +67,7 @@ def compile_and_test():
         except:
             retry_count += 1
             if retry_count < 5:
-                utils.console('Exception catched, trying again in 2sec')
+                utils.console('Exception caught, trying again in 2sec')
                 time.sleep(2)
                 continue
             else:
@@ -81,21 +82,23 @@ def compile_and_test():
         utils.console('There is no program to compile and test. Exiting')
         return ""
     basename = os.path.splitext(program_to_compile_and_test.filename)[0]
-    key_string = program_to_compile_and_test.key
-    compiler = program_to_compile_and_test.compiler
+    pubkey_string = program_to_compile_and_test.pubkey
+    proof_of_knowledge_string = program_to_compile_and_test.proof_of_knowledge
     # Make sure the key can be converted in a 16-byte string
     try:
-        key_bytes = bytes.fromhex(key_string)
-        if len(key_bytes) != 16:
+        pubkey_bytes = bytes.fromhex(pubkey_string)
+        proof_of_knowledge_bytes = bytes.fromhex(proof_of_knowledge_string)
+        if len(pubkey_bytes) != 64 or len(proof_of_knowledge_bytes) != 64:
             raise
     except:
-        utils.console("The key is invalid, setting the status to test failed.")
+        utils.console("The public key or the proof-of-knowledge is invalid, "
+                      "setting the status to test failed.")
         program_to_compile_and_test.set_status_to_test_failed()
         db.session.commit()
         return ""
 
     utils.console(
-        'Preparing to compile and test a program (basename=%s)' % basename)
+        f'Preparing to compile and test a program (basename={basename})')
 
     retry_count = 0
     while True:
@@ -106,7 +109,7 @@ def compile_and_test():
         except:
             retry_count += 1
             if retry_count < 5:
-                utils.console('Exception catched, trying again in 2sec')
+                utils.console('Exception caught, trying again in 2sec')
                 time.sleep(2)
                 continue
             else:
@@ -124,23 +127,18 @@ def compile_and_test():
         app.config['CHALLENGE_MAX_MEM_EXECUTION_IN_MB'])  # in Bytes
     resources = docker.types.Resources(mem_limit=mem_limit)
     networks = [app.config['COMPILE_AND_TEST_SERVICE_NETWORK']]
-    env = ['UPLOAD_FOLDER=/uploads',
-           'FILE_BASENAME=%s' % basename,
-           'COMPILER=%s' % compiler,
-           'URL_TO_PING_BACK=%s' % 'http://launcher:5000/compile_and_test_result/%s/%s/' % (
-               basename, nonce),
-           'URL_FOR_FETCHING_PLAINTEXTS=%s' % 'http://launcher:5000/get_plaintexts/%s/%s' % (
-               basename, nonce),
-           'CHALLENGE_MAX_MEM_COMPILATION_IN_MB=%d' % app.config[
-               'CHALLENGE_MAX_MEM_COMPILATION_IN_MB'],
-           'CHALLENGE_MAX_TIME_COMPILATION_IN_SECS=%d' % app.config[
-               'CHALLENGE_MAX_TIME_COMPILATION_IN_SECS'],
-           'CHALLENGE_MAX_BINARY_SIZE_IN_MB=%d' % app.config['CHALLENGE_MAX_BINARY_SIZE_IN_MB'],
-           'CHALLENGE_MAX_MEM_EXECUTION_IN_MB=%d' % app.config['CHALLENGE_MAX_MEM_EXECUTION_IN_MB'],
-           'CHALLENGE_MAX_TIME_EXECUTION_IN_SECS=%d' % app.config[
-               'CHALLENGE_MAX_TIME_EXECUTION_IN_SECS'],
-           'CHALLENGE_NUMBER_OF_TEST_VECTORS=%d' % app.config['CHALLENGE_NUMBER_OF_TEST_VECTORS'],
-           ]
+    env = [
+        'UPLOAD_FOLDER=/uploads',
+        f'FILE_BASENAME={basename}',
+        f'URL_TO_PING_BACK=http://launcher:5000/compile_and_test_result/{basename}/{nonce}/',
+        f'URL_FOR_FETCHING_MESSAGES=http://launcher:5000/get_messages/{basename}/{nonce}',
+        f'CHALLENGE_MAX_MEM_COMPILATION_IN_MB={app.config["CHALLENGE_MAX_MEM_COMPILATION_IN_MB"]}',
+        f'CHALLENGE_MAX_TIME_COMPILATION_IN_SECS={app.config["CHALLENGE_MAX_TIME_COMPILATION_IN_SECS"]}',
+        f'CHALLENGE_MAX_BINARY_SIZE_IN_MB={app.config["CHALLENGE_MAX_BINARY_SIZE_IN_MB"]}',
+        f'CHALLENGE_MAX_MEM_EXECUTION_IN_MB={app.config["CHALLENGE_MAX_MEM_EXECUTION_IN_MB"]}',
+        f'CHALLENGE_MAX_TIME_EXECUTION_IN_SECS={app.config["CHALLENGE_MAX_TIME_EXECUTION_IN_SECS"]}',
+        f'CHALLENGE_NUMBER_OF_TEST_VECTORS={app.config["CHALLENGE_NUMBER_OF_TEST_VECTORS"]}',
+    ]
 
     # We copy the source file from /uploads to a fresh directory in /compilations
     dir_for_compilation = basename
@@ -176,13 +174,13 @@ def compile_and_test():
     retry_count = 0
     while True:
         try:
-            utils.console('Setting the program\'s task id to %s' % task_id)
+            utils.console(f'Setting the program\'s task id to {task_id}')
             program_to_compile_and_test.task_id = task_id
             db.session.commit()
         except:
             retry_count += 1
             if retry_count < 5:
-                utils.console('Exception catched, trying again in 2sec')
+                utils.console('Exception caught, trying again in 2sec')
                 time.sleep(2)
                 continue
             else:
@@ -198,56 +196,50 @@ def compile_and_test():
     return "youpi"
 
 
-@app.route('/get_plaintexts/<basename:basename>/<basename:nonce>',
+@app.route('/get_messages/<string:basename>/<string:nonce>',
            methods=['GET'])
-def get_plaintexts(basename, nonce):
+def get_messages(basename, nonce):
     if not utils.basename_and_nonce_are_valid(basename, nonce):
         return ""
 
-    path_to_plaintexts_file = os.path.join('/tmp', basename + '.plaintext.bin')
+    path_to_message_file = os.path.join('/tmp', basename + '.message.bin')
 
-    # If it doesn't already exist, create the file containting the plaintexts
-    if not os.path.exists(path_to_plaintexts_file):
-        with open(path_to_plaintexts_file, 'wb') as f:
+    # If it doesn't already exist, create the file containting the messages
+    if not os.path.exists(path_to_message_file):
+        with open(path_to_message_file, 'wb') as f:
             f.write(os.urandom(
-                16 * app.config['CHALLENGE_NUMBER_OF_TEST_VECTORS']))
+                32 * app.config['CHALLENGE_NUMBER_OF_TEST_VECTORS']))
 
-    plaintexts = b''
-    with open(path_to_plaintexts_file, 'rb') as f:
-        plaintexts = f.read()
+    with open(path_to_message_file, 'rb') as f:
+        messages = f.read()
 
-    return plaintexts
+    return messages
 
 
-@app.route(
-    '/compile_and_test_result/<basename:basename>/<basename:nonce>/<int:ret>',
-    methods=['GET', 'POST'])
+@app.route('/compile_and_test_result/<string:basename>/<string:nonce>/<int:ret>',
+           methods=['GET', 'POST'])
 def compile_and_test_result(basename, nonce, ret):
-    utils.console(
-        "Entering compile_and_test_result(basename=%s, nonce=%s, ret=%d)" %
-        (basename, nonce, ret))
+    utils.console(f"Entering compile_and_test_result(basename={basename}, "
+                  f"nonce={nonce}, ret={ret})")
     if not utils.basename_and_nonce_are_valid(basename, nonce) or ret is None:
         utils.console("Exception takes place ... (0)")
         return ""
 
     program = Program.get(basename)
     if program.status != Program.Status.submitted:
-        utils.console(
-            "The program %d status is %s. No need to proceed for this program."
-            % (program._id, program.status)
-        )
+        utils.console(f"The program {program._id} status is {program.status}. "
+                      "No need to proceed for this program.")
         utils.console("Exception takes place ... (1)")
         return ""
 
     # We (try to) remove the compilation directory
     dir_for_compilation = basename
     path_for_compilations = os.path.join('/compilations', dir_for_compilation)
-    utils.console('Trying to remove %s' % str(path_for_compilations))
+    utils.console(f'Trying to remove {path_for_compilations}')
     try:
         shutil.rmtree(path_for_compilations)
     except:
-        utils.console('Could NOT remove the directory %s' %
-                      str(path_for_compilations))
+        utils.console(f'Could NOT remove the dir {path_for_compilations}')
 
     # We process the ret code
     if ret == ERR_CODE_CONTAININT_FORBIDDEN_STRING:
@@ -260,8 +252,7 @@ def compile_and_test_result(basename, nonce, ret):
         else:
             program.set_status_to_compilation_failed(
                 'Compilation failed for unknown reason (may be due to an excessive memory usage).')
-        utils.console(
-            'Compilation failed for file with basename %s' % str(basename))
+        utils.console(f'Compilation failed for file with basename {basename}')
     elif ret == ERR_CODE_BIN_TOO_LARGE:
         program.set_status_to_compilation_failed(
             'Compiled binary file size exceeds the limit of %dMB.' % app.config['CHALLENGE_MAX_BINARY_SIZE_IN_MB'])
@@ -309,11 +300,11 @@ def compile_and_test_result(basename, nonce, ret):
     time_factor = response['time_factor']
     program.set_performance_factor(size_factor, ram_factor, time_factor)
 
-    ciphertexts = bytes.fromhex(response['ciphertexts'])
+    signatures = bytes.fromhex(response['signatures'])
     number_of_test_vectors = app.config['CHALLENGE_NUMBER_OF_TEST_VECTORS']
-    if len(ciphertexts) != 16 * number_of_test_vectors:
-        utils.console("The length of the ciphertexts is %d, we were expecting %d." % (
-            len(ciphertexts), 16 * number_of_test_vectors))
+    if len(signatures) != 64 * number_of_test_vectors:
+        utils.console(f"The length of the signatures is {len(signatures)}, "
+                      f"we were expecting {32*number_of_test_vectors}.")
         error_message = "The stream of ciphertexts does not have the appropriate length."
         utils.console(error_message)
         program.error_message = error_message
@@ -325,59 +316,41 @@ def compile_and_test_result(basename, nonce, ret):
 
     # If we reach this point, the ciphertexts stream has the appropriate length
     utils.console("We received the appropriate number of ciphertexts.")
-    utils.console(
-        "Testing the plaintexts against the ciphertexts using the announced key...")
+    utils.console("Verify signature for messages using the announced key...")
 
     # Retrieve the plaintexts from the saved file
-    path_to_plaintexts_file = os.path.join('/tmp', basename + '.plaintext.bin')
-    plaintexts = b''
-    with open(path_to_plaintexts_file, 'rb') as f:
-        plaintexts = f.read()
+    path_to_messages_file = os.path.join('/tmp', basename + '.message.bin')
+    with open(path_to_messages_file, 'rb') as f:
+        messages = f.read()
 
-    # Check the ciphertexts against the plaintext and key.
-    # TODO the db should always return the key as 16 bytes
-    key = bytes.fromhex(program.key)
-    try:
-        expected_ciphertexts = utils.compute_ciphertexts(
-            plaintexts, key, number_of_test_vectors)
-        if len(expected_ciphertexts) != 16 * number_of_test_vectors:
-            raise
-    except:
-        error_message = "Could not compute the test vectors for the given key."
-        program.set_status_to_test_failed(error_message)
-        db.session.commit()
-        return ""
+    # Check the signature against the public key and messages.
+    # TODO the db should always return the key as 128 hexdecimal digits
+    pubkey = program.pubkey
+    print(pubkey, flush=True)
     for i in range(number_of_test_vectors):
-        ciphertext = ciphertexts[16*i:16*(i+1)]
-        expected_ciphertext = expected_ciphertexts[16*i:16*(i+1)]
-        if ciphertext != expected_ciphertext:
-            plaintext = plaintexts[16*i:16*(i+1)]
-            utils.console("One of the ciphertext failed the test (plaintext=%s, key=%s, ciphertext=%s)." % (
-                plaintext, key, ciphertext))
-            error_message = '''One of the tests failed:
-- plaintext   %s
-- key         %s
-- ciphertext  %s
-- expected    %s''' % (binascii.hexlify(plaintext).decode(),
-                       binascii.hexlify(key).decode(),
-                       binascii.hexlify(ciphertext).decode(),
-                       binascii.hexlify(expected_ciphertext).decode())
+        message = messages[32*i:32*(i+1)].hex()
+        signature = signatures[64*i:64*(i+1)].hex()
+        if not ecdsa_verify_str(pubkey, message, signature):
+            utils.console(f"The {i}-th signature cannot be verified "
+                          f"(hash={message}, pubkey={pubkey}, "
+                          f"signature={signature}).")
+
+            error_message = f'''One of the tests failed:
+
+- hash      {message}
+- pubkey    {pubkey}        %s
+- signature {signature}%s'''
             program.set_status_to_test_failed(error_message)
             db.session.commit()
             return ""
+    utils.console(f"All {number_of_test_vectors} signatures verified")
 
     # If we reach this point, all the tests were successful.
-    # We save 10 test vectors for key validation in the database:
-    plaintexts_for_breaking = plaintexts[0:10*16]
-    ciphertexts_for_breaking = ciphertexts[0:10*16]
-    program.plaintexts = plaintexts_for_breaking
-    program.ciphertexts = ciphertexts_for_breaking
-    # we save one pair for validating inversion
-    plaintext_for_inverting = plaintexts[10*16:11*16]
-    ciphertext_for_inverting = ciphertexts[10*16:11*16]
-    program.plaintext_sha256_for_inverting = hashlib.sha256(
-        plaintext_for_inverting).hexdigest()
-    program.ciphertext_for_inverting = ciphertext_for_inverting
+    # We save 10 test vectors for in the database
+    messages_for_checking = messages[0:10*32]
+    signatures_for_checking = signatures[0:10*64]
+    program.hashes = messages_for_checking
+    program.signatures = signatures_for_checking
 
     program.set_status_to_unbroken()
     db.session.commit()
@@ -385,9 +358,9 @@ def compile_and_test_result(basename, nonce, ret):
 
     # Cleanup
     try:
-        os.remove(path_to_plaintexts_file)
-        utils.console("We removed the file %s" % path_to_plaintexts_file)
+        os.remove(path_to_messages_file)
+        utils.console("We removed the file %s" % path_to_messages_file)
     except:
-        utils.console("Could NOT remove the file %s" % path_to_plaintexts_file)
+        utils.console("Could NOT remove the file %s" % path_to_messages_file)
 
     return ""

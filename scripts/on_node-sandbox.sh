@@ -1,5 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-eval $(docker-machine env node-sandbox)
+eval $(docker-machine env --shell bash node-sandbox)
 
 exec "$@"

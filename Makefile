@@ -93,7 +93,16 @@ copy-vendors-files-dev:
 	# cp vendors/flot/jquery.flot.time.js services/web-dev/static/js/jquery.flot.time.js
 	# cp vendors/metisMenu/metisMenu.min.js services/web-dev/static/js/metisMenu.min.js
 
-copy-common-app-dev-files:
+update_submodule:
+	git submodule init && git submodule update
+
+copy-common-app-dev-files: update_submodule
+	-chmod 644 services/launcher-dev/dockerfile/commands.py
+	cp services/compile_and_test/whibox-contest-2021_supplementary-materials/commands.py services/launcher-dev/dockerfile/commands.py
+	chmod 400 services/launcher-dev/dockerfile/commands.py
+	-chmod 644 services/launcher-dev/dockerfile/nist_p256.py
+	cp services/compile_and_test/whibox-contest-2021_supplementary-materials/nist_p256.py services/launcher-dev/dockerfile/nist_p256.py
+	chmod 400 services/launcher-dev/dockerfile/nist_p256.py
 	-chmod 644 services/launcher-dev/app/models/program.py
 	cp services/web-dev/app/models/program.py services/launcher-dev/app/models/program.py
 	chmod 400 services/launcher-dev/app/models/program.py

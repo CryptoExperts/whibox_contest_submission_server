@@ -2,6 +2,7 @@
 
 import binascii
 import json
+import logging
 import mmap
 import os
 import re
@@ -11,6 +12,11 @@ import traceback
 import urllib.request
 from urllib.parse import urljoin
 from statistics import mean
+
+# logging
+FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+logging.basicConfig(stream=sys.stdout, level=logging.INFO, format=FORMAT)
+logger = logging.getLogger()
 
 CODE_SUCCESS = 0
 ERR_CODE_CONTAININT_FORBIDDEN_STRING = 1
@@ -29,13 +35,13 @@ forbidden_pattern = [re.compile(p) for p in [b'\sasm\W', ]]
 def exit_after_notifying_launcher(code, post_data=None):
     url_to_ping_back = os.environ['URL_TO_PING_BACK']
     url = urljoin(url_to_ping_back, './%d' % code)
-    print("Contacting %s" % url, flush=True)
+    logger.info(f"Contacting {url}")
 
     # post data
     try:
         if post_data:
             post_data = json.dumps(post_data).encode('utf8')
-            print(post_data, flush=True)
+            logger.info(f"POST: {post_data}")
         req = urllib.request.Request(
             url,
             data=post_data,
@@ -49,59 +55,64 @@ def exit_after_notifying_launcher(code, post_data=None):
             os._exit(0)
     except Exception as e:
         print(e)
-        print("!!! Could not contact %s" % url, flush=True)
+        logger.error(f"!!! Could not contact {url}")
         os._exit(1)
 
 
-def try_fetch_plaintexts():
+def try_fetch_messages():
     try:
-        url = os.environ['URL_FOR_FETCHING_PLAINTEXTS']
-        print("Contacting %s" % url, flush=True)
-        sys.stdout.flush()
+        url = os.environ['URL_FOR_FETCHING_MESSAGES']
+        logger.info(f"Contacting {url}")
         return urllib.request.urlopen(url).read()
     except:
-        print("Could not fetch plaintexts", flush=Truep)
+        logger.error("Could not fetch messages")
         os._exit(1)
 
 
 def preprocess(source):
     with open(source, 'rb', 0) as f, \
             mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ) as contents:
+
+        include_str = b'#include <gmp.h>\n'
+        if (idx := contents.find(include_str)) != -1:
+            logger.info("Remove #include <gmp.h>")
+            contents = contents[:idx] + contents[idx+17:]
+
         for string in forbidden_strings:
             if contents.find(string) != -1:
-                error_message = "Forbidden string '%s' is found." % string.decode()
-                print(error_message, flush=True)
+                error_message = f"Forbidden string '{string.decode()}' found."
+                logger.warning(error_message)
                 post_data = {"error_message": error_message}
                 exit_after_notifying_launcher(
-                    ERR_CODE_CONTAININT_FORBIDDEN_STRING, post_data
-                )
+                    ERR_CODE_CONTAININT_FORBIDDEN_STRING, post_data)
 
         for pattern in forbidden_pattern:
             match = re.search(pattern, contents)
             if match is not None:
-                error_message = "The string '%s' in the source code matches forbidden pattern '%s'." % (
-                    match.group(0).decode(), pattern.pattern.decode())
-                print(error_message, flush=True)
+                matched = match.group(0).decode()
+                pattern = pattern.pattern.decode()
+                error_message = (f"The string '{matched}' in the source code "
+                                 f"matches forbidden pattern '{pattern}'.")
+                logger.warning(error_message)
                 post_data = {"error_message": error_message}
                 exit_after_notifying_launcher(
                     ERR_CODE_CONTAININT_FORBIDDEN_STRING, post_data)
 
 
-def compile(basename, compiler, source, obj):
+def compile(basename, source, obj):
     try:
         # max ram in KB
-        max_ram = int(os.environ['CHALLENGE_MAX_MEM_COMPILATION_IN_MB']) \
-            * (2**10) + 5000
-        max_cpu_time = int(
-            os.environ['CHALLENGE_MAX_TIME_COMPILATION_IN_SECS']) + 10
-        cmd_ulimit_ram = 'ulimit -v %d' % (max_ram)
-        cmd_ulimit_cpu_time = 'ulimit -t %d' % (max_cpu_time)
+        max_ram = int(os.environ['CHALLENGE_MAX_MEM_COMPILATION_IN_MB']) * (2**10) + 5000  # noqa
+        max_cpu_time = int(os.environ['CHALLENGE_MAX_TIME_COMPILATION_IN_SECS']) + 10  # noqa
+        cmd_ulimit_ram = f'ulimit -v {max_ram}'
+        cmd_ulimit_cpu_time = f'ulimit -t {max_cpu_time}'
+        cmd_compile = f'gcc -c {source} -o {obj}'
 
-        cmd_compiler = '%s -nostdinc -c %s -o %s' % (compiler, source, obj)
-        compile_prcess = subprocess.run(
-            '%s; %s; %s' % (cmd_ulimit_ram, cmd_ulimit_cpu_time, cmd_compiler),
-            check=True, shell=True, stderr=subprocess.PIPE
-        )
+        cmd_all = f'{cmd_ulimit_ram}; {cmd_ulimit_cpu_time}; {cmd_compile}'
+        logger.info(f"Compilation CMD: {cmd_all}")
+        compile_prcess = subprocess.run(cmd_all, check=True, shell=True,
+                                        stderr=subprocess.PIPE)
+
         if b'warning: implicit declaration of function' in compile_prcess.stderr:
             err_msg = re.sub(
                 r'/uploads/[a-z0-9]{32}\.c\:(\d+\:)*', '',
@@ -111,62 +122,59 @@ def compile(basename, compiler, source, obj):
             exit_after_notifying_launcher(
                 ERR_CODE_COMPILATION_FAILED, post_data)
     except Exception as e:
-        print("The compilation of file %s.c failed." % basename)
-        print("The compile command is:\t%s\t" % cmd_compiler, flush=True)
+        logger.error(f"The compilation of file {basename}.c failed.")
+        logger.error(f"The compile command is:\t{cmd_compile}\t")
         traceback.print_exc()
         exit_after_notifying_launcher(ERR_CODE_COMPILATION_FAILED)
-    print("The compilation of the file with basename %s succeeded." % basename,
-          flush=True)
+    logger.info(f"The compilation of {basename}.c succeeded.")
 
 
-def link(basename, compiler, obj, executable):
+def link(basename, obj, executable):
     try:
-        cmd_list = [compiler, '/main.o', obj, '-o', executable]
+        cmd_list = ['gcc', '/main.o', obj, '-lgmp', '-o', executable]
         subprocess.run(cmd_list, check=True)
     except:
-        print("The link of the file with basename %s failed." % basename,
-              flush=True)
+        logger.error(f"The link of the file with basename {basename} failed.")
         exit_after_notifying_launcher(ERR_CODE_LINK_FAILED)
-    print("The link of the file with basename %s succeeded." % basename,
-          flush=True)
+    logger.info(f"The link of the file with basename {basename} succeeded.")
 
 
 def performance_measure(executable,
-                        plaintexts,
+                        messages,
                         number_of_tests,
                         ram_limit,
                         cpu_time_limit):
     current_test_index = 0
-    ciphertexts = b''
+    signatures = b''
     all_cpu_time = list()
     all_max_ram = list()
-    cmd = '/execute.py %s %s %d'
+
     while current_test_index < number_of_tests:
-        current_plaintext = plaintexts[
-            current_test_index * 16:(current_test_index+1)*16
-        ]
-        current_pt_as_text = binascii.hexlify(current_plaintext).decode()
+        current_message = messages[
+            current_test_index*32: (current_test_index+1)*32]
+        current_message_as_text = binascii.hexlify(current_message).decode()
+        cmd = (f'/execute.py {executable} {current_message_as_text} '
+               f'{current_test_index}')
         try:
-            ps = subprocess.run(
-                cmd % (executable, current_pt_as_text, current_test_index),
-                check=True,
-                stdout=subprocess.PIPE,
-                shell=True)
-            ct_as_text, cpu_time, ram = json.loads(ps.stdout)
-            current_ciphertext = bytes.fromhex(ct_as_text)
-            if len(current_ciphertext) != 16:
-                raise Exception("ciphertext is too short")
-            ciphertexts += current_ciphertext
+            ps = subprocess.run(cmd, check=True, stdout=subprocess.PIPE,
+                                shell=True)
+            signature_as_text, cpu_time, ram = json.loads(ps.stdout)
+            current_signature = bytes.fromhex(signature_as_text)
+            if len(current_signature) != 64:
+                raise Exception("Signature is too short")
+            signatures += current_signature
 
             # check whether we reach the limitation
             if cpu_time > cpu_time_limit:
-                print("Execution reaches memory limit: %.2fs was used!" % cpu_time, flush=True)
+                logger.warning("Execution reaches CPU time limit: "
+                               f"{cpu_time:.2f}s was used!")
                 post_data = {"cpu_time": cpu_time}
                 exit_after_notifying_launcher(
                     ERR_CODE_EXECUTION_EXCEED_TIME_LIMIT,
                     post_data=post_data)
             if ram > ram_limit:
-                print("Execution reaches time limit: %.2fMB" % (ram/1024.), flush=True)
+                logger.warning("Execution reaches memory limit: "
+                               f"{ram/1024:.2f}MB")
                 post_data = {"ram": ram/1024.}
                 exit_after_notifying_launcher(
                     ERR_CODE_EXECUTION_EXCEED_RAM_LIMIT,
@@ -176,55 +184,61 @@ def performance_measure(executable,
             all_max_ram.append(ram)
             current_test_index += 1
         except Exception as e:
-            print("Execution failed", flush=True)
+            logger.error(f"Execution failed: {cmd}")
             traceback.print_exc()
-            print("===========")
-            print(e, flush=True)
+            logger.error("===========")
+            logger.error(e)
             exit_after_notifying_launcher(ERR_CODE_EXECUTION_FAILED)
 
-    print("The execution succeeded and we retrieved the ciphertexts.", flush=True)
+    logger.info("The execution succeeded and we retrieved the signatures.")
     all_cpu_time.sort()
     all_max_ram.sort()
     average_cpu_time = mean(all_cpu_time[5:-5])
     average_max_ram = mean(all_max_ram[5:-5])
 
-    return (ciphertexts, average_cpu_time, average_max_ram)
+    return (signatures, average_cpu_time, average_max_ram)
 
 
 def main():
+    logger.info("Start compilation and test")
+
     # Compile
     upload_folder = os.environ['UPLOAD_FOLDER']
     basename = os.environ['FILE_BASENAME']
-    compiler = os.environ['COMPILER']
     source_file = basename + '.c'
     object_file = basename + '.o'
     path_to_source = os.path.join(upload_folder, source_file)
     path_to_object = os.path.join('/tmp', object_file)
 
     # check forbidden string and pattern
+    logger.info("***** Preprocess the code *****")
     preprocess(path_to_source)
 
-    compile(basename, compiler, path_to_source, path_to_object)
+    logger.info("***** Start to compile *****")
+    compile(basename, path_to_source, path_to_object)
 
-    # Check the binary size
+    # check the binary size
     max_bin_size = 2**20 * int(os.environ['CHALLENGE_MAX_BINARY_SIZE_IN_MB'])
     bin_size = os.path.getsize(path_to_object)
     if bin_size > max_bin_size:
         exit_after_notifying_launcher(ERR_CODE_BIN_TOO_LARGE)
 
-    # Link
+    # link
+    logger.info("***** Start to link *****")
     path_to_executable = '/tmp/main'
-    link(basename, compiler, path_to_object, path_to_executable)
+    link(basename, path_to_object, path_to_executable)
 
-    # Fetch the plaintexts to encrypt
-    plaintexts = try_fetch_plaintexts()
+    # fetch the plaintexts to encrypt
+    logger.info("***** Start to fetch messages to sign *****")
+    messages = try_fetch_messages()
 
     # performance measure
+    logger.info("***** Sign messages, and measure performances *****")
     number_of_tests = int(os.environ['CHALLENGE_NUMBER_OF_TEST_VECTORS'])
     cpu_time_limit = int(os.environ['CHALLENGE_MAX_TIME_EXECUTION_IN_SECS'])
     ram_limit = 2**10 * int(os.environ['CHALLENGE_MAX_MEM_EXECUTION_IN_MB'])
-    ciphertexts, average_cpu_time, average_max_ram = performance_measure(
-        path_to_executable, plaintexts, number_of_tests,
+    signatures, average_cpu_time, average_max_ram = performance_measure(
+        path_to_executable, messages, number_of_tests,
         ram_limit, cpu_time_limit
     )
     size_factor = os.path.getsize(path_to_object) / max_bin_size
@@ -233,7 +247,7 @@ def main():
 
     # If we reach this line, everything went fine
     post_data = {
-        "ciphertexts": binascii.hexlify(ciphertexts).decode(),
+        "signatures": binascii.hexlify(signatures).decode(),
         "size_factor": size_factor,
         "ram_factor": ram_factor,
         "time_factor": time_factor
