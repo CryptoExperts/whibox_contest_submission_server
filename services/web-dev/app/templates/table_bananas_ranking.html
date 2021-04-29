@@ -15,7 +15,7 @@
           {% if current_user.is_authenticated and current_user == user %}
           <span class="badge badge-info">You!</span>
           {% else %}
-          {{ user.displayname or user.username}}
+          {{ user.nickname or user.username}}
           {% endif %}
         </td>
         <td>{{ user.bananas | round(2) }} 🍌</td>
