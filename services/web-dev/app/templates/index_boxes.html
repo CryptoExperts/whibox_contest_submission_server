@@ -41,16 +41,16 @@
         <div class="row no-gutters align-items-center">
           <div class="col mr-2">
             <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-              <span class="text-danger">Broken!</span> / <span class="text-success">Unbroken!</span>
+              <span class="text-danger">Broken!</span> / <span class="text-success">Standing!</span>
             </div>
             <div class="row no-gutters align-items-center">
               <div class="col-auto">
-                <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800">{{ number_of_unbroken_programs }}/{{ number_of_unbroken_programs }}</div>
+                <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800">{{ number_of_broken_programs }}/{{ number_of_unbroken_programs }}</div>
               </div>
               <div class="col">
                 <div class="progress progress-sm mr-2" style="height: 1.5em">
-                  <div class="progress-bar progress-bar-striped bg-danger" role="progressbar" style="width: 50%" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100">50%</div>
-                  <div class="progress-bar bg-success" role="progressbar" style="width: 50%" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100">50%</div>
+                  <div class="progress-bar progress-bar-striped bg-danger" role="progressbar" style="width: {{ broken_ratio }}%" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100">{{ broken_ratio }}%</div>
+                  <div class="progress-bar bg-success" role="progressbar" style="width: {{ 100 - broken_ratio }}%" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100">{{100-broken_ratio}}%</div>
                 </div>
               </div>
             </div>

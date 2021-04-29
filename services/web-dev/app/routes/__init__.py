@@ -58,6 +58,9 @@ def index():
         max_rank=app.config['MAX_RANK_OF_PLOTED_CHALLENGES'])
     programs = Program.get_all_published_sorted_by_ranking()
     number_of_unbroken_programs = Program.get_number_of_unbroken_programs()
+    number_of_broken_programs = Program.get_number_of_broken_programs()
+    broken_ratio = round(number_of_broken_programs*100 /
+                         (number_of_broken_programs+number_of_unbroken_programs))
     wb_breaks = WhiteboxBreak.get_all()
     programs_broken_by_current_user = None
     if current_user and current_user.is_authenticated:
@@ -74,6 +77,8 @@ def index():
         wb_breaks=wb_breaks,
         programs_broken_by_current_user=programs_broken_by_current_user,
         number_of_unbroken_programs=number_of_unbroken_programs,
+        number_of_broken_programs=number_of_broken_programs,
+        broken_ratio=broken_ratio,
         programs_to_plot=programs_to_plot
     )
 

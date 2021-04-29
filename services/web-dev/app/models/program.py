@@ -405,6 +405,12 @@ class Program(db.Model):
         ).count()
 
     @staticmethod
+    def get_number_of_broken_programs():
+        return Program.query.filter(
+            Program._status == Program.Status.broken.value,
+        ).count()
+
+    @staticmethod
     def get_next_program_to_compile():
         return Program.query.filter(
             Program._status == Program.Status.submitted.value,
