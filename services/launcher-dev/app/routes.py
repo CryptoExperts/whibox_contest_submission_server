@@ -1,6 +1,4 @@
-import binascii
 import docker
-import hashlib
 import os
 import shutil
 import time
@@ -12,7 +10,8 @@ from app import utils
 from flask import request
 from .models.program import Program
 from .models.user import User
-from commands import ecdsa_verify_str
+from commands import (ecdsa_verify_str, decode_public, check_public_key,
+                      ec_schnorr_verify)
 
 
 CODE_SUCCESS = 0
@@ -23,6 +22,10 @@ ERR_CODE_LINK_FAILED = 4
 ERR_CODE_EXECUTION_FAILED = 5
 ERR_CODE_EXECUTION_EXCEED_RAM_LIMIT = 6
 ERR_CODE_EXECUTION_EXCEED_TIME_LIMIT = 7
+
+CHALLENGE_MAX_BINARY_SIZE_IN_MB = app.config['CHALLENGE_MAX_BINARY_SIZE_IN_MB']
+CHALLENGE_MAX_MEM_EXECUTION_IN_MB = app.config['CHALLENGE_MAX_MEM_EXECUTION_IN_MB']
+CHALLENGE_MAX_TIME_EXECUTION_IN_SECS = app.config['CHALLENGE_MAX_TIME_EXECUTION_IN_SECS']
 
 
 def clean_programs_timeout_to_compile_or_test():
@@ -86,14 +89,30 @@ def compile_and_test():
     proof_of_knowledge_string = program_to_compile_and_test.proof_of_knowledge
     # Make sure the key can be converted in a 16-byte string
     try:
-        pubkey_bytes = bytes.fromhex(pubkey_string)
+        Q = decode_public(pubkey_string)
         proof_of_knowledge_bytes = bytes.fromhex(proof_of_knowledge_string)
-        if len(pubkey_bytes) != 64 or len(proof_of_knowledge_bytes) != 64:
+        if len(proof_of_knowledge_bytes) != 64:
             raise
     except:
         utils.console("The public key or the proof-of-knowledge is invalid, "
                       "setting the status to test failed.")
         program_to_compile_and_test.set_status_to_test_failed()
+        db.session.commit()
+        return ""
+
+    if not check_public_key(Q):
+        error_message = "The public key is not invalid"
+        utils.console(error_message)
+        program_to_compile_and_test.set_status_to_test_failed(
+            error_message=error_message)
+        db.session.commit()
+        return ""
+
+    if not ec_schnorr_verify(pubkey_string, proof_of_knowledge_string):
+        error_message = "Proof-of-knowledge could not be verified"
+        utils.console(error_message)
+        program_to_compile_and_test.set_status_to_test_failed(
+            error_message=error_message)
         db.session.commit()
         return ""
 
@@ -124,7 +143,7 @@ def compile_and_test():
                                                 max_attempts=1)
     mem_limit = 2**20 * max(
         app.config['CHALLENGE_MAX_MEM_COMPILATION_IN_MB'],
-        app.config['CHALLENGE_MAX_MEM_EXECUTION_IN_MB'])  # in Bytes
+        CHALLENGE_MAX_MEM_EXECUTION_IN_MB)  # in Bytes
     resources = docker.types.Resources(mem_limit=mem_limit)
     networks = [app.config['COMPILE_AND_TEST_SERVICE_NETWORK']]
     env = [
@@ -134,8 +153,8 @@ def compile_and_test():
         f'URL_FOR_FETCHING_MESSAGES=http://launcher:5000/get_messages/{basename}/{nonce}',
         f'CHALLENGE_MAX_MEM_COMPILATION_IN_MB={app.config["CHALLENGE_MAX_MEM_COMPILATION_IN_MB"]}',
         f'CHALLENGE_MAX_TIME_COMPILATION_IN_SECS={app.config["CHALLENGE_MAX_TIME_COMPILATION_IN_SECS"]}',
-        f'CHALLENGE_MAX_BINARY_SIZE_IN_MB={app.config["CHALLENGE_MAX_BINARY_SIZE_IN_MB"]}',
-        f'CHALLENGE_MAX_MEM_EXECUTION_IN_MB={app.config["CHALLENGE_MAX_MEM_EXECUTION_IN_MB"]}',
+        f'CHALLENGE_MAX_BINARY_SIZE_IN_MB={CHALLENGE_MAX_BINARY_SIZE_IN_MB}',
+        f'CHALLENGE_MAX_MEM_EXECUTION_IN_MB={CHALLENGE_MAX_MEM_EXECUTION_IN_MB}',
         f'CHALLENGE_MAX_TIME_EXECUTION_IN_SECS={app.config["CHALLENGE_MAX_TIME_EXECUTION_IN_SECS"]}',
         f'CHALLENGE_NUMBER_OF_TEST_VECTORS={app.config["CHALLENGE_NUMBER_OF_TEST_VECTORS"]}',
     ]
@@ -216,6 +235,54 @@ def get_messages(basename, nonce):
     return messages
 
 
+def process_compile_and_test_ret(program, request, basename, ret):
+    if ret == ERR_CODE_CONTAININT_FORBIDDEN_STRING:
+        postdata = request.get_json()
+        program.set_status_to_preprocess_failed(postdata['error_message'])
+    elif ret == ERR_CODE_COMPILATION_FAILED:
+        postdata = request.get_json()
+        if postdata:
+            program.set_status_to_compilation_failed(postdata['error_message'])
+        else:
+            program.set_status_to_compilation_failed(
+                'Compilation failed for unknown reason '
+                '(may be due to an excessive memory usage).')
+        utils.console(f'Compilation failed for file with basename {basename}')
+    elif ret == ERR_CODE_BIN_TOO_LARGE:
+        program.set_status_to_compilation_failed(
+            "Compiled binary file size exceeds the limit of "
+            f"{CHALLENGE_MAX_BINARY_SIZE_IN_MB:d}MB.")
+        utils.console(f'Compilation failed for file with basename {basename}')
+    elif ret == ERR_CODE_LINK_FAILED:
+        program.set_status_to_link_failed()
+        utils.console(f'Link failed for file with basename {basename}')
+    elif ret == ERR_CODE_EXECUTION_EXCEED_RAM_LIMIT:
+        postdata = request.get_json()
+        program.set_status_to_execution_failed(
+            "Execution reach memory limitation of "
+            f"{CHALLENGE_MAX_MEM_EXECUTION_IN_MB:d}MB. "
+            f"Memory consumption was {postdata['ram']:.2f}MB.")
+        utils.console("Code execution reach memory limit for file with "
+                      f"basename {basename}")
+    elif ret == ERR_CODE_EXECUTION_EXCEED_TIME_LIMIT:
+        postdata = request.get_json()
+        program.set_status_to_execution_failed(
+            "Execution reach time limitation of "
+            f"{app.config['CHALLENGE_MAX_TIME_EXECUTION_IN_SECS']:d}s. "
+            f"Time used {postdata['cpu_time']:.2f}s")
+        utils.console("Code execution reach time limit for file with "
+                      f"basename {basename}")
+    elif ret == ERR_CODE_EXECUTION_FAILED:
+        program.set_status_to_execution_failed()
+        utils.console(
+            f'Code execution failed for file with basename {basename}')
+    elif ret == CODE_SUCCESS:
+        utils.console(f'Success for file with basename {basename}')
+    else:
+        utils.console(f"We received an unexpected return code ({ret}) "
+                      f"for file with basename {basename}")
+
+
 @app.route('/compile_and_test_result/<string:basename>/<string:nonce>/<int:ret>',
            methods=['GET', 'POST'])
 def compile_and_test_result(basename, nonce, ret):
@@ -242,46 +309,7 @@ def compile_and_test_result(basename, nonce, ret):
         utils.console(f'Could NOT remove the dir {path_for_compilations}')
 
     # We process the ret code
-    if ret == ERR_CODE_CONTAININT_FORBIDDEN_STRING:
-        postdata = request.get_json()
-        program.set_status_to_preprocess_failed(postdata['error_message'])
-    elif ret == ERR_CODE_COMPILATION_FAILED:
-        postdata = request.get_json()
-        if postdata:
-            program.set_status_to_compilation_failed(postdata['error_message'])
-        else:
-            program.set_status_to_compilation_failed(
-                'Compilation failed for unknown reason (may be due to an excessive memory usage).')
-        utils.console(f'Compilation failed for file with basename {basename}')
-    elif ret == ERR_CODE_BIN_TOO_LARGE:
-        program.set_status_to_compilation_failed(
-            'Compiled binary file size exceeds the limit of %dMB.' % app.config['CHALLENGE_MAX_BINARY_SIZE_IN_MB'])
-        utils.console(
-            'Compilation failed for file with basename %s' % str(basename))
-    elif ret == ERR_CODE_LINK_FAILED:
-        program.set_status_to_link_failed()
-        utils.console('Link failed for file with basename %s' % str(basename))
-    elif ret == ERR_CODE_EXECUTION_EXCEED_RAM_LIMIT:
-        postdata = request.get_json()
-        program.set_status_to_execution_failed(
-            "Execution reach memory limitation of %dMB. Memory consumption was %.2fMB." % (app.config['CHALLENGE_MAX_MEM_EXECUTION_IN_MB'], postdata['ram']))
-        utils.console(
-            'Code execution reach memory limit for file with basename %s' % str(basename))
-    elif ret == ERR_CODE_EXECUTION_EXCEED_TIME_LIMIT:
-        postdata = request.get_json()
-        program.set_status_to_execution_failed(
-            "Execution reach time limitation of %ds. Time used %.2fs" % (app.config['CHALLENGE_MAX_TIME_EXECUTION_IN_SECS'], postdata['cpu_time']))
-        utils.console(
-            'Code execution reach time limit for file with basename %s' % str(basename))
-    elif ret == ERR_CODE_EXECUTION_FAILED:
-        program.set_status_to_execution_failed()
-        utils.console(
-            'Code execution failed for file with basename %s' % str(basename))
-    elif ret == CODE_SUCCESS:
-        utils.console('Success for file with basename %s' % str(basename))
-    else:
-        utils.console(
-            "We received an unexpected return code (%s) for file with basename %s" % (str(ret), str(basename)))
+    process_compile_and_test_ret(program, request, basename, ret)
     db.session.commit()
 
     if ret != ERR_CODE_EXECUTION_FAILED:
@@ -292,15 +320,16 @@ def compile_and_test_result(basename, nonce, ret):
         utils.console("Failed to compiling ... ")
         return ""
 
-    # If we reach this point, the program was successfuly compiled,
-    # we can test the ciphertexts
-    response = request.get_json()
-    size_factor = response['size_factor']
-    ram_factor = response['ram_factor']
-    time_factor = response['time_factor']
+    # If we reach this point, the program was successfully compiled,
+    # we get performance factors
+    postdata = request.get_json()
+    size_factor = postdata['size_factor']
+    ram_factor = postdata['ram_factor']
+    time_factor = postdata['time_factor']
     program.set_performance_factor(size_factor, ram_factor, time_factor)
 
-    signatures = bytes.fromhex(response['signatures'])
+    # we can test the signatures
+    signatures = bytes.fromhex(postdata['signatures'])
     number_of_test_vectors = app.config['CHALLENGE_NUMBER_OF_TEST_VECTORS']
     if len(signatures) != 64 * number_of_test_vectors:
         utils.console(f"The length of the signatures is {len(signatures)}, "
@@ -315,10 +344,10 @@ def compile_and_test_result(basename, nonce, ret):
         return ""
 
     # If we reach this point, the ciphertexts stream has the appropriate length
-    utils.console("We received the appropriate number of ciphertexts.")
+    utils.console("We received the appropriate number of signatures.")
     utils.console("Verify signature for messages using the announced key...")
 
-    # Retrieve the plaintexts from the saved file
+    # Retrieve the messages from the saved file
     path_to_messages_file = os.path.join('/tmp', basename + '.message.bin')
     with open(path_to_messages_file, 'rb') as f:
         messages = f.read()

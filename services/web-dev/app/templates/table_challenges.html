@@ -5,7 +5,7 @@
         <th class='column-to-sort-first asc'>Rank</th>
         <th class='text-center'>id</th>
         <th class='text-center'></th>
-        <th class='text-center'>Name (click to download)</th>
+        <th class='text-center'>Name</th>
         <th data-type="fruit" class='text-center'> 🍓 Peak</th>
         <th class='text-center'>User</th>
         <th class='text-center'>Status</th>
@@ -27,7 +27,7 @@
         <th class="text-center" scope="row">{{ program.strawberries_ranking }}</th>
         <td class="text-center">{{ program._id }}</td>
         <td><div style="width: 1em; height: 1em; background-color: {{ program.hsl_color }}"></div></td>
-        <td class="text-center"><a href='/show/candidate/{{ program._id }}.c'>{{ program.funny_name }}</a></td>
+        <td class="text-center"><a href='/candidate/{{ program._id }}/source.c'>{{ program.funny_name }}</a></td>
         <td class="text-center">{{ program.strawberries_peak | round(2) }} 🍓 </td>
         <td class="ellipsable text-center">
           {% if current_user.is_authenticated and current_user == program.user %}
