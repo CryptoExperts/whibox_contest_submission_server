@@ -10,7 +10,7 @@
         <th class='text-center'>User</th>
         <th class='text-center'>Status</th>
         <th class='text-center'>Performance</th>
-        <th class="text-center">Publi Key</th>
+        <th class="text-center">Public Key</th>
         <th class="text-center">Proof of knowledge</th>
         <th class="text-center">Source</th>
         <th class='text-center'>Publication Date</th>
@@ -31,7 +31,7 @@
         <td class="text-center">{{ program.strawberries_peak | round(2) }} 🍓 </td>
         <td class="ellipsable text-center">
           {% if current_user.is_authenticated and current_user == program.user %}
-          <span class="badge badge-primary">You!</span>
+          <span class="badge badge-info">You!</span>
           {% else %}
           {{ program.user.displayname|trim or program.user.username}}
           {% endif %}
@@ -54,7 +54,7 @@
               <span class="icon text-white-50">
                 <i class="fas fa-eye"></i>
               </span>
-              <span class="text">View</span>
+              <span class="text">view</span>
             </a>
           </div>
           <div class="d-lg-none">
@@ -74,7 +74,7 @@
               <span class="icon text-white-50">
                 <i class="fas fa-eye"></i>
               </span>
-              <span class="text">View</span>
+              <span class="text">view</span>
             </a>
           </div>
           <div class="d-lg-none">
@@ -91,7 +91,7 @@
               <span class="icon text-white-50">
                 <i class="fas fa-save"></i>
               </span>
-              <span class="text">Save</span>
+              <span class="text">save</span>
             </a>
           </div>
           <div class="d-lg-none">
@@ -112,11 +112,23 @@
         {% if current_user.is_authenticated %}
         <td class="nowrap">
           {% if program.user == current_user %}
-          <span class="badge badge-primary">Yours!</span>
+          <span class="badge badge-info">Yours!</span>
           {% elif program in programs_broken_by_current_user %}
           <span class="badge badge-success">Broken by you!</span>
           {% else %}
-          <a href="/break/candidate/{{ program._id }}" class="btn btn-danger btn-sm">Break</a>
+          <div class="d-none d-lg-block">
+            <a href="/break/candidate/{{ program._id }}" class="btn btn-danger btn-icon-split btn-sm">
+              <span class="icon text-white-50">
+                <i class="fas fa-crosshairs"></i>
+              </span>
+              <span class="text">break</span>
+            </a>
+          </div>
+          <div class="d-lg-none">
+            <a href="/break/candidate/{{ program._id }}" class="btn btn-danger btn-circle btn-sm">
+              <i class="fas fa-crosshairs"></i>
+            </a>
+          </div>
           {% endif %}
         </td>
         {% endif %}

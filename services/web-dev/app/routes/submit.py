@@ -3,6 +3,8 @@ import random
 import string
 import time
 
+import sqlalchemy
+
 from flask import render_template, url_for, request
 from flask_login import login_required, current_user
 
@@ -52,8 +54,19 @@ def submit_candidate():
                        pubkey=pubkey,
                        proof_of_knowledge=proof_of_knowledge,
                        user=current_user)
-        db.session.commit()
-        return redirect(url_for('submit_candidate_ok'))
+        try:
+            db.session.commit()
+        except sqlalchemy.exc.IntegrityError as e:
+            db.session.rollback()
+            crx_flash("DUPLICATE_KEY")
+            app.logger.error(e)
+            new_form = WhiteboxSubmissionForm()
+            return render_template('submit_candidate.html',
+                                   form=new_form,
+                                   active_page='submit_candidate',
+                                   testing=app.testing), 400
+        else:
+            return redirect(url_for('submit_candidate_ok'))
 
 
 @app.route('/submit/candidate/ok', methods=['GET'])

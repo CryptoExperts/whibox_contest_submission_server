@@ -73,7 +73,7 @@ class Program(db.Model):
     _timestamp_published = db.Column(db.BigInteger, default=None)
     _timestamp_first_break = db.Column(db.BigInteger, default=None)
     _status = db.Column(db.String(100), default=Status.submitted.value)
-    _pubkey = db.Column(db.String(128), default=None)
+    _pubkey = db.Column(db.String(128), default=None, unique=True)
     _proof_of_knowledge = db.Column(db.String(128), default=None)
     _performance_factor = db.Column(mysql.DOUBLE, default=1.0)
     _size_factor = db.Column(mysql.DOUBLE, default=1.0)
@@ -85,6 +85,8 @@ class Program(db.Model):
     _timestamp_compilation_finished = db.Column(db.BigInteger, default=None)
     _error_message = db.Column(db.Text, default=None)
     _hashes = db.Column(db.LargeBinary, default=None)
+    _signatures = db.Column(db.LargeBinary, default=None)
+
     # First set when the program is published
     _strawberries_peak = db.Column(mysql.DOUBLE, default=0)
     _strawberries_last = db.Column(mysql.DOUBLE, default=0)
@@ -194,14 +196,14 @@ class Program(db.Model):
             self._hashes = val
 
     @property
-    def ciphertexts(self):
-        return self._ciphertexts
+    def signatures(self):
+        return self._signatures
 
-    @ciphertexts.setter
-    def ciphertexts(self, val):
+    @signatures.setter
+    def signatures(self, val):
         assert type(val) == bytes
-        if self._ciphertexts is None:
-            self._ciphertexts = val
+        if self._signatures is None:
+            self._signatures = val
 
     @property
     def datetime_first_break(self):
@@ -559,6 +561,7 @@ class Program(db.Model):
             f'\t ts_compilation_start:    {self._timestamp_compilation_start}\n'
             f'\t error_message:           {self._error_message}\n'
             f'\t hashes:                  {self._hashes}\n'
+            f'\t signatures:              {self._signatures}\n'
             f'\t strawberries_peak:       {self._strawberries_peak}\n'
             f'\t strawberries_last:       {self._strawberries_last}\n'
         )
