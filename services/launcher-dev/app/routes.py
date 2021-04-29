@@ -355,7 +355,6 @@ def compile_and_test_result(basename, nonce, ret):
     # Check the signature against the public key and messages.
     # TODO the db should always return the key as 128 hexdecimal digits
     pubkey = program.pubkey
-    print(pubkey, flush=True)
     for i in range(number_of_test_vectors):
         message = messages[32*i:32*(i+1)].hex()
         signature = signatures[64*i:64*(i+1)].hex()

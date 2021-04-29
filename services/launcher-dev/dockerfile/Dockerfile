@@ -16,8 +16,8 @@ RUN chmod 755 /usr/local/bin/get_compile_and_test.sh
 ENTRYPOINT ["docker-entrypoint.sh"]
 
 COPY run_dev.py /
-COPY commands.py /
-COPY nist_p256.py /
+COPY supplementary-materials/commands.py /
+COPY supplementary-materials/nist_p256.py /
 
 RUN chmod 755 /run_dev.py
 CMD ["/run_dev.py"]
