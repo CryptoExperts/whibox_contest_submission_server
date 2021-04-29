@@ -61,6 +61,13 @@
   <!-- Divider -->
   <hr class="sidebar-divider d-none d-md-block">
 
+  {% if current_user.is_authenticated %}
+  <li class="nav-item">
+    <a class="nav-link" href="/user/logout">
+      <i class="fas fa-fw fa-sign-out-alt"></i>
+      <span>Logout</span></a>
+  </li>
+  {% endif %}
 
   <!-- Sidebar Toggler (Sidebar) -->
   <div class="text-center d-none d-md-inline">

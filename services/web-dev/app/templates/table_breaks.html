@@ -20,7 +20,7 @@
           {% endif %}
         </td>
         <td class="text-center">{{ wb_break.strawberries | round(2) }} 🍓</td>
-        <td class="text-center"><a href='/show/candidate/{{ wb_break.program._id }}.c'>{{ wb_break.program.funny_name }}</a> ({{ wb_break.program._id }})</td>
+        <td class="text-center"><a href='/candidate/{{ wb_break.program._id }}/source.c'>{{ wb_break.program.funny_name }}</a> ({{ wb_break.program._id }})</td>
       </tr>
       {% endfor %}
     </tbody>
