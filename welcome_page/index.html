@@ -48,7 +48,7 @@
     <!-- Set your background image for this header on the line below. -->
     <header class="intro-header" style="background-image: url('img/taipei.jpg')">
       <div class="container">
-	<div class="row">
+        <div class="row">
           <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
             <div class="site-heading">
               <h1>CHES 2019 Capture the Flag Challenge</h1>
@@ -68,101 +68,101 @@
       <div class="row">
         <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
 
-	  <div style="text-align:center; margin-bottom: 50px;"><h2 style="border:none;"><a href="https://whibox.cyber-crypt.com/dashboard" style="display:inline-block; padding:20px 50px; background-color:#f55; text-decoration: none; color: #fff;">Go to Dashboard</a></h2></div>
+          <div style="text-align:center; margin-bottom: 50px;"><h2 style="border:none;"><a href="https://whibox.cyber-crypt.com/dashboard" style="display:inline-block; padding:20px 50px; background-color:#f55; text-decoration: none; color: #fff;">Go to Dashboard</a></h2></div>
 
           <div class="post-preview">
-	    <h2>Call for participation</h2>
+            <h2>Call for participation</h2>
 
-	    <p>The competition comes in two flavors for contestants:</p>
-	    <ul>
-	      <li>Coders are invited to post challenge programs that are white-box implementations of AES-128 under freely chosen keys. Challenges are expected to resist key extraction and ciphertext inversion when submitted to white-box attackers.</li>
-	      <li>Attackers are invited to break the submitted challenges i.e. extract their hard-coded encryption key or reverse encryption punctually on random ciphertexts.</li>
-	    </ul>
-	    <p>It is up to contestants to choose between remaining <mark>completely anonymous</mark> or using a recognizable identity. Coders are not expected to explain their designs, but only to provide a resulting C code. Attackers are not expected to explain their techniques, but only to recover embedded key(s) or decrypted plaintexts.</p>
+            <p>The competition comes in two flavors for contestants:</p>
+            <ul>
+              <li>Coders are invited to post challenge programs that are white-box implementations of AES-128 under freely chosen keys. Challenges are expected to resist key extraction and ciphertext inversion when submitted to white-box attackers.</li>
+              <li>Attackers are invited to break the submitted challenges i.e. extract their hard-coded encryption key or reverse encryption punctually on random ciphertexts.</li>
+            </ul>
+            <p>It is up to contestants to choose between remaining <mark>completely anonymous</mark> or using a recognizable identity. Coders are not expected to explain their designs, but only to provide a resulting C code. Attackers are not expected to explain their techniques, but only to recover embedded key(s) or decrypted plaintexts.</p>
           </div>
-
-	  <hr>
-
-	  <div class="post-preview">
-	    <h2>The purpose of Edition 2</h2>
-	    <p>The motivation for initiating the WhibOx contest Edition 1 came from the growing interest of the industry towards white-box cryptography (most particularly for DRMs and mobile payments) and the obvious difficulty of designing secure solutions in a scientifically valid sense. The conjunction of these 2 realities has prompted some companies to develop home-made solutions (with a security relying on the secrecy of the underlying techniques) rather than to rely on academic designs.</p>
-	    <p>The 2017 edition of the competition gave an opportunity for researchers and practitioners to confront their (secretly designed) white-box implementations to state-of-the-art attackers. It also provided a new training material to reverse-engineers and security evaluators.</p>
-	    <p>Given the success of Edition 1, and the fact that no challenge implementation survived more than 28 days of continuous attacks, we thought useful and exciting to pick up the competition where we left off and give a new chance to designers to showcase their talents. Once again, we hope to give a boost to scientific research and elevate the worldwide industrial know-how in the field of white-box cryptography.</p>
-	  </div>
-
-	  <hr>
-
-	  <div class="post-preview">
-	    <h2>How to win this competition?</h2>
-	    <p>Similarly to Edition 1:</p>
-	    <ul>
-	      <li>A white-box implementation collects <mark>strawberry points</mark> as long as it stays unbroken. As a reward for not being broken after time \(t\), a challenge implementation gets \(\propto t\) extra strawberries, so its strawberry score increases as $$\propto t^2$$ The score of a broken implementation decreases symmetrically down to \(0\). The winning score is the maximal strawberry score reached by challenge programs throughout the competition. The strawberry winner is the developer whose challenge has realized the winning score.</li>
-	      <li>An attacker who breaks a challenge implementation by recovering its hard-coded key, converts the current strawberry score of the broken challenge into <mark>banana points</mark>. Those are integrated into the attacker's current banana score through the <mark>max rule</mark>: the attacker's new score is the max between their previous score and the bananas earned from the break. The banana winner is the attacker with the most banana points when the competition ends.</li>
-        </ul>
-        <p><strong>New in Edition 2:</strong></p>
-        <p> This time around, new features and competition rules have been instated.</p>
-	    <ul>
-                <li>Bonus (carrot) points are introduced to reward the successful inversion of ciphertexts, which amounts to unauthorized decryption. Attackers may now generate bananas even when hard-coded keys still resist extraction.</li>
-                <li>The most efficient challenge programs collect strawberries (and carrots) faster than the others. Efficiency is measured in terms of average running time, code size and memory consumption.</li>
-                <li>Time granularity has been improved and is now of 1 minute.</li>
-                <li>Challenge programs are allowed to use both 32-bit and 64-bit instructions.</li>
-                <li>Contestants may freely choose between 2 compiling options (GCC or TCC).</li>
-                <li>Plaintext-ciphertext pairs for all challenges can be downloaded through a programmatic API.</li>
-              </ul>
-            </div>
-
-	  <hr>
-
-	  <div class="post-preview">
-	    <h2>Rules</h2>
-	    <p>The complete and detailed rules of the competition are available in the "Competition Rules" tab on the dashboard.</p>
-	  </div>
-
-	  <hr>
-
-	  <div class="post-preview">
-	    <h2>Important dates</h2>
-	    <p>
-	      <ul>
-		<li><strong>March 18, 2019:</strong> Competition starting date, the submission server opens</li>
-		<li><strong>Aug 1, 2019:</strong> Submission deadline (the submission period expires but attacks continue)</li>
-		<li><strong>Aug 21, 2019:</strong> Final deadline (strawberry, carrot and banana scores are frozen)</li>
-		<li><strong>CHES 2019 rump session:</strong> Announcement of the top-3 winners in each category</li>
-	      </ul>
-	    </p>
-	    <p>As soon as a challenge implementation is submitted, it is made public on the server and can hence be freely downloaded and broken by contestants. Implementations can be submitted from March 18 to Aug 1, 2019. After the submission deadline, attackers still have 20 days to continue breaking challenge implementations (until 4 days before CHES 2019 starts).</p>
-	    <p>Winners will be announced at the CHES 2019 rump session (CHES 2019 will take place from Aug 25 to 28 in Atlanta, USA).</p>
-	  </div>
-
-	  <hr>
-
-      <div class="post-preview">
-            <h2>Connect with the community</h2>
-            <p>Join the discussion forum on <a href="https://whibox-contest.slack.com">Slack</a> and get your questions answered by the organizing committee. Invitation based - send us an invitation request at <a href="mailto:whibox.organizing.committee@gmail.com">whibox.organizing.committee@gmail.com</a>. You may also be invited by people that are already members.</p>
-            <p>The organizing committee is composed of Yunsi Fei, Vincent J. Mooney III and Patrick Schaumont (General Chairs of CHES 2019), Andrey Bogdanov and Stefan Kölbl (CyberCrypt), Louis Goubin, Pascal Paillier, Matthieu Rivain and Junwei Wang (CryptoExperts).</p>
-        </div>
 
           <hr>
 
-	  <div class="post-preview">
-	    <h2>Credits</h2>
-	    <p>This competition is the Capture-The-Flag event of <a href="https://ches.iacr.org/2019/">CHES 2019</a>, a conference sponsored by <a href="https://www.iacr.org">IACR</a>.</p>
-	    <p>Andrey Bogdanov and Stefan Kölbl have gracefully volunteered to host and manage the submission server at <a href="https://www.cyber-crypt.com">CyberCrypt</a>.</p>
+          <div class="post-preview">
+            <h2>The purpose of Edition 2</h2>
+            <p>The motivation for initiating the WhibOx contest Edition 1 came from the growing interest of the industry towards white-box cryptography (most particularly for DRMs and mobile payments) and the obvious difficulty of designing secure solutions in a scientifically valid sense. The conjunction of these 2 realities has prompted some companies to develop home-made solutions (with a security relying on the secrecy of the underlying techniques) rather than to rely on academic designs.</p>
+            <p>The 2017 edition of the competition gave an opportunity for researchers and practitioners to confront their (secretly designed) white-box implementations to state-of-the-art attackers. It also provided a new training material to reverse-engineers and security evaluators.</p>
+            <p>Given the success of Edition 1, and the fact that no challenge implementation survived more than 28 days of continuous attacks, we thought useful and exciting to pick up the competition where we left off and give a new chance to designers to showcase their talents. Once again, we hope to give a boost to scientific research and elevate the worldwide industrial know-how in the field of white-box cryptography.</p>
+          </div>
+
+          <hr>
+
+          <div class="post-preview">
+            <h2>How to win this competition?</h2>
+            <p>Similarly to Edition 1:</p>
+            <ul>
+              <li>A white-box implementation collects <mark>strawberry points</mark> as long as it stays unbroken. As a reward for not being broken after time \(t\), a challenge implementation gets \(\propto t\) extra strawberries, so its strawberry score increases as $$\propto t^2$$ The score of a broken implementation decreases symmetrically down to \(0\). The winning score is the maximal strawberry score reached by challenge programs throughout the competition. The strawberry winner is the developer whose challenge has realized the winning score.</li>
+              <li>An attacker who breaks a challenge implementation by recovering its hard-coded key, converts the current strawberry score of the broken challenge into <mark>banana points</mark>. Those are integrated into the attacker's current banana score through the <mark>max rule</mark>: the attacker's new score is the max between their previous score and the bananas earned from the break. The banana winner is the attacker with the most banana points when the competition ends.</li>
+            </ul>
+            <p><strong>New in Edition 2:</strong></p>
+            <p> This time around, new features and competition rules have been instated.</p>
+            <ul>
+              <li>Bonus (carrot) points are introduced to reward the successful inversion of ciphertexts, which amounts to unauthorized decryption. Attackers may now generate bananas even when hard-coded keys still resist extraction.</li>
+              <li>The most efficient challenge programs collect strawberries (and carrots) faster than the others. Efficiency is measured in terms of average running time, code size and memory consumption.</li>
+              <li>Time granularity has been improved and is now of 1 minute.</li>
+              <li>Challenge programs are allowed to use both 32-bit and 64-bit instructions.</li>
+              <li>Contestants may freely choose between 2 compiling options (GCC or TCC).</li>
+              <li>Plaintext-ciphertext pairs for all challenges can be downloaded through a programmatic API.</li>
+            </ul>
+          </div>
+
+          <hr>
+
+          <div class="post-preview">
+            <h2>Rules</h2>
+            <p>The complete and detailed rules of the competition are available in the "Competition Rules" tab on the dashboard.</p>
+          </div>
+
+          <hr>
+
+          <div class="post-preview">
+            <h2>Important dates</h2>
+            <p>
+              <ul>
+                <li><strong>March 18, 2019:</strong> Competition starting date, the submission server opens</li>
+                <li><strong>Aug 1, 2019:</strong> Submission deadline (the submission period expires but attacks continue)</li>
+                <li><strong>Aug 21, 2019:</strong> Final deadline (strawberry, carrot and banana scores are frozen)</li>
+                <li><strong>CHES 2019 rump session:</strong> Announcement of the top-3 winners in each category</li>
+              </ul>
+            </p>
+            <p>As soon as a challenge implementation is submitted, it is made public on the server and can hence be freely downloaded and broken by contestants. Implementations can be submitted from March 18 to Aug 1, 2019. After the submission deadline, attackers still have 20 days to continue breaking challenge implementations (until 4 days before CHES 2019 starts).</p>
+            <p>Winners will be announced at the CHES 2019 rump session (CHES 2019 will take place from Aug 25 to 28 in Atlanta, USA).</p>
+          </div>
+
+          <hr>
+
+          <div class="post-preview">
+            <h2>Connect with the community</h2>
+            <p>Join the discussion forum on <a href="https://whibox-contest.slack.com">Slack</a> and get your questions answered by the organizing committee. Invitation based - send us an invitation request at <a href="mailto:whibox.organizing.committee@gmail.com">whibox.organizing.committee@gmail.com</a>. You may also be invited by people that are already members.</p>
+            <p>The organizing committee is composed of Yunsi Fei, Vincent J. Mooney III and Patrick Schaumont (General Chairs of CHES 2019), Andrey Bogdanov and Stefan Kölbl (CyberCrypt), Louis Goubin, Pascal Paillier, Matthieu Rivain and Junwei Wang (CryptoExperts).</p>
+          </div>
+
+          <hr>
+
+          <div class="post-preview">
+            <h2>Credits</h2>
+            <p>This competition is the Capture-The-Flag event of <a href="https://ches.iacr.org/2019/">CHES 2019</a>, a conference sponsored by <a href="https://www.iacr.org">IACR</a>.</p>
+            <p>Andrey Bogdanov and Stefan Kölbl have gracefully volunteered to host and manage the submission server at <a href="https://www.cyber-crypt.com">CyberCrypt</a>.</p>
             <p>The source code of the submission server has been developed by <a href="https://www.cryptoexperts.com/">CryptoExperts</a>. It is fully open source and available on <a href="https://github.com/CryptoExperts/wb_contest_submission_server">GitHub</a>. Credits go to Junwei Wang for re-developing significant parts of the server at the occasion of  this second edition of the WhibOx Contest; the 2017 version was created by Thomas Baignères and Matthieu Finiasz. The new rules and features are due to the CryptoExperts team, with ideas suggested by Benoît Chevallier-Mames, Chris Brzuska and contestants from the 2017 edition.</p>
 
-	    <!-- <p>For any further information about the competition, please contact <code>ecrypt.wbc-competition@???.com</code></p> -->
-	  </div>
+            <!-- <p>For any further information about the competition, please contact <code>ecrypt.wbc-competition@???.com</code></p> -->
+          </div>
 
-	</div>
+        </div>
       </div><!-- row -->
 
       <div class="row">
-	<div class="col-lg-4 col-lg-offset-2 col-md-4 col-md-offset-2 col-xs-8 col-xs-offset-2 align-self-center">
-	  <a href="https://www.cryptoexperts.com/"><img src="https://heat-project.eu/images/partners/logo_crx_transparent.png" class="img-responsive"></a>
-	</div>
-	<div class="col-lg-3 col-lg-offset-0 col-md-2 col-md-offset-0 col-xs-4 col-xs-offset-4 align-self-center" style="padding-top: 18px; padding-right: 18px;">
-	  <a href="https://www.cyber-crypt.com/"><img src="https://test.cyber-crypt.com/wp-content/uploads/2018/05/cybercrypt-logo.svg" class="img-responsive"></a>
-	</div>
+        <div class="col-lg-4 col-lg-offset-2 col-md-4 col-md-offset-2 col-xs-8 col-xs-offset-2 align-self-center">
+          <a href="https://www.cryptoexperts.com/"><img src="https://heat-project.eu/images/partners/logo_crx_transparent.png" class="img-responsive"></a>
+        </div>
+        <div class="col-lg-3 col-lg-offset-0 col-md-2 col-md-offset-0 col-xs-4 col-xs-offset-4 align-self-center" style="padding-top: 18px; padding-right: 18px;">
+          <a href="https://www.cyber-crypt.com/"><img src="https://test.cyber-crypt.com/wp-content/uploads/2018/05/cybercrypt-logo.svg" class="img-responsive"></a>
+        </div>
       </div><!-- row -->
 
     </div>
@@ -199,7 +199,7 @@
 
     <!-- Mathjax -->
     <script type="text/javascript" async
-	    src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML">
+	          src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML">
     </script>
 
   </body>

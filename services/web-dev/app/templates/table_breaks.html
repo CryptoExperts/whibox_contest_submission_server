@@ -14,7 +14,7 @@
         <th scope="row" class="text-center">{{ wb_break.datetime_broken }}</th>
         <td class="text-center">
           {% if current_user.is_authenticated and current_user == wb_break.user %}
-          <span class="badge badge-primary">You!</span>
+          <span class="badge badge-info">You!</span>
           {% else %}
           {{ wb_break.user.displayname or wb_break.user.username }}
           {% endif %}
