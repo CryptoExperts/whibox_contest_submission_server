@@ -104,12 +104,6 @@ def index():
 #         wb_breaks_by_current_user = WhiteboxBreak.get_all_by_user(current_user)
 #         programs_broken_by_current_user = [
 #             wb_break.program for wb_break in wb_breaks_by_current_user]
-#         wb_inversions_by_current_user = WhiteboxInvert.get_all_by_user(
-#             current_user)
-#         programs_inverted_by_current_user = [
-#             wb_inversion.program for wb_inversion in wb_inversions_by_current_user
-#         ]
-
 #     # If we reach this point, we can show the source code
 #     return render_template(
 #         'candidate.html',
