@@ -38,9 +38,9 @@
             It is the users' responsibility to choose a strong enough password and to keep it in a safe place.
             Winners will be asked to log in and reveal their real name on the competition website if they want to be publicly awarded during the prize ceremony.
           </p>
-          <p>
-            Every newly registered user, referred to as a contestant, is assigned a <span class="text-dark">BANANA</span> score initialized to 0.
-          </p>
+          <!-- <p>
+               Every newly registered user, referred to as a contestant, is assigned a <span class="text-dark">BANANA</span> score initialized to 0.
+               </p> -->
           <p>
             The website is public in the sense that anyone can freely browse it (including downloading challenges) but logging in is required to post or break challenges.
           </p>
@@ -67,25 +67,28 @@
         <div class="card-body scrollable">
 
           <p>A challenge is a C source program that contains a function with prototype</p>
-          <pre>void AES_128_encrypt(unsigned char ciphertext[16], unsigned char plaintext[16]);</pre>
+          <pre>void ECDSA_256_sign(unsigned char sig[64], const unsigned char hash[32]);</pre>
           <p>
-            It implements an AES-128 encryption under some 128-bit key embedded into the code.
-            The function <code>AES_128_encrypt(ciphertext, plaintext)</code> takes a 128-bit plaintext block as input (as a pointer on an array of 16 bytes) and writes the corresponding 128-bit ciphertext (as an array of 16 bytes) at the given address.
+            It implements an ECDSA signature algorithm on the <a href="https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.186-4.pdf">NIST P-256 curve</a> under some private key embedded into the code.
+            The function <code>ECDSA_256_sign</code> takes two arguments:
+            <ul>
+              <li><code>hash</code> : a pointer to the 32-byte hash of the message to be signed (the hash function is excluded from the implementation),</li>
+              <li><code>sig</code> : the address for the output 64-byte signature.</li>
+            </ul>
           </p>
           <p>
-            The C language is the one accepted by either GCC 8.2.0 or TCC 0.9.27 with NO additional language dialect options.
-            Contestants may freely choose which compiler is to be used when the <span class="text-dark">SYSTEM</span> validates the challenge program.
+            The C language is the one accepted by GCC 10.2.0 with NO additional language dialect options.
             The source code must be completely portable and re-compilable towards any target architecture.
             In other words, it must be made only of generic C which in particular, excludes the use of inline assembly.
             Note that there is no restriction to a 32-bit architecture as in the first edition of the WhibOx contest.
             Native 64-bit operations are supported by default and contestants may use them as they see fit.
           </p>
           <p>
-            No <code>#include</code> or <code>extern</code> is allowed in the source code, and more generally linking to external libraries (even the standard C libraries) is forbidden.
-            This is intended to prevent the inclusion of malware in submitted challenges.
+            The source file is allowed to include the GMP library (version 6.2.1) through <code>#include &lt;gmp.h&gt;</code>.
+            Besides that, no <code>#include</code> or <code>extern</code> is allowed in the source code, and more generally linking to external libraries (even the standard C libraries) is forbidden.
             Any attempt to maliciously attack the <span class="text-dark">SYSTEM</span> or the computer system of contestants will lead to <span class="text-danger">DISQUALIFICATION</span>.
             In case evidence of malicious code is found in a challenge, contestants are invited to report the issue to the <span class="text-dark">ORGANIZING COMMITTEE</span> directly (whibox.organizing.committee@gmail.com).
-            If contestants are suspicious that some challenge program may contain malware, they may run GCC or TCC in docker or a virtual machine, exactly like the server does (using VirtualBox).
+            If contestants are suspicious that some challenge program may contain malware, they may run GCC in docker or a virtual machine, exactly like the server does (using VirtualBox).
           </p>
           <p>
             Documentation on how the server runs is found on <a href="https://github.com/CryptoExperts/wb_contest_submission_server">GitHub</a>.
@@ -112,14 +115,13 @@
       <!-- Card Content - Collapse -->
       <div class="collapse show" id="cardRequirements">
         <div class="card-body scrollable">
-          <p>The <span class="text-dark">SYSTEM</span> will reject a program that does not comply with the following requirements.</p>
           <ul>
             <li>The source code must be no bigger than <strong>{{ challenge_max_source_size_in_mb }}MB</strong>.</li>
             <li>The <span class="text-dark">REFERENCE COMPILERS</span> must use at most <strong>{{ challenge_max_mem_for_compilation_in_mb }}MB</strong> of RAM to complete compilation.</li>
             <li>The compilation must not exceed <strong>{{ challenge_max_time_for_compilation_in_secs }} seconds</strong>.</li>
             <li>The following character strings are forbidden in the source code:
               <ul>
-                <li><code>"#include"</code></li>
+                <li><code>"#include"</code>, except <code>#include &lt;gmp.h&gt;</code></li>
                 <li><code>"extern"</code></li>
                 <li><code>"_FILE__"</code></li>
                 <li><code>"__DATE__"</code></li>
@@ -132,8 +134,9 @@
               An occurence of either of these strings will lead to a rejection of the challenge program, even if they are embedded in (arbitrarily nested) quoted strings. </li>
             <li>The executable must be <strong>{{ challenge_max_binary_size_in_mb }}MB</strong> in size or less,</li>
             <li>The executable must use <strong>{{ challenge_max_mem_execution_in_mb }}MB</strong> of RAM or less (this includes the stack and all global variables, at the exclusion of the code itself),</li>
-            <li>The executable must run in <strong>{{ challenge_max_time_execution_in_secs }} second</strong> or less per function call. This is not absolute time but CPU time, measured within a VirtualBox VM by the SYSTEM. Contestants may check that their challenges comply with this limitation by using the utility <code>ulimit</code> with the <code>-t</code> option.</li>
+            <li>The executable must run in <strong>{{ challenge_max_time_execution_in_secs }} second</strong> or less per function call. This is not absolute time but CPU time, measured within a VirtualBox VM by the SYSTEM. Contestants may check that their challenges comply with this limitation by using the utility <code>ulimit</code> with the <code>&minus;t</code> option.</li>
           </ul>
+          <p>The <span class="text-dark">SYSTEM</span> will reject a program that does not comply with these requirements.</p>
           <p>Compliance with the requirements can be tested by downloading and running a local instance of the submission server found <a href="https://github.com/CryptoExperts/wb_contest_submission_server">here</a>.</p>
         </div>
       </div>
@@ -142,8 +145,48 @@
   </div>
 
 
-  <!-- Card "Posting a challenge" -->
+  <!-- Card "Auxiliary inputs" -->
   <div class="col-md-12 col-lg-6">
+
+    <div class="card shadow mb-4">
+      <!-- Card Header - Accordion -->
+      <a href="#cardAuxiliaryInputs" class="d-block card-header py-3" data-toggle="collapse"
+         role="button" aria-expanded="true" aria-controls="collapseCardExample">
+        <h4 class="m-0 font-weight-bold text-primary">Auxiliary inputs</h4>
+      </a>
+      <!-- Card Content - Collapse -->
+      <div class="collapse show" id="cardAuxiliaryInputs">
+        <div class="card-body scrollable">
+          <p>
+            A challenge must come with
+            <ul>
+              <li>  the public key corresponding to the embedded private key,</li>
+              <li> a proof of knowledge of the private key.</li>
+            </ul>
+          </p>
+
+          <p>
+            The public key must be pasted into the appropriate field of the submission form as the 128-digit hexadecimal string encoding the 64-byte string \( \textsf{FE2OS}(x_Q) \parallel \textsf{FE2OS}(y_Q)\), where \( \textsf{FE2OS} \) is the "Field Element to Octet String" primitive defined in Section 3.1.3 of the <a href="https://www.bsi.bund.de/SharedDocs/Downloads/EN/BSI/Publications/TechGuidelines/TR03111/BSI-TR-03111_V-2-0_pdf.pdf?__blob=publicationFile&v=2">BSI ECC guideline</a>, \( (x_Q,y_Q) \) is the public key (\(x\)- and \(y\)-coordinates) and \( \parallel \) is the concatenation operator.
+          </p>
+
+          <p>
+            The proof of knowledge is a <a href="https://en.wikipedia.org/wiki/Schnorr_signature">Schnorr signature</a> of the empty message under the private key, that is a pair \( (r,s) \) such that \( \mathsf{SHA256}(s\cdot G+r\cdot  Q)=r \), where \( G \) is the base point and \( Q \) is the public key.
+            The input of \( \mathsf{SHA256} \) is the padded \(x\)-coordinate (32 bytes).
+            The format of the proof of knowledge is similar to that of the public key.
+            Namely, it is a 64-byte hexadecimal string obtained by concatenating \(r\) and \(s\) (each of them padded to 32 bytes).
+          </p>
+
+          <p>
+            A reference implementation with corresponding public key (formatted for submission) and a script to generate the proof of knowledge from the private key are available <a href="https://github.com/whibox/whibox-contest-2021_supplementary-materials">here</a>.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+
+  <!-- Card "Posting a challenge" -->
+  <div class="col-12">
 
     <div class="card shadow mb-4">
       <!-- Card Header - Accordion -->
@@ -155,81 +198,98 @@
       <div class="collapse show" id="cardPosting">
         <div class="card-body scrollable">
           <p>
-            A contestant who posts a new challenge must temporarily reveal the embedded key to the <span class="text-dark">SYSTEM</span> for the purpose of verifying the consistency of the challenge program.
-            The key is erased from the <span class="text-dark">SYSTEM</span> as soon as it has determined whether it is consistent or not with the challenge.
+            A contestant who posts a new challenge must submit the corresponding public key to the <span class="text-dark">SYSTEM</span> for the purpose of verifying the consistency of the challenge program.
             This is done as follows.
           </p>
           <p><strong>Challenge-key verification procedure</strong></p>
           <ol>
             <li>
-              The <span class="text-dark">SYSTEM</span> uses the <span class="text-dark">REFERENCE IMPLEMENTATION</span> of AES-128 to generate a number of random plaintext-ciphertext pairs under the given key.
-              The number of pairs is determined by the <span class="text-dark">SYSTEM</span> but is at least 1000.
-              Once this is done, the key is erased from the <span class="text-dark">SYSTEM</span>.
+              The <span class="text-dark">SYSTEM</span> verifies that the submitted public key has not been previously submitted. If it has been, the challenge is rejected.
+            </li>
+            <li>
+              The <span class="text-dark">SYSTEM</span> verifies that the submitted public key is a valid public key by checking that the underlying elliptic point is on the curve P-256.
+              If not, the challenge is rejected.
+            </li>
+            <li>
+              The <span class="text-dark">SYSTEM</span> verifies the submitted proof of knowledge. If the verification fails, the challenge is rejected.
             </li>
             <li>
               The <span class="text-dark">SYSTEM</span> compiles the challenge program and checks that it complies with the above requirements.
               If not, the challenge is rejected.
             </li>
             <li>
-              For each plaintext-ciphertext pair, the <span class="text-dark">SYSTEM</span> runs the executable on the plaintext and checks that the output is equal to the ciphertext.
+              The <span class="text-dark">SYSTEM</span> generates a number of random input hashes (32-byte strings), uses the submitted implementation of ECDSA P-256 to generate the corresponding signatures, and uses the submitted public key to verify these signatures.
+              The number of (input hash, signature) pairs is determined by the <span class="text-dark">SYSTEM</span> but is at least 100.
             </li>
             <li>
-              In case of mismatch, the procedure halts, the challenge program is rejected and the mismatching plaintext-ciphertext pair is returned to the submitting contestant.
+              In case of mismatch, the procedure halts, the challenge program is rejected and the mismatching (input hash, signature) pair is returned to the submitting contestant.
             </li>
-            <li>
-              The <span class="text-dark">SYSTEM</span> selects a plaintext-ciphertext pair, hashes the plaintext, deletes it from memory and attaches the ciphertext to the challenge for the purpose of <span class="text-dark">INVERSION</span>.
-            </li>
-            <li>Finally, the challenge program is validated and:</li>
+            <li>Finally, the challenge program is validated and:
             <ol>
               <li>given a name by the system,</li>
               <li>assigned a <span class="text-dark">PERFORMANCE SCORE</span> (see below)</li>
               <li>declared as <span class="text-dark">STANDING</span>,</li>
-              <li>assigned a <span class="text-dark">STRAWBERRY</span> score and a <span class="text-dark">CARROT</span> score both initialized to 0.</li>
+              <li>assigned a <span class="text-dark">STRAWBERRY</span> score (both initialized to 0).</li>
             </ol>
+            </li>
           </ol>
           <p><strong>Programmatic API access to input-output pairs</strong></p>
           <p>
             When accepted, the challenge is published on the website for anyone to download and play with.
-            In addition, a small subset of random plaintext-ciphertext pairs is kept by the SYSTEM for later verification of candidate keys.
-            The number of pairs is determined by the SYSTEM but is at least 10.
+            In addition, a small subset of random hash-signature pairs is kept by the SYSTEM.
+            The number of pairs is determined by the <span class="text-dark">SYSTEM</span> but is at least 10.
             These pairs can be recovered as a JSON object with the following HTTP request:
           </p>
-          <p><code>GET https://whibox.cyber-crypt.com/show/candidate/{id}/testvectors</code></p>
+          <p><code>GET https://{HOST}/candidate/{id}</code></p>
           <p>where <code>{id}</code> is the integer identifier of the challenge (not its name). No authentication is required. Example output:</p>
           <pre><code>{
-    "id": 35,
-    "test_vectors": [{
-             "ciphertext": "4d05886d8f6d8fee136b9c6b75d2a753",
-             "plaintext": "79eff209372700ba9ce2623b2fdb95f3"
-        }, {
-             "ciphertext": "e6ea072912bf6ba04c8fe9c4215f9ad4",
-             "plaintext": "d38c88f2c31ac6ec7df1414150d55fa2"
-        }, {
-             "ciphertext": "3f82dfbe892f25bcfd756f4519b1c13b",
-             "plaintext": "b1d74f9cca796c5d523859c43c614cf9"
-        }, {
-             "ciphertext": "20903a77e0a9188b6736ec9de6138fc7",
-             "plaintext": "9d8ba8a29bf95ba26394624f3c89fb61"
-        }, {
-             "ciphertext": "ba899a8f85d274d7eb62638f86943432",
-             "plaintext": "295df29c62f81a20eed0c1d70a2b5db4"
-        }, {
-             "ciphertext": "2666fd8172769c66093d7c7074bad088",
-             "plaintext": "24b92c789dda5a079d065f396cb73559"
-        }, {
-             "ciphertext": "8e3de268154d6ef98c5ff1c2fd200192",
-             "plaintext": "9490098f4ccbaad5ff04b463d3339dce"
-        }, {
-             "ciphertext": "6bf067d0d06814a64faa08c9bc62c09d",
-             "plaintext": "446a591cdd83d15f2aae83888ce0197d"
-        }, {
-             "ciphertext": "00579a1abcec3132041b8888c06d5491",
-             "plaintext": "e7b8d53ae7d7ea6cbfebd49d0d5ff769"
-        }, {
-             "ciphertext": "0f598d59d2881df6a32dd83277b25a4f",
-             "plaintext": "798252d2f3d8f43f6360655b06fb8fba"
-        }]
-}</code></pre>
+  "id": 3,
+  "proof_of_knowledge": "DA95FB593E561E3D24BA7C6AFFE28169EF17A76BCE9442E6EE1E768E5253E2844104C6513DD37DF82E7600018ACA5BC2AF467129DEF7903EDA693C0BBB76BD55",
+  "public_key": "7D333C24CE6E539C66E6C7EF159CC1FA75F1B36321D4E6F4E3C0B42294D927A0C77DCFDE5782CF5B82B18C3499575D5191950F56678AE4F7B11815FA19A66807",
+  "test_vectors": [
+    {
+      "hash": "CA432252911CB7D6984354F2C08B94850C013C4A7584C53E044D5AA840234A82",
+      "signature": "F946FA83BEBB4F1C31729175034A2971C1C8E9577DD7AB74DA476854157F459436A4C9EFE55DA6DC9E58B99777C6DD47F925C75B33A045F9F2E22DE7B26F6F24"
+    },
+    {
+      "hash": "E8720F0770A55ECF716B8E7E5EDFC7DE29A0D60D34FB22D999B6652F9EFC5092",
+      "signature": "EBDA369AABA4C9C1D234A089C9E8C4A5C58474B281FB03F87DDB796A8379604BAD85EFB1FFAAB2866F5F58BCA2B10F9837598C09EC46E739D78EBB5E0A0F05E7"
+    },
+    {
+      "hash": "0011F7845B3B0177A8FFA0B091EF6E18CBAC48B9CB1D094AA132D115B29A3C17",
+      "signature": "2DFCE93EF82D986F4D70D9A13DCAE09710251EBC410C5C9D40D2A58DB2072422AB5D507051B6E84C76D7EB0C9171663D17D0ADE206B06D5CA32C212BF7CA9202"
+    },
+    {
+      "hash": "74EE4AC38DAFE9E412A6BFD4B5C700D323647DF08E5D9CA6424FB9545AF8A921",
+      "signature": "4ACADB17EEA49231B8D418B4183F60108687A545C51329F8305C975CB0FA8BE745A668E46EA2667391044811C37C3B66E372DD7F85E026BCBCE5269E966153AD"
+    },
+    {
+      "hash": "635E98797C020703DF02401FC7875F6A898DAF6A97B44545085CEB7121DBF87C",
+      "signature": "936F5F1BB888D9767C85F35FD1E2D3B7E00B756CF1132CB3BC5D11E4F1FB9566DBB386D66EBBA03D08B8CCBCCFDCDEF9B347A3F0FA532FF863631517892631C7"
+    },
+    {
+      "hash": "6A80250B5D99AB19E7A22CD0C693DB5512171BA52F4CD6E5ED57D0F235BE5744",
+      "signature": "56C083E3EB85F6A7CEF35759717DC22CC3680A0347AC438462B58560D68EAA083E76468601FD86E4CB0AC3DCD72B76193193A91431ABB709F77106AB1E1004D6"
+    },
+    {
+      "hash": "C27A231D7FA08308DDFD708E1164885BC69126E6DEC7362388AF6E9AB5A9011F",
+      "signature": "15D5D181EE52D3946B720D4DBF6A1EF71D0A4DAB88B7D5339C1D74661029EB899624CF95A91163FCA4561091E780B7B677095EE3CF1F84FA268C6BEB299FADF4"
+    },
+    {
+      "hash": "50365D99155091C54E137CC3E7FB0B706BB0EFED921F690354F4AA08D783C94C",
+      "signature": "3F90C0F2912B52CEC781ADCF6E489B636549E543DBCE133D63B8B1B5E620291D5172A8A5BA844FB56E33C7D2324369DAF0BD29AC7FA0CDDD823EB9911577C71D"
+    },
+    {
+      "hash": "4E9A84C83082848926BF0B89E7D3585BE767C8657B4FFBAA9370C9839EC4D26E",
+      "signature": "5C6135E8BEDC689177CFE3AA25E6ED1EB8904DEB7E5967DDE901EAA3C5AE4A8D6A5C8BEB4A350E9A7828CCDC6904893CD16F2721D14320F9FE95C507F58B8B00"
+    },
+    {
+      "hash": "743E576BD584EEA6EDFE32CD3ECC3BB6C013258539CC31C653C31F7371E72A90",
+      "signature": "15A68010CF6EF4C2C29E9549D20532B4E86BECB18AA2C3338BCDE8081BF634F87FC5610E6978072CF8851ECBBF0377084E12B23130A8A2F84062C81B8227DFE7"
+    }
+  ]
+}
+          </code></pre>
         </div>
       </div>
     </div>
@@ -237,26 +297,26 @@
   </div>
 
   <!-- Card Performance -->
-  <div class="col-12">
+  <div class="col-md-12 col-lg-6">
 
     <div class="card shadow mb-4">
       <!-- Card Header - Accordion -->
       <a href="#cardPerformance" class="d-block card-header py-3" data-toggle="collapse"
          role="button" aria-expanded="true" aria-controls="collapseCardExample">
-        <h4 class="m-0 font-weight-bold text-primary">User accounts</h4>
+        <h4 class="m-0 font-weight-bold text-primary">Performance scores</h4>
       </a>
       <!-- Card Content - Collapse -->
       <div class="collapse show" id="cardPerformance">
         <div class="card-body scrollable">
           <p>
             The performance score of a challenge is measured by the <span class="text-dark">SYSTEM</span> when validating its consistency at posting time.
-            Challenges with a higher performance score collect <span class="text-dark">STRAWBERRY</span> and <span class="text-dark">CARROT</span> points faster.
+            Challenges with a higher performance score collect <span class="text-dark">STRAWBERRY</span> points faster.
             The score is assigned as follows.
           </p>
           <p>
             <strong>Execution time.</strong>
             The <span class="text-dark">SYSTEM</span> measures the average CPU time consumed by the challenge program and determines the fraction
-            \[f_{\text{time}} = \frac{\text{average time}}{1 \text{ second} }\;.\]
+            \[f_{\text{time}} = \frac{\text{average time}}{3 \text{ seconds} }\;.\]
           </p>
           <p>
             <strong>Code size.</strong>
@@ -297,7 +357,7 @@
           <p>A contestant may post challenges anytime between the <span class="text-dark">STARTING DATE</span> and the <span class="text-dark">POSTING DEADLINE</span>.</p>
           <p>
             A challenge gets more and more <span class="text-dark">STRAWBERRIES</span> as time goes by, as long as it is not <span class="text-dark">BROKEN</span>.
-            In this second edition of the competition, time has a granularity of 1 minute instead of 1 day.
+            In this third edition of the competition, time has a granularity of 1 minute instead of 1 day.
           </p>
           <p>
             At the time \(t_{post}\) the challenge is posted, its <span class="text-dark">STRAWBERRY</span> score is set to \(0\).
@@ -335,15 +395,26 @@
         <div class="card-body scrollable">
           <p>
             A contestant may <span class="text-dark">BREAK</span> any challenge by submitting a candidate key to the <span class="text-dark">SYSTEM</span>.
-            The challenge may be <span class="text-dark">STANDING</span>, <span class="text-dark">BROKEN</span>.
+            The challenge may be <span class="text-dark">STANDING</span>, or already <span class="text-dark">BROKEN</span>.
           </p>
           <p>
             <strong>Key verification procedure:</strong>
-            Given the submitted key, the <span class="text-dark">SYSTEM</span> fetches the recorded plaintext-ciphertext pairs attached to the challenge and uses the <span class="text-dark">AES REFERENCE IMPLEMENTATION</span> again to check that the key matches all the pairs.
-            The key is erased as soon as the verification is completed.
+            Given the submitted key, the <span class="text-dark">SYSTEM</span>
+            <ol>
+              <li>
+                generates the public key corresponding to the submitted private key,
+              </li>
+              <li>
+                fetches the public key of the target challenge,
+              </li>
+              <li>
+                3. verifies that the two public keys match.
+              </li>
+            </ol>
+            The submitted private key is erased as soon as the verification is completed.
           </p>
           <p>
-            In case of mismatch, the mismatching pair is returned to the submitting contestant and the break is rejected.
+            In case of mismatch, the break is rejected.
             Otherwise, the submitting contestant is notified that the break is accepted.
             If the challenge was <span class="text-dark">STANDING</span>, it is declared as <span class="text-dark">BROKEN</span> at the time the <span class="text-dark">SYSTEM</span> accepted the break.
           </p>
@@ -368,6 +439,9 @@
       <div class="collapse show" id="cardBanana">
         <div class="card-body scrollable">
           <p>
+            Every newly registered user, referred to as a contestant, is assigned a <span class="text-dark">BANANA</span> score initialized to 0.
+          </p>
+          <p>
             A contestant whose <span class="text-dark">BREAK</span> has been accepted by the <span class="text-dark">SYSTEM</span> gets a chance to increase their <span class="text-dark">BANANA</span> score.
             Noting \(\mathtt{strawberries}\) the current <span class="text-dark">STRAWBERRY</span> score of the challenge and \(\mathtt{bananas}\) the contestant's current <span class="text-dark">BANANA</span> score, \(\mathtt{bananas}\) is updated as
             \[\mathtt{bananas} = \max(\mathtt{bananas}, \mathtt{strawberries})\;.\]
@@ -380,7 +454,7 @@
 
 
   <!-- Card Win Contest -->
-  <div class="col-md-12 col-lg-6">
+  <div class="col-12">
 
     <div class="card shadow mb-4">
       <!-- Card Header - Accordion -->
@@ -397,25 +471,50 @@
           </p>
           <h5 class="text-primary">The strawberry winner</h5>
           <p>
-            The <span class="text-dark">WINNING CHALLENGE</span> is the challenge (<span class="text-dark">STANDING</span> or <span class="text-dark">BROKEN</span>) which <span class="text-dark">STRAWBERRY</span> score has reached the highest peak between the <span class="text-class">STARTING DATE</span> and the <span class="text-class">FINAL DEADLINE</span>.
+            The <span class="text-dark">WINNING CHALLENGE</span> is the challenge (<span class="text-dark">STANDING</span> or <span class="text-dark">BROKEN</span>) which, by <span class="text-dark">STRAWBERRY</span> score, has reached the highest peak between the <span class="text-dark">STARTING DATE</span> and the <span class="text-dark">FINAL DEADLINE</span>.
           </p>
           <p>
             The <span class="text-dark">STRAWBERRY WINNER</span> is the contestant who posted the <span class="text-dark">WINNING CHALLENGE</span>.
-          </p>
-          <p>There may be several <span class="text-dark">WINNING CHALLENGE</span>s and <span class="text-dark">STRAWBERRY WINNER</span>s (no tie-breaking rule).
           </p>
           <h5 class="text-primary">The banana winner</h5>
           <p>
             The <span class="text-dark">BANANA WINNER</span> is the contestant with the highest <span class="text-dark">BANANA</span> score at the time of the <span class="text-dark">FINAL DEADLINE</span>.
           </p>
-          <p>There may be several <span class="text-dark">BANANA WINNER</span>s (no tie-breaking rule).</p>
+
+          <h5 class="text-primary">Cash prizes</h5>
+          <p>A 2000$ cash prize will be shared between the winners, as follows:</p>
+          <ul>
+            <li>
+              Designers' podium:
+              <ul>
+                <li>500$ for the strawberry winner</li>
+                <li>200$ for the second highest strawberry score</li>
+                <li>100$ for the third highest strawberry score</li>
+              </ul>
+            </li>
+            <li>
+              Attackers' podium:
+              <li>500$ for the banana winner</li>
+              <li>200$ for the second highest banana score</li>
+              <li>100$ for the third highest banana score</li>
+            </li>
+            <li>
+              Bonus for the designers' **or** attackers' podium
+              <li>250$ for the winner</li>
+              <li>100$ for the second</li>
+              <li>50$ for the third</li>
+            </li>
+          </ul>
+
+          <p>
+            The bonus cash prizes go to the designers' podium if there is at least one <span class="text-dark">STANDING</span> challenge at the <span class="text-dark">FINAL DEADLINE</span>.
+            The bonus cash prizes go to the attackers' podium if all the challenges are <span class="text-dark">BROKEN</span> at the <span class="text-dark">FINAL DEADLINE</span>.
+          </p>
         </div>
       </div>
     </div>
 
   </div>
-
-
 
 
   <!-- Card disqualification -->
@@ -435,7 +534,7 @@
             Examples of misconduct include
           </p>
           <ul>
-            <li>posting a challenge program that does not implement AES-128,</li>
+            <li>posting a challenge program that does not implement ECDSA signature on P-256 curve,</li>
             <li>posting a challenge program that contains malware,</li>
             <li>attempting to attack/hack the SYSTEM or the computer system of contestants in any manner.</li>
           </ul>
@@ -475,11 +574,14 @@
               <table class="table table-striped table-bordered">
                 <tbody>
                   <tr><td class="text-dark">SYSTEM</td><td>Server comprising the competition website and tools for compiling and testing challenge programs. The compilation environment is fully described in <a href="https://github.com/CryptoExperts/wb_contest_submission_server/blob/master/services/compile_and_test/Dockerfile">this dockerfile</a>.</td></tr>
-                  <tr><td class="text-dark">REFERENCE COMPILERS</td><td>Option 1: <code>gcc</code> with option <code>-nostdinc</code> (version 8.2.0)</br>Option 2: <code>tcc</code> with option <code>-nostdinc</code> (version 0.9.27)</td></tr>
-                  <tr><td class="text-dark">REFERENCE IMPLEMENTATION</td><td><code>aes.c</code> file available from <a href="https://github.com/CryptoExperts/wb_contest_submission_server">this GitHub repository</a>.</td></tr>
+                  <tr>
+                    <td class="text-dark">REFERENCE COMPILER</td>
+                    <td><code>gcc</code> version 8.2.0</td>
+                  </tr>
+                  <tr><td class="text-dark">REFERENCE IMPLEMENTATION</td><td><code>dECDSA.c</code> file available from <a href="https://github.com/whibox/whibox-contest-2021_supplementary-materials">this GitHub repository</a>.</td></tr>
                   <tr>
                     <td><span class="text-dark">BROKEN</span> (challenge)</td>
-                    <td> At least one contestant has been able to provide the <span class="text-dark">SYSTEM</span> with an AES-128 key that passes the key verification procedure.
+                    <td> At least one contestant has been able to provide the <span class="text-dark">SYSTEM</span> with the private ECDSA key that passes the key verification procedure.
                     </td>
                   </tr>
                   <tr>
@@ -516,7 +618,6 @@
             <div class="table-responsive">
               <table class="table table-striped table-bordered">
                 <tbody>
-                  <tr><td><strong>Members</strong></td><td>Stefan Kölbl (Google), Louis Goubin, Pascal Paillier, Matthieu Rivain, Aleksei Udovenko, and Junwei Wang (CryptoExperts).</td></tr>
                   <tr><td><strong>Email</strong></td><td>whibox.organizing.committee@gmail.com</td></tr>
                   <tr><td><strong>Twitter</strong></td><td>@WhiboxC (WhibOx Contest Organizing Committee)</td></tr>
                 </tbody>
