@@ -4,7 +4,7 @@
 
 {% block content %}
 
-{% include 'index_boxes.html' %}
+{% include 'homepage_boxes.html' %}
 
 <hr>
 
@@ -15,7 +15,7 @@
 </div>
 
 <div class="row">
-  <div class="col-12">
+  <div class="col-xl-10 col-12">
 
     {% if current_user.programs|length == 0 %}
     <p class="lead">You haven't <strong>submitted</strong> any challenge yet! You can do so by clicking on the <mark>Submit a Challenge</mark> link in the menu bar.</p>
@@ -59,7 +59,7 @@
 </div>
 
 <div class="row">
-  <div class="col-12">
+  <div class="col-xl-6 col-lg-10 col-12">
     <h3>Your Challenge Breaks</h3>
     {% if wb_breaks %}
     {% include 'table_breaks.html' %}

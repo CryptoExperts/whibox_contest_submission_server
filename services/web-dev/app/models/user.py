@@ -96,12 +96,17 @@ class User(db.Model):
         return User.query.filter(User._id == int(id)).first()
 
     @staticmethod
-    def refresh_all_strawberry_rankings():
+    def refresh_all_strawberry_rankings(programs):
+        for p in programs:
+            if p.strawberries_peak > p.user._strawberries:
+                p.user._strawberries = p.strawberries_peak
+
         users = User.query.filter(
             User._strawberries > 0
         ).order_by(User._strawberries.desc()).all()
         if len(users) == 0:
             return
+
         users[0]._strawberries_ranking = 1
         r = 1
         b = users[0]._strawberries

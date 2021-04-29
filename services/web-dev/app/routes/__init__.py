@@ -126,6 +126,8 @@ def user_show():
     programs_queued = Program.get_user_queued_programs(current_user)
     programs_rejected = Program.get_user_rejected_programs(current_user)
     wb_breaks = WhiteboxBreak.get_all_by_user(current_user)
+    all_programs = Program.get_all_published_sorted_by_ranking()
+    User.refresh_all_strawberry_rankings(all_programs)
     return render_template('user_show.html',
                            active_page='user_show',
                            user=current_user,
