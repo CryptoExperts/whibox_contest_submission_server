@@ -2,11 +2,13 @@ import time
 from flask import url_for, render_template, request
 from flask_login import current_user, login_required
 
-from app import app
+from app import app, db
 from app.forms import WhiteboxBreakForm
 from app.models.program import Program
 from app.models.whiteboxbreak import WhiteboxBreak
 from app.utils import redirect, format_timestamp, crx_flash
+
+from commands import validate_private_key
 
 
 @app.route('/break/candidate/<int:identifier>', methods=['GET', 'POST'])
@@ -24,7 +26,6 @@ def break_candidate(identifier):
 
     # Only published programs can be broken
     program = Program.get_unbroken_or_broken_by_id(identifier)
-    print(program, flush=True)
     if program is None or not program.is_published:
         return redirect(url_for('index'))
 
@@ -47,41 +48,24 @@ def break_candidate(identifier):
                                identifier=identifier,
                                testing=app.testing)
 
-    if program.plaintexts is None or program.ciphertexts is None:
-        return redirect(url_for('index'))
-    number_of_test_vectors = 10
-    plaintexts = program.plaintexts
-    ciphertexts = program.ciphertexts
-    if len(plaintexts) != len(ciphertexts) or len(plaintexts) % 16 != 0 or \
-       len(plaintexts) == 0:
+    submitted_prikey = form.prikey.data
+
+    if program.pubkey is None:
         return redirect(url_for('index'))
 
-    key = bytes.fromhex(form.key.data)
-    try:
-        aes = AES.new(key, AES.MODE_ECB)
-    except:
-        return redirect(url_for('index'))
-    for i in range(number_of_test_vectors):
-        pt = plaintexts[16*i:16*(i+1)]
-        ct = ciphertexts[16*i:16*(i+1)]
-        try:
-            computed_ct = aes.encrypt(pt)
-        except:
-            computed_ct = None
-        if computed_ct is None or ct != computed_ct:
-            pt_as_text = binascii.hexlify(pt).decode()
-            ct_as_text = binascii.hexlify(ct).decode()
-            return render_template('challenge_break_ko.html',
-                                   identifier=identifier,
-                                   current_user=current_user,
-                                   plaintext=pt_as_text,
-                                   ciphertext=ct_as_text)
+    if validate_private_key(submitted_prikey, program.pubkey):
+        app.logger.info(f"Implementation is broken at {now}")
+        program.set_status_to_broken(current_user, now)
+        db.session.commit()
 
-    # If we reach this point, the submitted key is correct
-    program.set_status_to_broken(current_user, now)
-    db.session.commit()
-
-    return redirect(url_for('break_candidate_ok', identifier=identifier))
+        return redirect(url_for('break_candidate_ok', identifier=identifier))
+    else:
+        app.logger.info("Invalid private key")
+        return render_template('challenge_break_ko.html',
+                               identifier=identifier,
+                               current_user=current_user,
+                               submitted_prikey=submitted_prikey,
+                               pubkey=program.pubkey)
 
 
 @app.route('/break/candidate/ok/<int:identifier>', methods=['GET'])
@@ -96,4 +80,5 @@ def break_candidate_ok(identifier):
     if wb_break is None:
         return redirect(url_for('index'))
     # If we reach this point, the user indeed broke the challenge
-    return render_template('challenge_break_ok.html', wb_break=wb_break, current_user=current_user)
+    return render_template('challenge_break_ok.html', wb_break=wb_break,
+                           current_user=current_user)

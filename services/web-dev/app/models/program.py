@@ -91,7 +91,6 @@ class Program(db.Model):
     _strawberries_peak = db.Column(mysql.DOUBLE, default=0)
     _strawberries_last = db.Column(mysql.DOUBLE, default=0)
     _strawberries_ranking = db.Column(db.BigInteger, default=None)
-    _timestamp_first_inversion = db.Column(db.BigInteger, default=None)
 
     @property
     def position_in_the_compilation_queue(self):
@@ -213,20 +212,10 @@ class Program(db.Model):
             return utils.format_timestamp(self._timestamp_first_break)
 
     @property
-    def datetime_first_inversion(self):
-        if self._timestamp_first_inversion is None:
-            return None
-        else:
-            return utils.format_timestamp(self._timestamp_first_inversion)
-
-    @property
     def timestamp_last_update(self):
         last_update = self._timestamp_published
         if self._timestamp_first_break:
             last_update = self._timestamp_first_break
-        if self._timestamp_first_inversion and \
-           last_update < self._timestamp_first_inversion:
-            last_update = self._timestamp_first_inversion
 
         return last_update
 
@@ -545,8 +534,9 @@ class Program(db.Model):
         ).order_by(Program._timestamp_compilation_start.desc()).all()
 
     def __repr__(self):
+        print(self._id, flush=True)
         s = (
-            f'[Program {self._id}]\n'
+            f'<Program {self._id}>\n'
             f'\t funny_name:              {self._funny_name}\n'
             f'\t basename:                {self._basename}\n'
             f'\t user_id:                 {self._user_id}\n'

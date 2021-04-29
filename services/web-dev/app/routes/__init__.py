@@ -1,18 +1,10 @@
 # import binascii
-# import hashlib
+import time
+from traceback import print_exc
+from flask import render_template, url_for, request, request_started
+from flask_login import login_required, current_user
 
-# from Crypto.Cipher import AES
-# from traceback import print_exc
-from flask import (render_template, url_for, request, send_from_directory,
-                   request_started, jsonify)
-from flask_login import login_user, logout_user, login_required, current_user
-from sqlalchemy.exc import IntegrityError
-
-from app import app
-from app import login_manager
-from app import utils
-from app import db
-from app.forms import LoginForm, UserRegisterForm
+from app import app, db, login_manager
 from app.models.user import User
 from app.models.program import Program
 from app.models.whiteboxbreak import WhiteboxBreak
@@ -23,40 +15,39 @@ from . import user, submit, challenge, breaks  # noqa
 # from werkzeug.contrib.atom import AtomFeed
 
 
-# def need_to_check(url_rule):
-#     if url_rule.startswith('/static/') \
-#        or (url_rule.startswith('/user/') and url_rule != "/user/show") \
-#        or url_rule == '/rules' \
-#        or url_rule == '/submit/candidate':
-#         return False
-#     return True
+def need_to_check(url_rule):
+    if url_rule.startswith('/static/') \
+       or (url_rule.startswith('/user/') and url_rule != "/user/show") \
+       or url_rule == '/rules' \
+       or url_rule == '/submit/candidate':
+        return False
+    return True
 
 
-# def update_strawberries_and_carrots(sender, **extra):
-#     url_rule = str(request.url_rule)
-#     if not need_to_check(url_rule):
-#         return
+def update_strawberries(sender, **extra):
+    url_rule = str(request.url_rule)
+    if not need_to_check(url_rule):
+        return
 
-#     now = int(time.time())
-#     try:
-#         programs = Program.get_programs_requiring_update(now)
+    now = int(time.time())
+    try:
+        programs = Program.get_programs_requiring_update(now)
 
-#         # update the strawberries and carrots for each program
-#         for program in programs:
-#             program.update_strawberries(now)
-#             program.update_carrots(now)
+        # update the strawberries and carrots for each program
+        for program in programs:
+            program.update_strawberries(now)
 
-#         # refresh program and user ranking
-#         Program.refresh_all_strawberry_rankings()
-#         User.refresh_all_strawberry_rankings()
+        # refresh program and user ranking
+        Program.refresh_all_strawberry_rankings()
+        User.refresh_all_strawberry_rankings()
 
-#         db.session.commit()
-#     except:
-#         db.session.rollback()
-#         print_exc()
+        db.session.commit()
+    except:
+        db.session.rollback()
+        print_exc()
 
 
-# request_started.connect(update_strawberries_and_carrots, app)
+request_started.connect(update_strawberries, app)
 
 
 @app.route('/', methods=['GET'])
@@ -121,30 +112,6 @@ def index():
 #         programs_broken_by_current_user=programs_broken_by_current_user,
 #         programs_inverted_by_current_user=programs_inverted_by_current_user,
 #     )
-
-
-# @app.route('/show/candidate/<int:identifier>/testvectors', methods=['GET'])
-# def show_candidate_sample(identifier):
-#     program = Program.get_by_id(identifier)
-#     if program is None or not program.is_published:
-#         return redirect(url_for('index'))
-
-#     number_of_test_vectors = int(len(program.plaintexts) / 16)
-#     test_vectors = list()
-#     for i in range(number_of_test_vectors):
-#         test_vectors.append({
-#             "plaintext": binascii.hexlify(
-#                 program.plaintexts[i*16:(i+1)*16]).decode(),
-#             "ciphertext": binascii.hexlify(
-#                 program.ciphertexts[i*16:(i+1)*16]).decode()
-#         })
-
-#     res = {
-#         "id": program._id,
-#         "test_vectors": test_vectors
-#     }
-
-#     return jsonify(res)
 
 
 @app.route('/user/show', methods=['GET'])

@@ -1,4 +1,4 @@
-from flask import url_for, send_from_directory
+from flask import url_for, send_from_directory, jsonify
 from flask_login import current_user
 
 from app import app
@@ -66,3 +66,26 @@ def get_candidate_proof_of_knowledge(identifier):
         return redirect(url_for('index'))
 
     return program.proof_of_knowledge
+
+
+@app.route('/candidate/<int:identifier>', methods=['GET'])
+def show_candidate_sample(identifier):
+    program = Program.get_by_id(identifier)
+    if program is None or not program.is_published:
+        return redirect(url_for('index'))
+
+    number_of_test_vectors = int(len(program.hashes) / 32)
+    test_vectors = list()
+    for i in range(number_of_test_vectors):
+        test_vectors.append({
+            "hash": program.hashes[i*32:(i+1)*32].hex().upper(),
+            "signature": program.signatures[i*64:(i+1)*64].hex().upper()
+        })
+
+    res = {
+        "id": program._id,
+        "public_key": program.pubkey,
+        "proof_of_knowledge": program.proof_of_knowledge,
+        "test_vectors": test_vectors
+    }
+    return jsonify(res)

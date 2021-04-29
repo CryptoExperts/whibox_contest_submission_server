@@ -1,50 +1,54 @@
-{% extends "base.html" %}
+{% extends "base_decorated.html" %}
 
 {% block title %}
-  Trying to Break Challenge {{ identifier }}
+Trying to Break Challenge {{ identifier }}
 {% endblock %}
 
 
 {% block content %}
 
-  {% import 'form_element.html' as formidable %}
+{% import 'form_element.html' as formidable %}
 
-  <div class="row">
-    <div class="col-lg-6 col-lg-offset-3">
-      <div class="panel panel-default">
-        <div class="panel-body">
+<div class="row">
+  <div class="col-lg-6 col-lg-offset-3">
+    <div class="panel panel-default">
+      <div class="panel-body">
 
-	  <p class="lead">This challenge is worth {{ strawberries | round(2) or 0 }} strawberries 🍓 !</p>
+        <p class="lead">This challenge is worth {{ strawberries | round(2) or 0 }} strawberries 🍓 !</p>
 
-	  <form id="form" class="form-signin" method="post">
-	    {{ form.hidden_tag() }}
-	    <fieldset>
+        <form id="form" class="form-signin" method="post">
+          {{ form.hidden_tag() }}
+          <fieldset>
 
-	      <div class="form-group{% if form.key.errors %} has-error has-feedback{% endif %}" id="key-form-group">
-		<label class="control-label" id="key-ko"> </label>
-		{% for error in form.key.errors %}
-		  <label class="control-label" for="key">{{ error }}</label>
-		  <span class="glyphicon glyphicon-remove form-control-feedback" aria-hidden="true"></span>
-		{% endfor %}
-		<label for="key" class="sr-only">Key</label>
-		<input type="text" name="key" id="key" class="form-control{% if form.key.errors %} form-control-warning{% endif %}" placeholder="Key" value="{% if form.key.data %}{{ form.key.data }}{% endif %}" oninput="window.crx_wb.keyChanged(this)" autocomplete="off" style="transition: border-color, 0.4s;" autofocus="">
-	      </div>
+            <div class="form-group{% if form.prikey.errors %} has-error has-feedback{% endif %}" id="prikey-form-group">
+              <label class="control-label text-danger" id="prikey-ko"> </label>
+              {% for error in form.prikey.errors %}
+              <label class="control-label text-danger" for="prikey">{{ error }}</label>
+              <span class="glyphicon glyphicon-remove form-control-feedback" aria-hidden="true"></span>
+              {% endfor %}
+              <label for="prikey" class="sr-only">Private Key</label>
+              <input type="text" name="prikey" id="prikey"
+                     class="form-control{% if form.prikey.errors %} form-control-warning{% endif %}"
+                     placeholder="Private Key" value="{% if form.prikey.data %}{{ form.prikey.data }}{% endif %}"
+                     oninput="window.crx_wb.prikeyChanged(this)"
+                     autocomplete="off" style="transition: border-color, 0.4s;" autofocus="">
+            </div>
 
-	      {{ formidable.recaptcha(form.recaptcha, testing) }}
+            {{ formidable.recaptcha(form.recaptcha, testing) }}
 
-	      <button class="btn btn-lg btn-primary btn-block" id="submitButton">Submit your key candidate</button>
+            <button class="btn btn-lg btn-primary btn-block" id="submitButton">Submit your private key candidate</button>
 
-	    </fieldset>
-	  </form>
+          </fieldset>
+        </form>
 
-	</div>
       </div>
     </div>
   </div>
+</div>
 
 {% endblock %}
 
 
 {% block javascript %}
-  <script src="/static/js/key-validator.js"></script>
+<script src="/static/js/break-validator.js"></script>
 {% endblock %}

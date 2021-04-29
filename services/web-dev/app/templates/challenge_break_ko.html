@@ -1,20 +1,27 @@
-{% extends "base.html" %}
+{% extends "base_decorated.html" %}
 
 {% block title %}You did not break challenge {{ identifier }}...{% endblock %}
 
 {% block content %}
 
-  <div class="row">
-    <div class="col-xs-12">
-      <p class="lead">The key you submitted for challenge {{ identifier }} is incorrect.</p>
-      <p class="lead">The correct key would encrypt the plaintext <code>{{ plaintext }}</code> as <code>{{ ciphertext }}</code>.</p>
-    </div>
+<div class="row">
+  <div class="col-12">
+    <p class="lead">The private key you submitted for challenge {{ identifier }} is incorrect.</p>
   </div>
+</div>
 
-  <div class="row">
-    <div class="col-md-6 col-md-offset-4 col-xs-10 col-xs-offset-2">
-      <img src="/static/images/sadbanana.gif" class="img-responsive" alt="Responsive image">
-    </div>
+<div class="row">
+  <div class="col-md-6 col-md-offset-4 col-xs-10 col-xs-offset-2">
+    <img src="/static/images/sadbanana.gif" class="img-responsive" alt="Responsive image">
   </div>
+</div>
+  <hr>
+<div class="row">
+  <div class="col-12">
+    <p class="lead">The private key you submitted <code>{{ submitted_prikey }}</code>.</p>
+    <p class="lead">The public key is <code>{{ pubkey }}</code>.</p>
+    <p class="lead">You can validate your submission with the supplimentary matrials.</p>
+  </div>
+</div>
 
 {% endblock %}

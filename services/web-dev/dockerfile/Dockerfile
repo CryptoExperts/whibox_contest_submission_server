@@ -24,5 +24,7 @@ COPY ssl/foobar.crt /
 # This should be the only difference from the prod Dockerfile
 # By copying run_dev.py, we assume that the app will be mounted in /app in the docker.
 COPY run_dev.py /
+COPY supplementary-materials/commands.py /
+COPY supplementary-materials/nist_p256.py /
 RUN chmod 755 /run_dev.py
 CMD ["/run_dev.py"]

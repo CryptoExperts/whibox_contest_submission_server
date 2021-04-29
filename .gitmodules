@@ -4,3 +4,6 @@
 [submodule "services/compile_and_test/supplementary-materials"]
 	path = services/compile_and_test/supplementary-materials
 	url = git@github.com:whibox/whibox-contest-2021_supplementary-materials.git
+[submodule "services/web-dev/dockerfile/supplementary-materials"]
+	path = services/web-dev/dockerfile/supplementary-materials
+	url = git@github.com:whibox/whibox-contest-2021_supplementary-materials.git

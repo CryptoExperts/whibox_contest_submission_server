@@ -3,7 +3,9 @@ from flask_wtf import FlaskForm, RecaptchaField
 from flask_wtf.file import FileField, FileRequired, FileAllowed
 from wtforms import StringField, PasswordField
 from wtforms.fields.html5 import EmailField
-from wtforms.validators import DataRequired, EqualTo, ValidationError, Length, Email, AnyOf
+from wtforms.validators import (
+    DataRequired, EqualTo, ValidationError, Length, Email
+)
 from .text_contents import flash_texts_and_categories
 
 
@@ -36,7 +38,8 @@ class WhiteboxSubmissionForm(FlaskForm):
 
     def validate_pubkey(self, pubkey):
         if re.fullmatch('^[0-9a-fA-F]{128}$', pubkey.data) is None:
-            raise ValidationError(flash_texts_and_categories['INVALID_KEY'][0])
+            raise ValidationError(
+                flash_texts_and_categories['INVALID_PUB_KEY'][0])
 
     def validate_proof_of_knowledge(self, proof_of_knowledge):
         if re.fullmatch('^[0-9a-fA-F]{128}$', proof_of_knowledge.data) is None:
@@ -49,5 +52,6 @@ class WhiteboxBreakForm(FlaskForm):
     recaptcha = RecaptchaField()
 
     def validate_prikey(self, key):
-        if re.fullmatch('^[0-9a-fA-F]{128}$', key.data) is None:
-            raise ValidationError(flash_texts_and_categories['INVALID_KEY'][0])
+        if re.fullmatch('^[0-9a-fA-F]{64}$', key.data) is None:
+            raise ValidationError(
+                flash_texts_and_categories['INVALID_PRI_KEY'][0])
