@@ -1,4 +1,32 @@
-version: "3"
+version: "3.9"
+
+x-recaptcha-variables: &recaptcha-variables
+    RECAPTCHA_PUBLIC_KEY: '6Le3QBoUAAAAANKiIexuJsV5XE_HjgqICK2kHGCb'
+    RECAPTCHA_PRIVATE_KEY: '6Le3QBoUAAAAALLIh0LrUMsIT8F1lV5fr3eqzj4x'
+    SECRET_KEY: 'da39a3ee5e6b4b0d3255bfef95601890afd80709'
+
+x-date-variables: &date-variables
+    STARTING_DATE: 1621209600       # In seconds since EPOCH. Must be identical in the web service. 17/05/2021 00:00 UTC is 1621209600
+    POSTING_DEADLINE: 1629590400    # In seconds since EPOCH. Must be identical in the web service. 22/08/2021 00:00 UTC is 1629590400
+    FINAL_DEADLINE: 1631318400      # In seconds since EPOCH. Must be identical in the web service. 11/09/2021 00:00 UTC is 1631318400
+
+x-db-variables: &db-variables
+    MYSQL_DATABASE: 'db_wb'
+    MYSQL_USER: 'user_wb'
+    MYSQL_PASSWORD: 'a_not_so_random_user_password'
+
+x-db-server-variables: &db-server-variables
+    MYSQL_HOST: 'mysql'
+    MYSQL_PORT: 3306
+
+x-challenge-variables: &challenge-variables
+    CHALLENGE_MAX_SOURCE_SIZE_IN_MB: 50         # In MB. Must be identical in the launcher service. Must be 50 in production.
+    CHALLENGE_MAX_MEM_COMPILATION_IN_MB: 500    # In MB. Must be identical in the launcher service. Must be 500 in production.
+    CHALLENGE_MAX_TIME_COMPILATION_IN_SECS: 100 # In seconds. Must be identical in the launcher service. Must be 100 in production.
+    CHALLENGE_MAX_BINARY_SIZE_IN_MB: 20         # In MB. Must be identical in the launcher service. Must be 20 in production.
+    CHALLENGE_MAX_MEM_EXECUTION_IN_MB: 20       # In MB. Must be identical in the launcher service. Must be 20 in production.
+    CHALLENGE_MAX_TIME_EXECUTION_IN_SECS: 3     # In seconds. Must be identical in the launcher service. Must be 1 in production.
+    CHALLENGE_NUMBER_OF_TEST_VECTORS: 100       # Must be identical in the launcher service. Must be at least 1000 in production.
 
 services:
 
@@ -12,31 +40,18 @@ services:
         volumes:
             - /volumes/whitebox_program_uploads:/uploads
         environment:
-            - RECAPTCHA_PUBLIC_KEY=6LfadSwUAAAAAEJY762usuBYGZqkt7EwV5ZrUIYs
-            - RECAPTCHA_PRIVATE_KEY=6LfadSwUAAAAAI6OcNUiEBbqWZJDDGYhxYgWJVML
-            - SECRET_KEY=da39a3ee5e6b4b0d3255bfef95601890afd80709
-            - MYSQL_DATABASE=db_wb
-            - MYSQL_USER=user_wb
-            - MYSQL_PASSWORD=a_not_so_random_user_password # Must be identical in web, launcher and mysql services.
-            - MYSQL_HOST=mysql
-            - MYSQL_PORT=3306
-            - UPLOAD_FOLDER=/uploads
-            - URL_COMPILE_AND_TEST=http://launcher:5000/compile_and_test
-            - STARTING_DATE=1621209600                   # In seconds since EPOCH. Must be identical in the web service. 18/03/2019 00:00 UTC is 1621209600
-            - POSTING_DEADLINE=1629590400                # In seconds since EPOCH. Must be identical in the web service. 01/08/2019 00:00 UTC is 1629590400  
-            - FINAL_DEADLINE=1631318400                  # In seconds since EPOCH. Must be identical in the web service. 21/08/2019 00:00 UTC is 1631318400
-            - CHALLENGE_MAX_SOURCE_SIZE_IN_MB=50         # In MB. Must be identical in the launcher service. Must be 50 in production.
-            - CHALLENGE_MAX_MEM_COMPILATION_IN_MB=500    # In MB. Must be identical in the launcher service. Must be 500 in production.
-            - CHALLENGE_MAX_TIME_COMPILATION_IN_SECS=100 # In seconds. Must be identical in the launcher service. Must be 100 in production.
-            - CHALLENGE_MAX_BINARY_SIZE_IN_MB=20         # In MB. Must be identical in the launcher service. Must be 20 in production.
-            - CHALLENGE_MAX_MEM_EXECUTION_IN_MB=20       # In MB. Must be identical in the launcher service. Must be 20 in production.
-            - CHALLENGE_MAX_TIME_EXECUTION_IN_SECS=3     # In seconds. Must be identical in the launcher service. Must be 1 in production.
-            - CHALLENGE_NUMBER_OF_TEST_VECTORS=200      # Must be identical in the launcher service. Must be at least 1000 in production.
+            <<: *recaptcha-variables
+            <<: *db-variables
+            <<: *db-server-variables
+            <<: *date-variables
+            <<: *challenge-variables
+
+            UPLOAD_FOLDER: '/uploads'
+            URL_COMPILE_AND_TEST: 'http://launcher:5000/compile_and_test'
+
         deploy:
             placement:
                 constraints: [node.labels.vm == node-manager]
-
-
 
     launcher:
         image: crx/launcher-prod
@@ -48,24 +63,13 @@ services:
             - /volumes/whitebox_program_uploads:/uploads:ro
             - /volumes/whitebox_program_uploads/compilations:/compilations
         environment:
-            - MYSQL_DATABASE=db_wb
-            - MYSQL_USER=user_wb
-            - MYSQL_PASSWORD=a_not_so_random_user_password # Must be identical in web, launcher and mysql services.
-            - MYSQL_HOST=mysql
-            - MYSQL_PORT=3306
-            - SOCK=unix:///var/run/docker.sock
-            - NAME_OF_COMPILE_AND_TEST_SERVICE=prod_compile_and_test
-            - COMPILE_AND_TEST_SERVICE_NETWORK=prod_back_network
-            - STARTING_DATE=1621209600                   # In seconds since EPOCH. Must be identical in the web service. 18/03/2019 00:00 UTC is 1621209600
-            - POSTING_DEADLINE=1629590400                # In seconds since EPOCH. Must be identical in the web service. 01/08/2019 00:00 UTC is 1629590400  
-            - FINAL_DEADLINE=1631318400                  # In seconds since EPOCH. Must be identical in the web service. 21/08/2019 00:00 UTC is 1631318400
-            - CHALLENGE_MAX_SOURCE_SIZE_IN_MB=50         # In MB. Must be identical in the web service. Must be 50 in production.
-            - CHALLENGE_MAX_MEM_COMPILATION_IN_MB=500    # In MB. Must be identical in the web service. Must be 500 in production.
-            - CHALLENGE_MAX_TIME_COMPILATION_IN_SECS=100 # In seconds. Must be identical in the web service. Must be 100 in production.
-            - CHALLENGE_MAX_BINARY_SIZE_IN_MB=20         # In MB. Must be identical in the web service. Must be 20 in production.
-            - CHALLENGE_MAX_MEM_EXECUTION_IN_MB=20       # In MB. Must be identical in the web service. Must be 20 in production.
-            - CHALLENGE_MAX_TIME_EXECUTION_IN_SECS=3     # In seconds. Must be identical in the web service. Must be 1 in production.
-            - CHALLENGE_NUMBER_OF_TEST_VECTORS=200      # Must be identical in the web service. Must be at least 1000 in production.
+            <<: *db-variables
+            <<: *db-server-variables
+            <<: *date-variables
+            <<: *challenge-variables
+            SOCK: "unix:///var/run/docker.sock"
+            NAME_OF_COMPILE_AND_TEST_SERVICE: "prod_compile_and_test"
+            COMPILE_AND_TEST_SERVICE_NETWORK: "prod_back_network"
 
         deploy:
             placement:
@@ -82,15 +86,12 @@ services:
         volumes:
             - /volumes/database:/var/lib/mysql
         environment:
-            - MYSQL_ROOT_PASSWORD=a_not_so_random_root_password
-            - MYSQL_DATABASE=db_wb # specify the name of a database to be created on image startup (does nothing if the db already exists).
-            - MYSQL_USER=user_wb # This user will be granted superuser permissions for the database specified by the MYSQL_DATABASE variable.
-            - MYSQL_PASSWORD=a_not_so_random_user_password # Must be identical in web, launcher and mysql services.
-            - MYSQL_ALLOW_EMPTY_PASSWORD=no
+            MYSQL_ROOT_PASSWORD: "a_not_so_random_root_password"
+            MYSQL_ALLOW_EMPTY_PASSWORD: "no"
+            <<: *db-variables
         deploy:
             placement:
                 constraints: [node.labels.vm == node-manager]
-
 
 networks:
     front_network:

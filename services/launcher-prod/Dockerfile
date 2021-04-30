@@ -1,9 +1,12 @@
-FROM crx/nginx:latest
+FROM nginx:1.19.9-alpine
 
-RUN apk add --no-cache 'uwsgi<2.0.18' 'uwsgi-python3<2.0.18' 'mysql-client<10.4' 'python3<3.7' 'curl' 'py3-crypto<2.6.2'
+RUN apk add --no-cache 'mysql-client' 'curl'
+RUN apk add --no-cache 'python3' 'python3-dev' 'py3-crypto' 'py3-pip'
+RUN apk add --no-cache 'build-base'
+RUN apk add --no-cache 'uwsgi' 'uwsgi-python3'
 
-RUN pip3 install --upgrade pip
-RUN pip3 install Flask==1.0.2 Flask-SQLAlchemy==2.3.2 Flask-Login==0.4.1 passlib==1.7.1 PyMySQL==0.9.3 docker==3.7.0
+RUN pip install --upgrade pip
+RUN pip install Flask==1.1.2 Flask-SQLAlchemy==2.5.1 Flask-Login==0.5.0 passlib==1.7.4 PyMySQL==1.0.2 docker==5.0.0 click==7.1.2
 
 
 COPY config/docker-entrypoint.sh /usr/local/bin/

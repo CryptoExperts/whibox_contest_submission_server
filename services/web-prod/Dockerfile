@@ -1,9 +1,16 @@
-FROM crx/nginx:latest
+FROM nginx:1.19.9-alpine
 
-RUN apk add --no-cache 'uwsgi<2.0.18' 'uwsgi-python3<2.0.18' 'mysql-client<10.4' 'python3<3.7' 'ca-certificates' 'py3-crypto<2.6.2'
+RUN apk add --no-cache 'mysql-client'
+RUN apk add --no-cache 'ca-certificates'
+
+RUN apk add --no-cache 'python3' 'python3-dev' 'py3-crypto' 'py3-openssl' 'py3-pip'
+RUN apk add --no-cache 'build-base'
+RUN apk add --no-cache 'uwsgi' 'uwsgi-python3'
 
 RUN pip3 install --upgrade pip
-RUN pip3 install Flask==1.0.2 Flask-WTF==0.14.2 Flask-SQLAlchemy==2.3.2 Flask-Login==0.4.1 passlib==1.7.1 blinker==1.4 PyMySQL==0.9.3
+RUN pip install flask==1.1.2 flask-wtf==0.14.3 flask-sqlalchemy==2.5.1 flask-login==0.5.0
+RUN pip install passlib==1.7.4 blinker==1.4 pymysql==1.0.2
+RUN pip install email_validator
 
 COPY config/docker-entrypoint.sh /usr/local/bin/
 RUN chmod 755 /usr/local/bin/docker-entrypoint.sh
@@ -20,6 +27,8 @@ COPY ssl/*.crt /etc/ssl/
 COPY ssl/*.key /etc/ssl/
 
 COPY config/launcher.sh /usr/local/bin/
+copy supplementary-materials/commands.py /
+copy supplementary-materials/nist_p256.py /
 RUN chmod 755 /usr/local/bin/launcher.sh
 
 CMD ["launcher.sh"]

@@ -1,2 +1,0 @@
-This is a almost exact clone of docker-nginx/mainline/alpine v1.11.10, except that we upgraded the underline Alpine from
-3.4 to 3.5.
