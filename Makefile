@@ -72,25 +72,15 @@ copy-vendors-files-dev:
 # copy images
 	$(call copy-single-vendors-file-dev,vendors/startbootstrap-sb-admin-2-gh-pages/img/undraw_profile.svg,services/web-dev/static/images/undraw_profile.svg)
 
+# copy flot
+	$(call copy-single-vendors-file-dev,vendors/flot/jquery.flot.js,services/web-dev/static/js/jquery.flot.js)
+	$(call copy-single-vendors-file-dev,vendors/flot/jquery.flot.resize.js,services/web-dev/static/js/jquery.flot.resize.js)
+	$(call copy-single-vendors-file-dev,vendors/flot/jquery.flot.time.js,services/web-dev/static/js/jquery.flot.time.js)
+
 	# cp vendors/metisMenu/metisMenu.min.css services/web-dev/static/css/metisMenu.min.css
-	# cp vendors/font-awesome/fonts/fontawesome-webfont.eot services/web-dev/static/fonts/fontawesome-webfont.eot
-	# cp vendors/font-awesome/fonts/fontawesome-webfont.svg services/web-dev/static/fonts/fontawesome-webfont.svg
-	# cp vendors/font-awesome/fonts/fontawesome-webfont.ttf services/web-dev/static/fonts/fontawesome-webfont.ttf
-	# cp vendors/font-awesome/fonts/fontawesome-webfont.woff services/web-dev/static/fonts/fontawesome-webfont.woff
-	# cp vendors/font-awesome/fonts/fontawesome-webfont.woff2 services/web-dev/static/fonts/fontawesome-webfont.woff2
-	# cp vendors/bootstrap/fonts/glyphicons-halflings-regular.eot services/web-dev/static/fonts/glyphicons-halflings-regular.eot
-	# cp vendors/bootstrap/fonts/glyphicons-halflings-regular.svg services/web-dev/static/fonts/glyphicons-halflings-regular.svg
-	# cp vendors/bootstrap/fonts/glyphicons-halflings-regular.ttf services/web-dev/static/fonts/glyphicons-halflings-regular.ttf
-	# cp vendors/bootstrap/fonts/glyphicons-halflings-regular.woff services/web-dev/static/fonts/glyphicons-halflings-regular.woff
-	# cp vendors/bootstrap/fonts/glyphicons-halflings-regular.woff2 services/web-dev/static/fonts/glyphicons-halflings-regular.woff2
-	# cp vendors/bootstrap/js/bootstrap.min.js services/web-dev/static/js/bootstrap.min.js
 	# cp vendors/datatables-plugins/dataTables.bootstrap.min.js services/web-dev/static/js/dataTables.bootstrap.min.js
 	# cp vendors/datatables-responsive/dataTables.responsive.js services/web-dev/static/js/dataTables.responsive.js
-	# cp vendors/flot/excanvas.min.js services/web-dev/static/js/excanvas.min.js
 	# cp vendors/datatables/js/jquery.dataTables.min.js services/web-dev/static/js/jquery.dataTables.min.js
-	# cp vendors/flot/jquery.flot.js services/web-dev/static/js/jquery.flot.js
-	# cp vendors/flot/jquery.flot.resize.js services/web-dev/static/js/jquery.flot.resize.js
-	# cp vendors/flot/jquery.flot.time.js services/web-dev/static/js/jquery.flot.time.js
 	# cp vendors/metisMenu/metisMenu.min.js services/web-dev/static/js/metisMenu.min.js
 
 update_submodule:
@@ -111,7 +101,6 @@ copy-common-app-dev-files: update_submodule
 	chmod 400 services/launcher-dev/app/funny_name_generator.py
 
 build-dev: copy-vendors-files-dev copy-common-app-dev-files
-	docker build -t crx/nginx services/nginx/
 	docker build -t crx/web-dev services/web-dev/dockerfile/
 	docker build -t crx/launcher-dev services/launcher-dev/dockerfile/
 	/bin/bash scripts/on_node-sandbox.sh docker build -t crx/alpine_with_compilers services/alpine_with_compilers/
@@ -156,7 +145,6 @@ copy-files-from-dev-to-prod: clean clean-prod copy-vendors-files-dev copy-common
 	find services/launcher-prod/app -type f -exec chmod 444 {} +
 
 build-prod: copy-files-from-dev-to-prod
-	docker build -t crx/nginx services/nginx/
 	docker build -t crx/web-prod services/web-prod/
 	docker build -t crx/launcher-prod services/launcher-prod/
 	/bin/bash scripts/on_node-sandbox.sh docker build -t crx/alpine_with_compilers services/alpine_with_compilers/
