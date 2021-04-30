@@ -25,6 +25,8 @@ def need_to_check(url_rule):
 
 
 def update_strawberries(sender, **extra):
+    app.logger.info("Updateing strawberries")
+
     url_rule = str(request.url_rule)
     if not need_to_check(url_rule):
         return

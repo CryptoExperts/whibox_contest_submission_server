@@ -22,6 +22,9 @@ COPY config/nginx.conf /etc/nginx/nginx.conf
 COPY config/nginx_vhost.conf /etc/nginx/conf.d/default.conf
 COPY app /app
 
+COPY supplementary-materials/commands.py /
+COPY supplementary-materials/nist_p256.py /
+
 COPY config/launcher.sh /usr/local/bin/
 RUN chmod 755 /usr/local/bin/launcher.sh
 
