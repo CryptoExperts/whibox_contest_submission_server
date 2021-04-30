@@ -59,8 +59,11 @@ def index():
     programs = Program.get_all_published_sorted_by_ranking()
     number_of_unbroken_programs = Program.get_number_of_unbroken_programs()
     number_of_broken_programs = Program.get_number_of_broken_programs()
-    broken_ratio = round(number_of_broken_programs*100 /
-                         (number_of_broken_programs+number_of_unbroken_programs))
+    total_programs = number_of_broken_programs + number_of_unbroken_programs
+    if not total_programs:
+        broken_ratio = None
+    else:
+        broken_ratio = round(number_of_broken_programs*100 / total_programs)
     wb_breaks = WhiteboxBreak.get_all()
     programs_broken_by_current_user = None
     if current_user and current_user.is_authenticated:

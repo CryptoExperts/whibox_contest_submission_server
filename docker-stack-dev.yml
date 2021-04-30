@@ -1,7 +1,12 @@
 version: "3.9"
 
+x-recaptcha-variables: &recaptcha-variables
+    RECAPTCHA_PUBLIC_KEY: '6Le3QBoUAAAAANKiIexuJsV5XE_HjgqICK2kHGCb'
+    RECAPTCHA_PRIVATE_KEY: '6Le3QBoUAAAAALLIh0LrUMsIT8F1lV5fr3eqzj4x'
+    SECRET_KEY: 'da39a3ee5e6b4b0d3255bfef95601890afd80709'
+
 x-date-variables: &date-variables
-    STARTING_DATE: 1621209600         # In seconds since EPOCH. Must be identical in the web service. 17/05/2021 00:00 UTC is 1621209600
+    STARTING_DATE: 1621209600       # In seconds since EPOCH. Must be identical in the web service. 17/05/2021 00:00 UTC is 1621209600
     POSTING_DEADLINE: 1629590400    # In seconds since EPOCH. Must be identical in the web service. 22/08/2021 00:00 UTC is 1629590400
     FINAL_DEADLINE: 1631318400      # In seconds since EPOCH. Must be identical in the web service. 11/09/2021 00:00 UTC is 1631318400
 
@@ -9,6 +14,8 @@ x-db-variables: &db-variables
     MYSQL_DATABASE: 'db_wb'
     MYSQL_USER: 'user_wb'
     MYSQL_PASSWORD: 'a_not_so_random_user_password'
+
+x-db-server-variables: &db-server-variables
     MYSQL_HOST: 'mysql'
     MYSQL_PORT: 3306
 
@@ -35,10 +42,9 @@ services:
             - /volumes/whitebox_program_uploads:/uploads
         environment:
             DEBUG: "True" # Must be set to false in production
-            RECAPTCHA_PUBLIC_KEY: '6Le3QBoUAAAAANKiIexuJsV5XE_HjgqICK2kHGCb'
-            RECAPTCHA_PRIVATE_KEY: '6Le3QBoUAAAAALLIh0LrUMsIT8F1lV5fr3eqzj4x'
-            SECRET_KEY: 'da39a3ee5e6b4b0d3255bfef95601890afd80709'
+            <<: *recaptcha-variables
             <<: *db-variables
+            <<: *db-server-variables
             <<: *date-variables
             <<: *challenge-variables
 
@@ -64,6 +70,7 @@ services:
         environment:
             DEBUG: "True"
             <<: *db-variables
+            <<: *db-server-variables
             <<: *date-variables
             <<: *challenge-variables
             SOCK: "unix:///var/run/docker.sock"
@@ -85,11 +92,9 @@ services:
         volumes:
             - /volumes/database:/var/lib/mysql
         environment:
-            - MYSQL_ROOT_PASSWORD=a_not_so_random_root_password
-            - MYSQL_DATABASE=db_wb # specify the name of a database to be created on image startup (does nothing if the db already exists).
-            - MYSQL_USER=user_wb # This user will be granted superuser permissions for the database specified by the MYSQL_DATABASE variable.
-            - MYSQL_PASSWORD=a_not_so_random_user_password # Must be identical in web, launcher and mysql services.
-            - MYSQL_ALLOW_EMPTY_PASSWORD=no
+            MYSQL_ROOT_PASSWORD: "a_not_so_random_root_password"
+            MYSQL_ALLOW_EMPTY_PASSWORD: "no"
+            <<: *db-variables
         deploy:
             placement:
                 constraints: [node.labels.vm == node-manager]
