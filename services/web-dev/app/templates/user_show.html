@@ -10,7 +10,7 @@
 
 <div class="row">
   <div class="col-12">
-    <h2>Strawberry Scores</h2>
+    <h3 class="text-gray-800">Strawberry Scores</h3>
   </div>
 </div>
 
@@ -38,12 +38,12 @@
   <div class="col-12">
 
     {% if programs %}
-    <h3>Your Competing Challenges</h3>
+    <h4>Your Competing Challenges</h4>
     {% include 'table_challenges.html' %}
     {% endif %}
 
     {% if programs_rejected %}
-    <h3>Your Rejected Programs</h3>
+    <h4>Your Rejected Programs</h4>
     {% include 'table_rejected_challenges.html' %}
     {% endif %}
 
@@ -54,13 +54,13 @@
 
 <div class="row">
   <div class="col-12">
-    <h2>Banana Scores</h2>
+    <h3 class="text-gray-800">Banana Scores</h3>
   </div>
 </div>
 
 <div class="row">
   <div class="col-xl-6 col-lg-10 col-12">
-    <h3>Your Challenge Breaks</h3>
+    <h4>Your Challenge Breaks</h4>
     {% if wb_breaks %}
     {% include 'table_breaks.html' %}
     {% else %}
