@@ -1,8 +1,10 @@
-# import binascii
 import time
+
+from datetime import datetime
 from traceback import print_exc
+from feedwerk.atom import AtomFeed
 from flask import render_template, url_for, request, request_started
-from flask_login import login_required, current_user
+from flask_login import current_user
 
 from app import app, db, login_manager
 from app.models.user import User
@@ -11,8 +13,6 @@ from app.models.whiteboxbreak import WhiteboxBreak
 from app.utils import crx_flash, redirect
 
 from . import user, submit, challenge, breaks  # noqa
-
-# from werkzeug.contrib.atom import AtomFeed
 
 
 def need_to_check(url_rule):
@@ -87,36 +87,6 @@ def index():
     )
 
 
-# @app.route('/candidate/<int:identifier>', methods=['GET'])
-# def candidate(identifier):
-#     program = Program.get_by_id(identifier)
-#     if program is None:
-#         return redirect(url_for('index'))
-#     do_show = False
-#     if program.is_published:
-#         do_show = True
-#     if current_user is not None and \
-#        current_user.is_authenticated and \
-#        current_user == program.user:
-#         do_show = True
-#     if not do_show:
-#         return redirect(url_for('index'))
-
-#     programs_broken_by_current_user = None
-#     programs_inverted_by_current_user = None
-#     if current_user and current_user.is_authenticated:
-#         wb_breaks_by_current_user = WhiteboxBreak.get_all_by_user(current_user)
-#         programs_broken_by_current_user = [
-#             wb_break.program for wb_break in wb_breaks_by_current_user]
-#     # If we reach this point, we can show the source code
-#     return render_template(
-#         'candidate.html',
-#         program=program,
-#         programs_broken_by_current_user=programs_broken_by_current_user,
-#         programs_inverted_by_current_user=programs_inverted_by_current_user,
-#     )
-
-
 @app.route('/rules', methods=['GET'])
 def rules():
     return render_template(
@@ -133,35 +103,34 @@ def rules():
     )
 
 
-# @app.route('/rss.xml', methods=['GET'])
-# def recent_feed():
-#     feed = AtomFeed('WhibOx 2nd Edition -- CHES 2019 CTF',
-#                     feed_url=request.url, url=request.url_root,
-#                     author="WhibOx organizing committee",
-#                     subtitle="Submitted challenged order by published date descending"
-#                     )
-#     programs = Program.get_all_published_sorted_by_published_time()
+@app.route('/rss.xml', methods=['GET'])
+def recent_feed():
+    feed = AtomFeed('WhibOx Contest 3nd Edition -- CHES 2021 Challenge',
+                    feed_url=request.url, url=request.url_root,
+                    author="WhibOx organizing committee",
+                    subtitle="Submitted challenged order by published date descending"
+                    )
+    programs = Program.get_all_published_sorted_by_published_time()
 
-#     for program in programs:
-#         item_url = "%scandidate/%d" % (
-#             request.url_root, program._id)
-#         title = 'New challenge "<strong>%s</strong>" submitted' % program.funny_name
-#         author = program.user.displayname
-#         content = render_template('candidate.html', program=program, feed=True)
+    for program in programs:
+        item_url = "%scandidate/%d" % (
+            request.url_root, program._id)
+        title = 'New challenge "<strong>%s</strong>" submitted' % program.funny_name
+        author = program.user.nickname
+        content = render_template('candidate.html', program=program, feed=True)
 
-#         if not author or not author.strip():
-#             author = program.user.username
-#         feed.add(id=item_url,
-#                  title=title,
-#                  title_type='html',
-#                  updated=datetime.fromtimestamp(program._timestamp_published),
-#                  author=author,
-#                  url=item_url,
-#                  categories=[{'term': program.status}],
-#                  content=content,
-#                  content_type='html',
-#                  )
-#     return feed.get_response()
+        if not author or not author.strip():
+            author = program.user.username
+        feed.add(id=item_url,
+                 title=title,
+                 title_type='html',
+                 updated=datetime.fromtimestamp(program._timestamp_published),
+                 author=author,
+                 url=item_url,
+                 categories=[{'term': program.status}],
+                 content=content,
+                 content_type='html',)
+    return feed.get_response()
 
 
 def unauthorized_handler():

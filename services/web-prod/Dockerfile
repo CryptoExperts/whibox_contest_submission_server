@@ -10,6 +10,7 @@ RUN apk add --no-cache 'uwsgi' 'uwsgi-python3'
 RUN pip3 install --upgrade pip
 RUN pip install flask==1.1.2 flask-wtf==0.14.3 flask-sqlalchemy==2.5.1 flask-login==0.5.0
 RUN pip install passlib==1.7.4 blinker==1.4 pymysql==1.0.2
+RUN pip install feedwerk==0.0.2
 RUN pip install email_validator
 
 COPY config/docker-entrypoint.sh /usr/local/bin/

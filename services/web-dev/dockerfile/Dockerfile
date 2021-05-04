@@ -9,6 +9,7 @@ RUN pip --version
 RUN pip install --upgrade pip
 RUN pip install Flask==1.1.2 Flask-WTF==0.14.3 Flask-SQLAlchemy==2.5.1 Flask-Login==0.5.0
 RUN pip install passlib==1.7.4 blinker==1.4 PyMySQL==1.0.2
+RUN pip install feedwerk==0.0.2
 RUN pip install email_validator
 
 

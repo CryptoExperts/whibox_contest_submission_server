@@ -1,8 +1,9 @@
-from flask import url_for, send_from_directory, jsonify
+from flask import url_for, send_from_directory, jsonify, render_template
 from flask_login import current_user
 
 from app import app
 from app.models.program import Program
+from app.models.whiteboxbreak import WhiteboxBreak
 from app.utils import redirect
 
 
@@ -89,3 +90,22 @@ def show_candidate_sample(identifier):
         "test_vectors": test_vectors
     }
     return jsonify(res)
+
+
+@app.route('/candidate/<int:identifier>.html', methods=['GET'])
+def candidate(identifier):
+    program = Program.get_by_id(identifier)
+    if program is None or not program.is_published:
+        return redirect(url_for('index'))
+
+    programs_broken_by_current_user = None
+    if current_user and current_user.is_authenticated:
+        wb_breaks_by_current_user = WhiteboxBreak.get_all_by_user(current_user)
+        programs_broken_by_current_user = [
+            wb_break.program for wb_break in wb_breaks_by_current_user]
+    # If we reach this point, we can show the source code
+    return render_template(
+        'candidate.html',
+        program=program,
+        programs_broken_by_current_user=programs_broken_by_current_user,
+    )
