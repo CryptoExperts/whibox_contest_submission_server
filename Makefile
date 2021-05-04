@@ -53,7 +53,6 @@ endef
 
 copy-vendors-files-dev:
 # copy fonts
-# $(call copy-single-vendors-file-dev,vendors/startbootstrap-sb-admin-2-gh-pages/vendor/fontawesome-free/css/fontawesome.min.css,services/web-dev/static/css/fontawesome.min.css)
 	$(call copy-single-vendors-file-dev,vendors/startbootstrap-sb-admin-2-gh-pages/vendor/fontawesome-free/css/all.min.css,services/web-dev/static/css/fontawesome.all.min.css)
 	$(call copy-single-vendors-file-dev,vendors/startbootstrap-sb-admin-2-gh-pages/vendor/fontawesome-free/webfonts/fa-solid-900.ttf,services/web-dev/static/webfonts/fa-solid-900.ttf)
 	$(call copy-single-vendors-file-dev,vendors/startbootstrap-sb-admin-2-gh-pages/vendor/fontawesome-free/webfonts/fa-solid-900.woff,services/web-dev/static/webfonts/fa-solid-900.woff)
@@ -151,14 +150,12 @@ build-prod: copy-files-from-dev-to-prod
 	/bin/bash scripts/on_node-sandbox.sh docker build -t crx/compile_and_test services/compile_and_test/
 
 backup-images:
-	docker save crx/nginx > backups/images/nginx.backup
 	docker save crx/web-dev > backups/images/web-dev.backup
 	docker save crx/web-prod > backups/images/web-prod.backup
 	docker save crx/launcher-dev > backups/images/launcher-dev.backup
 	docker save crx/launcher-prod > backups/images/launcher-prod.backup
 
 restore-images:
-	docker load -i backups/images/nginx.backup
 	docker load -i backups/images/web-dev.backup
 	docker load -i backups/images/web-prod.backup
 	docker load -i backups/images/launcher-dev.backup
@@ -166,7 +163,6 @@ restore-images:
 
 
 build-prod-no-cache: copy-files-from-dev-to-prod
-	docker build --no-cache -t crx/nginx services/nginx/
 	docker build --no-cache -t crx/web-prod services/web-prod/
 	docker build --no-cache -t crx/launcher-prod services/launcher-prod/
 	/bin/bash scripts/on_node-sandbox.sh docker build --no-cache -t crx/alpine_with_compilers services/alpine_with_compilers/
