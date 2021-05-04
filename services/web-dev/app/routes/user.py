@@ -1,10 +1,12 @@
 from flask import render_template, url_for, request
-from flask_login import current_user, login_user, logout_user
+from flask_login import current_user, login_user, logout_user, login_required
 from sqlalchemy.exc import IntegrityError
 
 from app import app
 from app.forms import LoginForm, UserRegisterForm
 from app.models.user import User
+from app.models.program import Program
+from app.models.whiteboxbreak import WhiteboxBreak
 from app.utils import crx_flash, redirect, is_safe_url
 
 
@@ -67,3 +69,20 @@ def user_register():
         app.logger.info(f"User created: {username}, {nickname}, {email}")
         crx_flash('ACCOUNT_CREATED', username)
         return redirect(url_for('user_login'))
+
+
+@app.route('/user/show', methods=['GET'])
+@login_required
+def user_show():
+    programs = Program.get_user_competing_programs(current_user)
+    programs_queued = Program.get_user_queued_programs(current_user)
+    programs_rejected = Program.get_user_rejected_programs(current_user)
+    wb_breaks = WhiteboxBreak.get_all_by_user(current_user)
+    User.refresh_all_strawberry_rankings()
+    return render_template('user_show.html',
+                           active_page='user_show',
+                           user=current_user,
+                           programs=programs,
+                           programs_queued=programs_queued,
+                           programs_rejected=programs_rejected,
+                           wb_breaks=wb_breaks)

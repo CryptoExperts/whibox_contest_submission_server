@@ -227,6 +227,7 @@ class Program(db.Model):
         self._strawberries_last = strawberries
         if self._strawberries_peak < strawberries:
             self._strawberries_peak = strawberries
+        self.user.update_strawberries(self._strawberries_peak)
 
     @staticmethod
     def clean_programs_which_timeout_to_compile_or_test():

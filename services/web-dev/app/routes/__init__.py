@@ -25,12 +25,11 @@ def need_to_check(url_rule):
 
 
 def update_strawberries(sender, **extra):
-    app.logger.info("Updating strawberries")
-
     url_rule = str(request.url_rule)
     if not need_to_check(url_rule):
         return
 
+    app.logger.info(f"Updating strawberries for {url_rule}")
     now = int(time.time())
     try:
         programs = Program.get_programs_requiring_update(now)
@@ -116,23 +115,6 @@ def index():
 #         programs_broken_by_current_user=programs_broken_by_current_user,
 #         programs_inverted_by_current_user=programs_inverted_by_current_user,
 #     )
-
-
-@app.route('/user/show', methods=['GET'])
-@login_required
-def user_show():
-    programs = Program.get_user_competing_programs(current_user)
-    programs_queued = Program.get_user_queued_programs(current_user)
-    programs_rejected = Program.get_user_rejected_programs(current_user)
-    wb_breaks = WhiteboxBreak.get_all_by_user(current_user)
-    User.refresh_all_strawberry_rankings()
-    return render_template('user_show.html',
-                           active_page='user_show',
-                           user=current_user,
-                           programs=programs,
-                           programs_queued=programs_queued,
-                           programs_rejected=programs_rejected,
-                           wb_breaks=wb_breaks)
 
 
 @app.route('/rules', methods=['GET'])

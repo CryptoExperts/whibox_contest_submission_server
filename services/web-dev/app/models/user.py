@@ -72,6 +72,10 @@ class User(db.Model):
             self._bananas = strawberries
         User.refresh_all_banana_rankings()
 
+    def update_strawberries(self, strawberries):
+        if strawberries > self._strawberries:
+            self._strawberries = strawberries
+
     @staticmethod
     def refresh_all_banana_rankings():
         users = User.query.filter(User._bananas.isnot(None)) \
