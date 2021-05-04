@@ -113,9 +113,8 @@ def recent_feed():
     programs = Program.get_all_published_sorted_by_published_time()
 
     for program in programs:
-        item_url = "%scandidate/%d" % (
-            request.url_root, program._id)
-        title = 'New challenge "<strong>%s</strong>" submitted' % program.funny_name
+        item_url = f"{request.url_root}candidate/{program._id}.html"
+        title = f'New challenge "{program.funny_name}" submitted'
         author = program.user.nickname
         content = render_template('candidate.html', program=program, feed=True)
 

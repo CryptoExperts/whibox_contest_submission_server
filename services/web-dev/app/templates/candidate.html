@@ -1,7 +1,7 @@
 <html lang="en">
   <head>
-    <link href="/static/css/bootstrap.min.css" rel="stylesheet">
-    <link href="/static/css/perso.css" rel="stylesheet">
+    <link href="/static/css/sb-admin-2.min.css" rel="stylesheet">
+    <link href="/static/css/style.css" rel="stylesheet">
   </head>
 
   <body>
@@ -23,7 +23,12 @@
             <th class='text-center'>Status</th>
             {% endif %}
             <th data-type="float" class='text-center'>Performance</th>
+            {% if not feed %}
             <th class='text-center'>Publication Date</th>
+            <th class="text-center">Public Key</th>
+            <th class="text-center">Proof of knowledge</th>
+            {% endif %}
+            <th class="text-center">Source</th>
             {% if not feed %}
             <th class='text-center'>First Break</th>
             <th data-type="fruit" class='text-center'>Current  🍓</th>
@@ -60,6 +65,31 @@
             </td>
             {% endif %}
             <td class="text-center">{{ program.performance_factor | round(2) }}</td>
+            {% if not feed %}
+            <td>
+              <div>
+                <a href="/candidate/{{ program._id }}/pubkey" class="btn btn-primary btn-sm">
+                  <span class="text">view</span>
+                </a>
+              </div>
+            </td>
+
+            <td>
+              <div>
+                <a href="/candidate/{{ program._id }}/proof-of-knowledge" class="btn btn-primary btn-sm">
+                  <span class="text">view</span>
+                </a>
+              </div>
+            </td>
+
+            <td>
+              <div>
+                <a href="/candidate/{{ program._id }}/source.c" class="btn btn-primary btn-sm">
+                  <span class="text">save</span>
+                </a>
+              </div>
+            </td>
+            {% endif %}
             <td class="text-center">{{ program.datetime_published }}</td>
             {% if not feed %}
             <td class="text-center">
@@ -81,9 +111,9 @@
               {% endif %}
             </td>
             {% endif %}
-	          {% endif %}
-	        </tr>
-	      </tbody>
+            {% endif %}
+          </tr>
+        </tbody>
       </table>
     </div>
 
