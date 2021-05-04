@@ -1,17 +1,19 @@
-FROM nginx:1.19.9-alpine
+FROM nginx:1.19-alpine
 
-RUN apk add --no-cache 'mysql-client'
-RUN apk add --no-cache 'ca-certificates'
+RUN apk update && apk upgrade
 
-RUN apk add --no-cache 'python3' 'python3-dev' 'py3-crypto' 'py3-openssl' 'py3-pip'
-RUN apk add --no-cache 'build-base'
-RUN apk add --no-cache 'uwsgi' 'uwsgi-python3'
+RUN apk add ca-certificates build-base
+RUN apk add mysql-client~=10.5.9
+RUN apk add python3~=3.8.8 python3-dev~=3.8.8 py3-pip
+RUN apk add py3-crypto~=3.9.9 py3-openssl~=20.0.1
 
-RUN pip3 install --upgrade pip
-RUN pip install flask==1.1.2 flask-wtf==0.14.3 flask-sqlalchemy==2.5.1 flask-login==0.5.0
-RUN pip install passlib==1.7.4 blinker==1.4 pymysql==1.0.2
+RUN pip install --upgrade pip
+RUN pip install Flask==1.1.2 Flask-WTF==0.14.3 Flask-SQLAlchemy==2.5.1 Flask-Login==0.5.0
+RUN pip install passlib==1.7.4 blinker==1.4 PyMySQL==1.0.2
 RUN pip install feedwerk==0.0.2
-RUN pip install email_validator
+RUN pip install email-validator==1.1.2
+
+RUN apk add uwsgi~=2.0.19.1 uwsgi-python3~=2.0.19.1
 
 COPY config/docker-entrypoint.sh /usr/local/bin/
 RUN chmod 755 /usr/local/bin/docker-entrypoint.sh

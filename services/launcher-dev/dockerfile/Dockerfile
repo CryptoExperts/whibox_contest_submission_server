@@ -1,11 +1,17 @@
-FROM nginx:1.19.9-alpine
+FROM nginx:1.19-alpine
 
-RUN apk add --no-cache 'mysql-client' 'curl'
-RUN apk add --no-cache 'python3' 'python3-dev' 'py3-crypto' 'py3-pip'
-RUN apk add --no-cache 'build-base'
+RUN apk update && apk upgrade
+
+RUN apk add build-base curl
+RUN apk add mysql-client~=10.5.9
+
+RUN apk add python3~=3.8.8 python3-dev~=3.8.8 py3-pip
+RUN apk add py3-crypto~=3.9.9
 
 RUN pip install --upgrade pip
-RUN pip install Flask==1.1.2 Flask-SQLAlchemy==2.5.1 Flask-Login==0.5.0 passlib==1.7.4 PyMySQL==1.0.2 docker==5.0.0 click==7.1.2
+RUN pip install Flask==1.1.2 Flask-SQLAlchemy==2.5.1 Flask-Login==0.5.0
+RUN pip install passlib==1.7.4 PyMySQL==1.0.2
+RUN pip install docker==5.0.0 click==7.1.2
 
 COPY docker-entrypoint.sh /usr/local/bin/
 RUN chmod 755 /usr/local/bin/docker-entrypoint.sh
