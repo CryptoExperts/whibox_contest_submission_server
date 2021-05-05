@@ -2,9 +2,18 @@
 
 {% block title %}Your Dashboard{% endblock %}
 
+{% block headerstyles %}
+<!-- dataTables -->
+<link href="/static/css/dataTables.bootstrap4.min.css" rel="stylesheet">
+{% endblock %}
+
 {% block content %}
 
-{% include 'homepage_boxes.html' %}
+<div class="card shadow mb-4">
+  <div class="card-body">
+    {% include 'homepage_boxes.html' %}
+  </div>
+</div>
 
 <hr>
 
@@ -38,8 +47,16 @@
   <div class="col-12">
 
     {% if programs %}
-    <h4>Your Competing Challenges</h4>
-    {% include 'table_challenges.html' %}
+    <div class="card shadow mb-4">
+      <div class="card-header py-3">
+        <h4 id="challenges" class="m-0 font-weight-bold text-primary">Your Competing Challenges</h4>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          {% include 'table_challenges.html' %}
+        </div>
+      </div>
+    </div>
     {% endif %}
 
     {% if programs_rejected %}
@@ -60,17 +77,29 @@
 
 <div class="row">
   <div class="col-xl-6 col-lg-10 col-12">
-    <h4>Your Challenge Breaks</h4>
-    {% if wb_breaks %}
-    {% include 'table_breaks.html' %}
-    {% else %}
-    <p class="lead">You haven't <strong>broken</strong> any challenge yet! You can try to do so by clicking on the <mark>Break</mark> button of any of the challenges listed on the main Dashboard.</p>
-    {% endif %}
+
+    <div class="card shadow mb-4">
+      <div class="card-header py-3">
+        <h4 class="m-0 font-weight-bold text-primary">Your Challenge Breaks</h4>
+      </div>
+      <div class="card-body">
+        {% if wb_breaks %}
+        {% include 'table_breaks.html' %}
+        {% else %}
+        <p class="lead">You haven't <strong>broken</strong> any challenge yet! You can try to do so by clicking on the <mark>Break</mark> button of any of the challenges listed on the main Dashboard.</p>
+        {% endif %}
+      </div>
+    </div>
   </div>
 </div>
 
 {% block javascript %}
 <script src="/static/js/copy-key.js"></script>
+
+<!-- dataTable -->
+<script src="/static/js/jquery.dataTables.min.js"></script>
+<script src="/static/js/dataTables.bootstrap4.min.js"></script>
+<script src="/static/js/data-table.js"></script>
 {% endblock %}
 
 {% endblock %}

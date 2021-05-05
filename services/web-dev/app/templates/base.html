@@ -18,13 +18,10 @@
     <!-- Custom styles for this template-->
     <link href="/static/css/sb-admin-2.min.css" rel="stylesheet">
 
-    <!-- dataTables -->
-    {% if active_page is defined and active_page == 'index' %}
-    <link href="/static/css/dataTables.bootstrap4.min.css" rel="stylesheet">
-    {% endif %}
-
     <!-- Personalization css -->
     <link href="/static/css/style.css" rel="stylesheet" type="text/css">
+
+    {% block headerstyles %} {% endblock %}
 
   </head>
 

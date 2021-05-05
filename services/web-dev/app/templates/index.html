@@ -2,11 +2,20 @@
 
 {% block title %}Dashboard{% endblock %}
 
+{% block headerstyles %}
+<!-- dataTables -->
+<link href="/static/css/dataTables.bootstrap4.min.css" rel="stylesheet">
+{% endblock %}
+
 {% block content %}
 
 <hr>
 <!-- Content Boxes -->
-{% include 'index_boxes.html' %}
+<div class="card shadow mb-4">
+  <div class="card-body">
+    {% include 'index_boxes.html' %}
+  </div>
+</div>
 
 <hr>
 
@@ -20,8 +29,16 @@
   <div class="col-12 mb-4">
 
     {% if programs %}
-    <h4 id="challenges">Challenges Ranking by Strawberry Scores</h4>
-    {% include 'table_challenges.html' %}
+    <div class="card shadow mb-2">
+      <div class="card-header py-3">
+        <h4 id="challenges" class="m-0 font-weight-bold text-primary">Challenges Ranking by Strawberry Scores</h4>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          {% include 'table_challenges.html' %}
+        </div>
+      </div>
+    </div>
     {% else %}
     <p class="lead">
       There aren't any challenges submitted yet.
@@ -36,9 +53,11 @@
 </div><!-- row -->
 
 {% if programs_to_plot %}
-<div class="row">
-  <div class="col-12 mb-4">
-    <h4>Strawberry scores over time</h4>
+<div class="card shadow mb-4">
+  <div class="card-header py-3">
+    <h4 id="challenges" class="m-0 font-weight-bold text-primary">Strawberry scores over time</h4>
+  </div>
+  <div class="card-body">
     <div id="strawberryholder" style="height: 500px;"></div>
   </div>
 </div>

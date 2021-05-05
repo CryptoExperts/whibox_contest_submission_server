@@ -21,9 +21,7 @@ jQuery.extend( jQuery.fn.dataTableExt.oSort, {
                 order = 'desc';
             }
             $(this).DataTable({
-                "paging": false,
-                "info": false,
-                "searching": false,
+                "pageLength": 25,
                 "order": [[ col_to_sort_index, order ]],
                 "columnDefs": [
                     { "orderable": false, "targets": 'no-sort' }
