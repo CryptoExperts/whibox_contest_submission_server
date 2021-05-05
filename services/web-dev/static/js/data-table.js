@@ -1,6 +1,6 @@
 jQuery.extend( jQuery.fn.dataTableExt.oSort, {
     "fruit-pre": function ( a ) {
-        if (a.endsWith('&nbsp;🍓') || a.endsWith('&nbsp;🍌') || a.endsWith('&nbsp;🥕')) {
+        if (a.endsWith('&nbsp;🍓') || a.endsWith('&nbsp;🍌')) {
             a = a.substring(a, a.length - 8);
         }
         return parseFloat(a);
@@ -25,6 +25,9 @@ jQuery.extend( jQuery.fn.dataTableExt.oSort, {
                 "info": false,
                 "searching": false,
                 "order": [[ col_to_sort_index, order ]],
+                "columnDefs": [
+                    { "orderable": false, "targets": 'no-sort' }
+                ],
             });
         });
     });

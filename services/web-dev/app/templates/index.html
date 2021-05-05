@@ -84,6 +84,12 @@
 <script src="/static/js/jquery.flot.resize.js"></script>
 <script src="/static/js/jquery.flot.time.js"></script>
 
+<!-- dataTable -->
+<script src="/static/js/jquery.dataTables.min.js"></script>
+<script src="/static/js/dataTables.bootstrap4.min.js"></script>
+<script src="/static/js/data-table.js"></script>
+
+
 <script>
  function getProgramsToPlot() {
    var programs = [{% if programs_to_plot %} {% for program in programs_to_plot %}{id:{{ program._id }},name:"{{ program._funny_name }}",ts_publish:{{program._timestamp_published}},ts_break:{{program._timestamp_first_break or -1}},performance:{{ program._performance_factor }},color:"{{ program.hsl_color }}"}, {% endfor %} {% endif %}];

@@ -76,10 +76,14 @@ copy-vendors-files-dev:
 	$(call copy-single-vendors-file-dev,vendors/flot/jquery.flot.resize.js,services/web-dev/static/js/jquery.flot.resize.js)
 	$(call copy-single-vendors-file-dev,vendors/flot/jquery.flot.time.js,services/web-dev/static/js/jquery.flot.time.js)
 
+# copy dataTable
+	$(call copy-single-vendors-file-dev,vendors/startbootstrap-sb-admin-2-gh-pages/vendor/datatables/dataTables.bootstrap4.min.css,services/web-dev/static/css/dataTables.bootstrap4.min.css)
+	$(call copy-single-vendors-file-dev,vendors/startbootstrap-sb-admin-2-gh-pages/vendor/datatables/dataTables.bootstrap4.min.js,services/web-dev/static/js/dataTables.bootstrap4.min.js)
+	$(call copy-single-vendors-file-dev,vendors/startbootstrap-sb-admin-2-gh-pages/vendor/datatables/jquery.dataTables.min.js,services/web-dev/static/js/jquery.dataTables.min.js)
+
+
 	# cp vendors/metisMenu/metisMenu.min.css services/web-dev/static/css/metisMenu.min.css
-	# cp vendors/datatables-plugins/dataTables.bootstrap.min.js services/web-dev/static/js/dataTables.bootstrap.min.js
 	# cp vendors/datatables-responsive/dataTables.responsive.js services/web-dev/static/js/dataTables.responsive.js
-	# cp vendors/datatables/js/jquery.dataTables.min.js services/web-dev/static/js/jquery.dataTables.min.js
 	# cp vendors/metisMenu/metisMenu.min.js services/web-dev/static/js/metisMenu.min.js
 
 update_submodule:
