@@ -1,7 +1,7 @@
 $(function() {
     $(document).ready(function () {
         var toggled = Cookies.get("sidebar-toggled");
-        if (toggled) {
+        if (toggled == "true") {
              $("#accordionSidebar").addClass('toggled');
         } else {
              $("#accordionSidebar").removeClass('toggled');
@@ -12,4 +12,5 @@ $(function() {
             Cookies.set("sidebar-toggled", toggled);
         });
     });
+
 });
