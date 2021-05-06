@@ -27,8 +27,22 @@ jQuery.extend( jQuery.fn.dataTableExt.oSort, {
                 searching = true;
             }
 
+            if ($(this).hasClass('no-paging')) {
+                paging = false;
+            } else {
+                paging = true;
+            }
+
+            if ($(this).hasClass('no-info')) {
+                info = false;
+            } else {
+                info = true;
+            }
+
             $(this).DataTable({
+                "paging": paging,
                 "pageLength": 25,
+                "info": info,
                 "searching": searching,
                 "order": [[ col_to_sort_index, order ]],
                 "columnDefs": [
