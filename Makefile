@@ -67,6 +67,7 @@ copy-vendors-files-dev:
 	$(call copy-single-vendors-file-dev,vendors/startbootstrap-sb-admin-2-gh-pages/vendor/bootstrap/js/bootstrap.bundle.min.js.map,services/web-dev/static/js/bootstrap.bundle.min.js.map)
 	$(call copy-single-vendors-file-dev,vendors/startbootstrap-sb-admin-2-gh-pages/vendor/jquery/jquery.min.js,services/web-dev/static/js/jquery.min.js)
 	$(call copy-single-vendors-file-dev,vendors/startbootstrap-sb-admin-2-gh-pages/vendor/jquery-easing/jquery.easing.min.js,services/web-dev/static/js/jquery.easing.min.js)
+	$(call copy-single-vendors-file-dev,vendors/js.cookie-2.2.1.min.js,services/web-dev/static/js/js.cookie.min.js)
 
 # copy images
 	$(call copy-single-vendors-file-dev,vendors/startbootstrap-sb-admin-2-gh-pages/img/undraw_profile.svg,services/web-dev/static/images/undraw_profile.svg)
@@ -82,9 +83,7 @@ copy-vendors-files-dev:
 	$(call copy-single-vendors-file-dev,vendors/startbootstrap-sb-admin-2-gh-pages/vendor/datatables/jquery.dataTables.min.js,services/web-dev/static/js/jquery.dataTables.min.js)
 
 
-	# cp vendors/metisMenu/metisMenu.min.css services/web-dev/static/css/metisMenu.min.css
 	# cp vendors/datatables-responsive/dataTables.responsive.js services/web-dev/static/js/dataTables.responsive.js
-	# cp vendors/metisMenu/metisMenu.min.js services/web-dev/static/js/metisMenu.min.js
 
 update_submodule:
 	git submodule init && git submodule update
