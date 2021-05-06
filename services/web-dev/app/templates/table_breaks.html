@@ -1,28 +1,26 @@
-<div class="dataTables_wrapper form-inline dt-bootstrap no-footer">
-  <table class="table table-striped table-bordered data-table table-hover no-search no-paging no-info" style="width: 100%;">
-    <thead>
-      <tr>
-        <th class='column-to-sort-first text-center'>Date</th>
-        <th class="text-center">User</th>
-        <th data-type="fruit" class="text-center">Strawberries</th>
-        <th class="text-center">Challenge Name</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for wb_break in wb_breaks %}
-      <tr>
-        <th scope="row" class="text-center">{{ wb_break.datetime_broken }}</th>
-        <td class="text-center">
-          {% if current_user.is_authenticated and current_user == wb_break.user %}
-          <span class="badge badge-info">You!</span>
-          {% else %}
-          {{ wb_break.user.nickname or wb_break.user.username }}
-          {% endif %}
-        </td>
-        <td class="text-center">{{ wb_break.strawberries | round(2) }} 🍓</td>
-        <td class="text-center"><a href='/candidate/{{ wb_break.program._id }}/source.c'>{{ wb_break.program.funny_name }}</a> ({{ wb_break.program._id }})</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-</div>
+<table class="table table-striped table-bordered data-table table-hover {% if active_page == 'user_show' %} no-search no-paging no-info {% endif %}" style="width: 100%;">
+  <thead>
+    <tr>
+      <th class='column-to-sort-first text-center'>Date</th>
+      <th class="text-center">User</th>
+      <th data-type="fruit" class="text-center">Strawberries</th>
+      <th class="text-center">Challenge Name</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for wb_break in wb_breaks %}
+    <tr>
+      <th scope="row" class="text-center">{{ wb_break.datetime_broken }}</th>
+      <td class="text-center">
+        {% if current_user.is_authenticated and current_user == wb_break.user %}
+        <span class="badge badge-info">You!</span>
+        {% else %}
+        {{ wb_break.user.nickname or wb_break.user.username }}
+        {% endif %}
+      </td>
+      <td class="text-center">{{ wb_break.strawberries | round(2) }} 🍓</td>
+      <td class="text-center"><a href='/candidate/{{ wb_break.program._id }}/source.c'>{{ wb_break.program.funny_name }}</a> ({{ wb_break.program._id }})</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>

@@ -79,7 +79,9 @@
         <h4 id="challenges" class="m-0 font-weight-bold text-primary">Banana ranking</h4>
       </div>
       <div class="card-body">
-        {% include 'table_bananas_ranking.html' %}
+        <div class="table-responsive">
+          {% include 'table_bananas_ranking.html' %}
+        </div>
       </div>
     </div>
   </div>
@@ -93,7 +95,9 @@
       </div>
       <div class="card-body">
         {% if wb_breaks %}
-        {% include 'table_breaks.html' %}
+        <div class="table-responsive">
+          {% include 'table_breaks.html' %}
+        </div>
         {% else %}
         <h2>No Challenge break Yet!</h2>
         {% endif %}
