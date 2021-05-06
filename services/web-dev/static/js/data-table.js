@@ -20,8 +20,16 @@ jQuery.extend( jQuery.fn.dataTableExt.oSort, {
             } else {
                 order = 'desc';
             }
+
+            if ($(this).hasClass('no-search')) {
+                searching = false;
+            } else {
+                searching = true;
+            }
+
             $(this).DataTable({
                 "pageLength": 25,
+                "searching": searching,
                 "order": [[ col_to_sort_index, order ]],
                 "columnDefs": [
                     { "orderable": false, "targets": 'no-sort' }

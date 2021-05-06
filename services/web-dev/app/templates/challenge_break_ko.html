@@ -4,23 +4,21 @@
 
 {% block content %}
 
-<div class="row">
-  <div class="col-12">
-    <p class="lead">The private key you submitted for challenge {{ identifier }} is incorrect.</p>
-  </div>
-</div>
+<div class="card col-12">
+  <div class="card-body">
+    <div class="row">
+      <p class="lead">The private key you submitted for challenge {{ identifier }} is incorrect.</p>
+    </div>
 
-<div class="row">
-  <div class="col-md-6 col-md-offset-4 col-xs-10 col-xs-offset-2">
-    <img src="/static/images/sadbanana.gif" class="img-responsive" alt="Responsive image">
-  </div>
-</div>
-  <hr>
-<div class="row">
-  <div class="col-12">
-    <p class="lead">The private key you submitted <code>{{ submitted_prikey }}</code>.</p>
-    <p class="lead">The public key is <code>{{ pubkey }}</code>.</p>
-    <p class="lead">You can validate your submission with the supplimentary matrials.</p>
+    <div class="row">
+      <img src="/static/images/sadbanana.gif" class="img-responsive" alt="Responsive image">
+    </div>
+    <hr>
+    <div class="row">
+      <p class="lead">The private key you submitted <code>{{ submitted_prikey }}</code>.</p>
+      <p class="lead">The public key is <code stype="word-warp: break-word;">{{ pubkey }}</code>.</p>
+      <p class="lead">You can validate your submission with the <a href="https://github.com/whibox/whibox-contest-2021_supplementary-materials">supplementary matrials</a>.</p>
+    </div>
   </div>
 </div>
 
