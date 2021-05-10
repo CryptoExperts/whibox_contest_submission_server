@@ -1,19 +1,15 @@
 [submodule "services/compile_and_test/whibox-contest-2021_supplementary-materials"]
 	path = services/launcher-dev/dockerfile/supplementary-materials
-	url = https://github.com/CryptoExperts/whibox_contest_submission_server.git
+	url = https://github.com/whibox/whibox-contest-2021_supplementary-materials.git 
 [submodule "services/compile_and_test/supplementary-materials"]
 	path = services/compile_and_test/supplementary-materials
-	url = https://github.com/CryptoExperts/whibox_contest_submission_server.git
+	url = https://github.com/whibox/whibox-contest-2021_supplementary-materials.git
 [submodule "services/web-dev/dockerfile/supplementary-materials"]
 	path = services/web-dev/dockerfile/supplementary-materials
-	url = https://github.com/CryptoExperts/whibox_contest_submission_server.git
+	url = https://github.com/whibox/whibox-contest-2021_supplementary-materials.git
 [submodule "services/web-prod/whibox-contest-2021_supplementary-materials"]
 	path = services/web-prod/supplementary-materials
-	url = https://github.com/CryptoExperts/whibox_contest_submission_server.git
+	url = https://github.com/whibox/whibox-contest-2021_supplementary-materials.git
 [submodule "services/launcher-prod/supplementary-materials"]
 	path = services/launcher-prod/supplementary-materials
-	url = https://github.com/CryptoExperts/whibox_contest_submission_server.git
-[submodule "services/launcher-dev/dockerfile/supplementary-materials"]
-	url = https://github.com/CryptoExperts/whibox_contest_submission_server.git
-[submodule "services/web-prod/supplementary-materials"]
-	url = https://github.com/CryptoExperts/whibox_contest_submission_server.git
+	url = https://github.com/whibox/whibox-contest-2021_supplementary-materials.git
