@@ -26,7 +26,9 @@
       <tr>
         <th class="text-center" scope="row">{{ program.strawberries_ranking }}</th>
         <td class="text-center">{{ program._id }}</td>
-        <td><div style="width: 1em; height: 1em; background-color: {{ program.hsl_color }}"></div></td>
+        <td class="text-center">
+          <div style="width: 1em; height: 1em; background-color: {{ program.hsl_color }}"></div>
+        </td>
         <td class="text-center"><a href='/candidate/{{ program._id }}/source.c'>{{ program.funny_name }}</a></td>
         <td class="text-center">{{ program.strawberries_peak | round(2) }} 🍓 </td>
         <td class="ellipsable text-center">
@@ -45,7 +47,7 @@
         </td>
         <td class="text-center">{{ program.performance_factor | round(2) }}</td>
 
-        <td>
+        <td class="text-center">
           <div class="d-none">
             <input type="text" value="{{ program.pubkey }}" id="pub-key-{{ program._id }}">
           </div>
@@ -65,7 +67,7 @@
 
         </td>
 
-        <td>
+        <td class="text-center">
           <div class="d-none">
             <input type="text" value="{{ program.proof_of_knowledge }}" id="proof-of-knowledge-{{ program._id }}">
           </div>
@@ -85,7 +87,7 @@
 
         </td>
 
-        <td>
+        <td class="text-center">
           <div class="d-none d-lg-block">
             <a href="/candidate/{{ program._id }}/source.c" class="btn btn-primary btn-icon-split btn-sm">
               <span class="icon text-white-50">

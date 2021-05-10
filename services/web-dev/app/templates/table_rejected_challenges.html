@@ -2,8 +2,8 @@
   <table class="table table-striped table-bordered data-table table-hover no-search">
     <thead>
       <tr>
-        <th class='column-to-sort-first'>Submission Date</th>
-        <th>id</th>
+        <th class='text-center column-to-sort-first'>Submission Date</th>
+        <th class="text-center">id</th>
         <th>Status</th>
         <th>Log</th>
         <th class="text-center no-sort">Public Key</th>
@@ -14,7 +14,7 @@
     <tbody>
       {% for program in programs_rejected %}
       <tr>
-        <th scope="row">{{ program.datetime_submitted }}</th>
+        <th class="text-center" scope="row">{{ program.datetime_submitted }}</th>
         <td class="text-center">{{ program._id }}</td>
         <td>{{ program.status }}</td>
         <td>
@@ -22,7 +22,7 @@
           <pre style="margin-top: 10px;">{{ program.error_message }}</pre>
           {% endif %}
         </td>
-        <td>
+        <td class="text-center">
           <div class="d-none">
             <input type="text" value="{{ program.pubkey }}" id="pub-key-{{ program._id }}">
           </div>
@@ -42,7 +42,7 @@
 
         </td>
 
-        <td>
+        <td class="text-center">
           <div class="d-none">
             <input type="text" value="{{ program.proof_of_knowledge }}" id="proof-of-knowledge-{{ program._id }}">
           </div>
@@ -62,7 +62,7 @@
 
         </td>
 
-        <td>
+        <td class="text-center">
           <div class="d-none d-lg-block">
             <a href="/candidate/{{ program._id }}/source.c" class="btn btn-primary btn-icon-split btn-sm">
               <span class="icon text-white-50">
