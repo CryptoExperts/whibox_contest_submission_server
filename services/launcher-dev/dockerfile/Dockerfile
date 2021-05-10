@@ -5,7 +5,7 @@ RUN apk update && apk upgrade
 RUN apk add build-base curl
 RUN apk add mysql-client~=10.5.9
 
-RUN apk add python3~=3.8.8 python3-dev~=3.8.8 py3-pip
+RUN apk add python3~=3.8 python3-dev~=3.8 py3-pip
 RUN apk add py3-crypto~=3.9.9
 
 RUN pip install --upgrade pip
