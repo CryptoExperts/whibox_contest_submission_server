@@ -8,7 +8,7 @@ RUN apk add python3~=3.8 python3-dev~=3.8 py3-pip
 RUN apk add py3-crypto~=3.9.9 py3-openssl~=20.0.1
 
 RUN pip install --upgrade pip
-RUN pip install Flask==1.1.2 Flask-WTF==0.14.3 Flask-SQLAlchemy==2.5.1 Flask-Login==0.5.0
+RUN pip install Flask==1.1.2 Flask-WTF==0.14.3 Flask-SQLAlchemy==2.5.1 Flask-Login==0.5.0 Werkzeug==1.0.1
 RUN pip install passlib==1.7.4 blinker==1.4 PyMySQL==1.0.2
 RUN pip install feedwerk==0.0.2
 RUN pip install email-validator==1.1.2

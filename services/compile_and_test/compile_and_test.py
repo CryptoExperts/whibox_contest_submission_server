@@ -234,7 +234,9 @@ def main():
 
     # performance measure
     logger.info("***** Sign messages, and measure performances *****")
-    number_of_tests = int(os.environ['CHALLENGE_NUMBER_OF_TEST_VECTORS'])
+    number_of_tests = int(os.environ['CHALLENGE_NUMBER_OF_TEST_VECTORS']) + \
+        int(os.environ['CHALLENGE_NUMBER_OF_TEST_EDGE_CASES'])
+    logger.info("Number of tests: {number_of_tests}")
     cpu_time_limit = int(os.environ['CHALLENGE_MAX_TIME_EXECUTION_IN_SECS'])
     ram_limit = 2**10 * int(os.environ['CHALLENGE_MAX_MEM_EXECUTION_IN_MB'])
     signatures, average_cpu_time, average_max_ram = performance_measure(

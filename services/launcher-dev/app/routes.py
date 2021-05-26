@@ -26,6 +26,7 @@ ERR_CODE_EXECUTION_EXCEED_TIME_LIMIT = 7
 CHALLENGE_MAX_BINARY_SIZE_IN_MB = app.config['CHALLENGE_MAX_BINARY_SIZE_IN_MB']
 CHALLENGE_MAX_MEM_EXECUTION_IN_MB = app.config['CHALLENGE_MAX_MEM_EXECUTION_IN_MB']
 CHALLENGE_MAX_TIME_EXECUTION_IN_SECS = app.config['CHALLENGE_MAX_TIME_EXECUTION_IN_SECS']
+CHALLENGE_TEST_EDGE_CASES = app.config["CHALLENGE_TEST_EDGE_CASES"]
 
 
 def clean_programs_timeout_to_compile_or_test():
@@ -157,6 +158,7 @@ def compile_and_test():
         f'CHALLENGE_MAX_MEM_EXECUTION_IN_MB={CHALLENGE_MAX_MEM_EXECUTION_IN_MB}',
         f'CHALLENGE_MAX_TIME_EXECUTION_IN_SECS={app.config["CHALLENGE_MAX_TIME_EXECUTION_IN_SECS"]}',
         f'CHALLENGE_NUMBER_OF_TEST_VECTORS={app.config["CHALLENGE_NUMBER_OF_TEST_VECTORS"]}',
+        f'CHALLENGE_NUMBER_OF_TEST_EDGE_CASES={len(CHALLENGE_TEST_EDGE_CASES)}',
     ]
 
     # We copy the source file from /uploads to a fresh directory in /compilations
@@ -226,6 +228,10 @@ def get_messages(basename, nonce):
     # If it doesn't already exist, create the file containting the messages
     if not os.path.exists(path_to_message_file):
         with open(path_to_message_file, 'wb') as f:
+
+            for case in CHALLENGE_TEST_EDGE_CASES:
+                f.write(case.to_bytes(32, byteorder="big"))
+
             f.write(os.urandom(
                 32 * app.config['CHALLENGE_NUMBER_OF_TEST_VECTORS']))
 
@@ -331,6 +337,7 @@ def compile_and_test_result(basename, nonce, ret):
     # we can test the signatures
     signatures = bytes.fromhex(postdata['signatures'])
     number_of_test_vectors = app.config['CHALLENGE_NUMBER_OF_TEST_VECTORS']
+    number_of_test_vectors += len(CHALLENGE_TEST_EDGE_CASES)
     if len(signatures) != 64 * number_of_test_vectors:
         utils.console(f"The length of the signatures is {len(signatures)}, "
                       f"we were expecting {32*number_of_test_vectors}.")
@@ -366,8 +373,8 @@ def compile_and_test_result(basename, nonce, ret):
             error_message = f'''One of the tests failed:
 
 - hash      {message}
-- pubkey    {pubkey}        %s
-- signature {signature}%s'''
+- pubkey    {pubkey}
+- signature {signature}'''
             program.set_status_to_test_failed(error_message)
             db.session.commit()
             return ""
