@@ -63,6 +63,20 @@ class WhiteboxBreak(db.Model):
         return wb_breaks
 
     @staticmethod
+    def get_total_breaks_group_by_user():
+        result = db.session.query(WhiteboxBreak._user_id, func.count(
+            WhiteboxBreak._user_id)).group_by(WhiteboxBreak._user_id).all()
+
+        return {user_id: total_breaks for user_id, total_breaks in result}
+
+    @staticmethod
+    def get_total_breaks_group_by_program():
+        result = db.session.query(WhiteboxBreak._program_id, func.count(
+            WhiteboxBreak._program_id)).group_by(WhiteboxBreak._program_id).all()
+
+        return {program_id: total_breaks for program_id, total_breaks in result}
+
+    @staticmethod
     def bananas_for_user(user_id):
         return WhiteboxBreak.query(
             func.max(WhiteboxBreak._strawberries).label('bananas')

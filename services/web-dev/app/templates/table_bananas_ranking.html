@@ -4,6 +4,7 @@
       <th class='column-to-sort-first asc text-center'>Rank</th>
       <th class="text-center">User</th>
       <th data-type="fruit" class="text-center">Bananas</th>
+      <th class="text-center">Total Breaks</th>
     </tr>
   </thead>
   <tbody>
@@ -18,6 +19,7 @@
         {% endif %}
       </td>
       <td>{{ user.bananas | round(2) }} 🍌</td>
+      <td>{{ total_breaks_by_user[user._id] }}</td>
     </tr>
     {% endfor %}
   </tbody>

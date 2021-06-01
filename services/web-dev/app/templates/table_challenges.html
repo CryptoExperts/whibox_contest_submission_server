@@ -15,6 +15,7 @@
         <th class="text-center no-sort">Source</th>
         <th class='text-center'>Publication Date</th>
         <th class='text-center'>First Break</th>
+        <th class='text-center'>Total Breaks</th>
         <th data-type="fruit" class='text-center'>Current  🍓 </th>
         {% if current_user.is_authenticated %}
         <th class="no-sort"></th>
@@ -106,6 +107,13 @@
         <td class="text-center">
           {% if program.is_broken %}
           <span class="text-danger">{{ program.datetime_first_break }}</span>
+          {% else %}
+          -
+          {% endif %}
+        </td>
+        <td class="text-center">
+          {% if program.is_broken %}
+          <span class="text-danger">{{ total_breaks_by_program[program._id] }}</span>
           {% else %}
           -
           {% endif %}

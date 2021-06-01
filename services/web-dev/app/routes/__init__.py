@@ -72,6 +72,9 @@ def index():
         programs_broken_by_current_user = [
             wb_break.program for wb_break in wb_breaks_by_current_user]
 
+    total_breaks_by_user = WhiteboxBreak.get_total_breaks_group_by_user()
+    total_breaks_by_program = WhiteboxBreak.get_total_breaks_group_by_program()
+
     return render_template(
         'index.html',
         active_page='index',
@@ -83,7 +86,9 @@ def index():
         number_of_unbroken_programs=number_of_unbroken_programs,
         number_of_broken_programs=number_of_broken_programs,
         broken_ratio=broken_ratio,
-        programs_to_plot=programs_to_plot
+        programs_to_plot=programs_to_plot,
+        total_breaks_by_user=total_breaks_by_user,
+        total_breaks_by_program=total_breaks_by_program
     )
 
 
