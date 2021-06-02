@@ -79,10 +79,12 @@ def user_show():
     programs_rejected = Program.get_user_rejected_programs(current_user)
     wb_breaks = WhiteboxBreak.get_all_by_user(current_user)
     User.refresh_all_strawberry_rankings()
+    total_breaks_by_program = WhiteboxBreak.get_total_breaks_group_by_program()
     return render_template('user_show.html',
                            active_page='user_show',
                            user=current_user,
                            programs=programs,
                            programs_queued=programs_queued,
                            programs_rejected=programs_rejected,
-                           wb_breaks=wb_breaks)
+                           wb_breaks=wb_breaks,
+                           total_breaks_by_program=total_breaks_by_program)
