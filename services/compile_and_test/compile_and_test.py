@@ -131,7 +131,7 @@ def compile(basename, source, obj):
 
 def link(basename, obj, executable):
     try:
-        cmd_list = ['gcc', '/main.o', obj, '-lgmp', '-o', executable]
+        cmd_list = ['gcc', '/main.o', obj, '-lgmp', '-nostdlib', '-o', executable]
         subprocess.run(cmd_list, check=True)
     except:
         logger.error(f"The link of the file with basename {basename} failed.")
