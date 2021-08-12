@@ -237,7 +237,7 @@ class Program(db.Model):
         for p in programs[:1]:
             max_compile_time = app.config['CHALLENGE_MAX_TIME_COMPILATION_IN_SECS']
             max_exec_time = app.config['CHALLENGE_MAX_TIME_EXECUTION_IN_SECS'] * \
-                app.config['CHALLENGE_NUMBER_OF_TEST_VECTORS']
+                (app.config['CHALLENGE_NUMBER_OF_TEST_VECTORS'] + len(app.config["CHALLENGE_TEST_EDGE_CASES"]))
             # buffer for forking processes
             buffer_time_for_forking = 100
             max_time = 10 + max_compile_time + max_exec_time + buffer_time_for_forking
