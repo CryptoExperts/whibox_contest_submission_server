@@ -248,3 +248,19 @@ ifneq ($(DB_TO_RESTORE),)
 else
 	@echo "Please export the SQL database file to be restored: 'DB_TO_RESTORE=XXX.sql make db-restore'"
 endif
+
+
+# Remove a specific user by his id (first remove all his programs, then remove him)
+db-remove-userid:
+ifneq ($(USERID_TO_DELETE),)
+	@echo -n "You asked to remove user id $(USERID_TO_DELETE): this will remove the user and all his programs! This is DANGEROUS, are you sure? [y/N] " && read ans && [ $${ans:-N} = y ]
+	@echo -n "You asked to remove user id $(USERID_TO_DELETE): this will remove the user and all his programs! This is DANGEROUS, are you REALLY sure? [y/N] " && read ans && [ $${ans:-N} = y ]
+	scripts/on_node-manager.sh scripts/db-shell.sh "DELETE from program WHERE _user_id=$(USERID_TO_DELETE);"
+	scripts/on_node-manager.sh scripts/db-shell.sh "DELETE from user WHERE _id='$(USERID_TO_DELETE)';"
+else
+	@echo "Please export the user id to deleted: 'USERID_TO_DELETE=XXX make db-remove-userid'"
+endif
+
+# Print all users ID, names and nickames
+db-dump-users:
+	scripts/on_node-manager.sh scripts/db-shell.sh "SELECT _id, _username, _nickname from user;"
