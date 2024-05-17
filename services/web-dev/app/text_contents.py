@@ -19,6 +19,7 @@ flash_texts_and_categories = {
     'INVALID_PRI_KEY': ('The public key must be a 128-character string of hexadecimal digits.', flash_categories['warning']),
     'INVALID_PROOF_OF_KNOWLEDGE': ('The proof-of-knowledge must be a 128-character string of hexadecimal digits.', flash_categories['warning']),
     'DUPLICATE_KEY': ('Challenge invalid, possibly because the public key has existed.', flash_categories['warning']),
+    'BLACKLISTED_KEY': ('Challenge invalid because the public key is blacklisted..', flash_categories['warning']),
     'EMAIL_MUST_MATCH': ('Emails must match', flash_categories['warning']),
     'PWD_MUST_MATCH': ('Passwords must match', flash_categories['warning']),
     'CANNOT_BREAK_OWN': ('You cannot break your own candidates.', flash_categories['warning']),

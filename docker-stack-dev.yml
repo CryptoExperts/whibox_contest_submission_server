@@ -6,9 +6,9 @@ x-recaptcha-variables: &recaptcha-variables
     SECRET_KEY: 'da39a3ee5e6b4b0d3255bfef95601890afd80709'
 
 x-date-variables: &date-variables
-    STARTING_DATE: 1621209600       # In seconds since EPOCH. Must be identical in the web service. 17/05/2021 00:00 UTC is 1621209600
-    POSTING_DEADLINE: 1629590400    # In seconds since EPOCH. Must be identical in the web service. 22/08/2021 00:00 UTC is 1629590400
-    FINAL_DEADLINE: 1631318400      # In seconds since EPOCH. Must be identical in the web service. 11/09/2021 00:00 UTC is 1631318400
+    STARTING_DATE: 1715687940       # 1716811140   # In seconds since EPOCH. Must be identical in the web service. 17/05/2021 00:00 UTC is 1621209600
+    POSTING_DEADLINE: 1723204740    # In seconds since EPOCH. Must be identical in the web service. 22/08/2021 00:00 UTC is 1629590400
+    FINAL_DEADLINE: 1725278340      # In seconds since EPOCH. Must be identical in the web service. 11/09/2021 00:00 UTC is 1631318400
 
 x-db-variables: &db-variables
     MYSQL_DATABASE: 'db_wb'
@@ -20,13 +20,14 @@ x-db-server-variables: &db-server-variables
     MYSQL_PORT: 3306
 
 x-challenge-variables: &challenge-variables
-    CHALLENGE_MAX_SOURCE_SIZE_IN_MB: 50         # In MB. Must be identical in the launcher service. Must be 50 in production.
-    CHALLENGE_MAX_MEM_COMPILATION_IN_MB: 500    # In MB. Must be identical in the launcher service. Must be 500 in production.
-    CHALLENGE_MAX_TIME_COMPILATION_IN_SECS: 100 # In seconds. Must be identical in the launcher service. Must be 100 in production.
-    CHALLENGE_MAX_BINARY_SIZE_IN_MB: 20         # In MB. Must be identical in the launcher service. Must be 20 in production.
-    CHALLENGE_MAX_MEM_EXECUTION_IN_MB: 20       # In MB. Must be identical in the launcher service. Must be 20 in production.
-    CHALLENGE_MAX_TIME_EXECUTION_IN_SECS: 3     # In seconds. Must be identical in the launcher service. Must be 1 in production.
+    CHALLENGE_MAX_SOURCE_SIZE_IN_MB: 100        # In MB. Must be identical in the launcher service. Must be 50 in production.
+    CHALLENGE_MAX_MEM_COMPILATION_IN_MB: 800    # In MB. Must be identical in the launcher service. Must be 500 in production.
+    CHALLENGE_MAX_TIME_COMPILATION_IN_SECS: 150 # In seconds. Must be identical in the launcher service. Must be 100 in production.
+    CHALLENGE_MAX_BINARY_SIZE_IN_MB: 50         # In MB. Must be identical in the launcher service. Must be 20 in production.
+    CHALLENGE_MAX_MEM_EXECUTION_IN_MB: 50       # In MB. Must be identical in the launcher service. Must be 20 in production.
+    CHALLENGE_MAX_TIME_EXECUTION_IN_SECS: 10    # In seconds. Must be identical in the launcher service. Must be 1 in production.
     CHALLENGE_NUMBER_OF_TEST_VECTORS: 100       # Must be identical in the launcher service. Must be at least 1000 in production.
+    CHALLENGE_TEST_EDGE_CASES: '[0, 2**256 - 1, 0xffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632551]' # Challenge edge cases to be tested.
 
 services:
 
@@ -42,6 +43,7 @@ services:
             - /volumes/whitebox_program_uploads:/uploads
         environment:
             DEBUG: "True" # Must be set to false in production
+            APPLY_PUBLIC_KEYS_BLACKLIST: "False" # Set to "False" to bypass public keys blacklisting, any other value will activate it
             <<: *recaptcha-variables
             <<: *db-variables
             <<: *db-server-variables
@@ -53,7 +55,7 @@ services:
 
         deploy:
             placement:
-                constraints: [node.labels.vm == node-manager]
+                constraints: [node.labels.vm == node-manager-ecdsa]
 
     launcher:
         image: crx/launcher-dev
@@ -79,14 +81,14 @@ services:
 
         deploy:
             placement:
-                constraints: [node.labels.vm == node-manager]
+                constraints: [node.labels.vm == node-manager-ecdsa]
 
 
 
     mysql:
-        image: "mysql:8.0.23"
+        image: "mysql:8.0.15"
         user: "1000:50"
-        command: "--innodb-use-native-aio=0 --default-authentication-plugin=mysql_native_password --mysqlx=0"
+        command: "--innodb-use-native-aio=0 --default-authentication-plugin=mysql_native_password --mysqlx=0 --connect-timeout=1000000"
         networks:
             - front_network
         volumes:
@@ -97,7 +99,7 @@ services:
             <<: *db-variables
         deploy:
             placement:
-                constraints: [node.labels.vm == node-manager]
+                constraints: [node.labels.vm == node-manager-ecdsa]
 
     visualizer:
         image: dockersamples/visualizer
@@ -109,7 +111,7 @@ services:
             - /var/run/docker.sock:/var/run/docker.sock
         deploy:
             placement:
-                constraints: [node.labels.vm == node-manager]
+                constraints: [node.labels.vm == node-manager-ecdsa]
 
 networks:
     front_network:

@@ -47,6 +47,16 @@ def submit_candidate():
             string.ascii_lowercase + string.digits) for _ in range(32))
         filename = basename + '.c'
         pubkey = form.pubkey.data
+        # If the public key is blacklisted, return an error
+        if app.config['APPLY_PUBLIC_KEYS_BLACKLIST'] is True:
+            if (pubkey.upper() in app.config['PUBLIC_KEYS_BLACKLIST']) or (pubkey.lower() in app.config['PUBLIC_KEYS_BLACKLIST']):
+                crx_flash("BLACKLISTED_KEY")
+                new_form = WhiteboxSubmissionForm()
+                return render_template('submit_candidate.html',
+                                       form=new_form,
+                                       active_page='submit_candidate',
+                                       testing=app.testing), 400
+        #
         proof_of_knowledge = form.proof_of_knowledge.data
         form_data = form.program.data
         form_data.save(os.path.join(upload_folder, filename))

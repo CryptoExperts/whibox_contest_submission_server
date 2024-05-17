@@ -24,7 +24,7 @@
       <div class="collapse show" id="cardAccount">
         <div class="card-body scrollable">
           <p>
-            Anyone can create an account and post one or several challenges and/or break one or more challenges on the WhibOx Contest Edition 3 website.
+            Anyone can create an account and post one or several challenges and/or break one or more challenges on the WhibOx Contest Edition 4 website.
           </p>
           <p>
             The account owner may remain completely anonymous when creating an account.
@@ -77,21 +77,21 @@
             </ul>
           </p>
           <p>
-            The C language is the one accepted by GCC 10.2.0 with NO additional language dialect options.
+            The C language is the one accepted by GCC 13.2.1 with NO additional language dialect options.
             The source code must be completely portable and re-compilable towards any target architecture.
             In other words, it must be made only of generic C which in particular, excludes the use of inline assembly.
             Note that there is no restriction to a 32-bit architecture as in the first edition of the WhibOx contest.
             Native 64-bit operations are supported by default and contestants may use them as they see fit.
           </p>
           <p>
-            The source file is allowed to include the GMP library (version 6.2.1) through <code>#include &lt;gmp.h&gt;</code>.
+            The source file is allowed to include the GMP library (version 6.3.0) through <code>#include &lt;gmp.h&gt;</code>.
             Besides that, no <code>#include</code> or <code>extern</code> is allowed in the source code, and more generally linking to external libraries (even the standard C libraries) is forbidden.
             Any attempt to maliciously attack the <span class="text-dark">SYSTEM</span> or the computer system of contestants will lead to <span class="text-danger">DISQUALIFICATION</span>.
             In case evidence of malicious code is found in a challenge, contestants are invited to report the issue to the <span class="text-dark">ORGANIZING COMMITTEE</span> directly (whibox.organizing.committee@gmail.com).
             If contestants are suspicious that some challenge program may contain malware, they may run GCC in docker or a virtual machine, exactly like the server does (using VirtualBox).
           </p>
           <p>
-            Documentation on how the server runs is found on <a href="https://github.com/CryptoExperts/wb_contest_submission_server">GitHub</a>.
+            Documentation on how the server runs is found on <a href="https://github.com/CryptoExperts/whibox_contest_submission_server/tree/whibox2024">GitHub</a>.
             Contestants are invited to download and install their own instance of the server if they want to ensure that their challenge will be accepted when submitted.
           </p>
           <p>
@@ -121,23 +121,28 @@
             <li>The compilation must not exceed <strong>{{ challenge_max_time_for_compilation_in_secs }} seconds</strong>.</li>
             <li>The following character strings are forbidden in the source code:
               <ul>
-                <li><code>"#include"</code>, except <code>#include &lt;gmp.h&gt;</code></li>
+                <li><code>"#(wsp*)include"</code>, except <code>#include &lt;gmp.h&gt;</code></li>
                 <li><code>"extern"</code></li>
                 <li><code>"_FILE__"</code></li>
                 <li><code>"__DATE__"</code></li>
                 <li><code>"__TIME"</code></li>
                 <li><code>"__STDC_"</code></li>
                 <li><code>"__asm__"</code></li>
+                <li><code>"syscall"</code></li>
+                <li><code>".init"</code>, <code>".fini"</code>, <code>".init_array"</code>, <code>".fini_array"</code>, <code>".ctors"</code>, <code>".dtors"</code></li> 
                 <li><code>"(wsp)asm(nan)"</code></li>
               </ul>
-              where <code>"(wsp)"</code> indicates a white space and <code>"(nan)"</code> indicates any non-alphanumeric character.
+              where <code>"(wsp)"</code> indicates a white space, <code>"(wsp*)"</code> indicates zero or more white spaces, and <code>"(nan)"</code> indicates any non-alphanumeric character.
               An occurence of either of these strings will lead to a rejection of the challenge program, even if they are embedded in (arbitrarily nested) quoted strings. </li>
             <li>The executable must be <strong>{{ challenge_max_binary_size_in_mb }}MB</strong> in size or less,</li>
             <li>The executable must use <strong>{{ challenge_max_mem_execution_in_mb }}MB</strong> of RAM or less (this includes the stack and all global variables, at the exclusion of the code itself),</li>
-            <li>The executable must run in <strong>{{ challenge_max_time_execution_in_secs }} second</strong> or less per function call. This is not absolute time but CPU time, measured within a VirtualBox VM by the SYSTEM. Contestants may check that their challenges comply with this limitation by using the utility <code>ulimit</code> with the <code>&minus;t</code> option.</li>
+            <li>The executable must run in <strong>{{ challenge_max_time_execution_in_secs }} seconds</strong> or less per function call. This is not absolute time but CPU time, measured within a VirtualBox VM by the SYSTEM. Contestants may check that their challenges comply with this limitation by using the utility <code>ulimit</code> with the <code>&minus;t</code> option.</li>
+            <li>The executable is <strong>not allowed</strong> to perform any system call beyond reading from <code>stdin</code>, writing to <code>stdout</code>, and performing allocations through <code>malloc</code> and <code>free</code> (which should be enough for using the <code>gmp</code> API). Any forbidden system call will kill the process as <code>SECCOMP</code> filters are used to enforce this. You can debug your program before submitting it using whatever system calls you want, but remember to remove the forbidden ones when submitting your challenge.
+The <code>SECCOMP</code> filters setup can be found <a href="https://github.com/whibox/whibox-contest-supplementary-materials">here</a> in the <code>main.c</code> file.
+            <li>The public key of the ECDSA implementation must not be one of the ones from the <a href=https://whibox.io/contests/2021/dashboard>previous 2021 edition</a> accepted candidates as they are <strong>blacklisted</strong>.
           </ul>
           <p>The <span class="text-dark">SYSTEM</span> will reject a program that does not comply with these requirements.</p>
-          <p>Compliance with the requirements can be tested by downloading and running a local instance of the submission server found <a href="https://github.com/CryptoExperts/wb_contest_submission_server">here</a>.</p>
+          <p>Compliance with the requirements can be tested by downloading and running a local instance of the submission server found <a href="https://github.com/CryptoExperts/whibox_contest_submission_server/tree/whibox2024">here</a>.</p>
         </div>
       </div>
     </div>
@@ -165,6 +170,7 @@
             </ul>
           </p>
 
+          <p>The public keys of the challenges accepted in the <a href=https://whibox.io/contests/2021/dashboard>previous 2021 edition</a> are <strong>blacklisted</strong> in order to avoid blind resubmissions.
           <p>
             The public key must be pasted into the appropriate field of the submission form as the 128-digit hexadecimal string encoding the 64-byte string \( \textsf{FE2OS}(x_Q) \parallel \textsf{FE2OS}(y_Q)\), where \( \textsf{FE2OS} \) is the "Field Element to Octet String" primitive defined in Section 3.1.3 of the <a href="https://www.bsi.bund.de/SharedDocs/Downloads/EN/BSI/Publications/TechGuidelines/TR03111/BSI-TR-03111_V-2-0_pdf.pdf?__blob=publicationFile&v=2">BSI ECC guideline</a>, \( (x_Q,y_Q) \) is the public key (\(x\)- and \(y\)-coordinates) and \( \parallel \) is the concatenation operator.
           </p>
@@ -177,7 +183,7 @@
           </p>
 
           <p>
-            A reference implementation with corresponding public key (formatted for submission) and a script to generate the proof of knowledge from the private key are available <a href="https://github.com/whibox/whibox-contest-2021_supplementary-materials">here</a>.</p>
+            A reference implementation with corresponding public key (formatted for submission) and a script to generate the proof of knowledge from the private key are available <a href="https://github.com/whibox/whibox-contest-supplementary-materials">here</a>.</p>
         </div>
       </div>
     </div>
@@ -198,13 +204,13 @@
       <div class="collapse show" id="cardPosting">
         <div class="card-body scrollable">
           <p>
-            A contestant who posts a new challenge must submit the corresponding public key to the <span class="text-dark">SYSTEM</span> for the purpose of verifying the consistency of the challenge program.
+            A contestant who posts a new challenge must submit the corresponding public key to the <span class="text-dark">SYSTEM</span> (an Intel Xeon-E 2136 - 6 cores / 12 threads @ 3.3 GHz/4.5 GHz - with 32GB of RAM) for the purpose of verifying the consistency of the challenge program.
             This is done as follows.
           </p>
           <p><strong>Challenge-key verification procedure</strong></p>
           <ol>
             <li>
-              The <span class="text-dark">SYSTEM</span> verifies that the submitted public key has not been previously submitted. If it has been, the challenge is rejected.
+              The <span class="text-dark">SYSTEM</span> verifies that the submitted public key has not been previously submitted, and that it is one of the <a href=https://whibox.io/contests/2021/dashboard>previous 2021 edition</a> accepted candidates public keys. If this is the case, the challenge is rejected.
             </li>
             <li>
               The <span class="text-dark">SYSTEM</span> verifies that the submitted public key is a valid public key by checking that the underlying elliptic point is on the curve P-256.
@@ -316,17 +322,17 @@
           <p>
             <strong>Execution time.</strong>
             The <span class="text-dark">SYSTEM</span> measures the average CPU time consumed by the challenge program and determines the fraction
-            \[f_{\text{time}} = \frac{\text{average time}}{3 \text{ seconds} }\;.\]
+            \[f_{\text{time}} = \frac{\text{average time}}{ {{ challenge_max_time_execution_in_secs }} \text{ seconds} }\;.\]
           </p>
           <p>
             <strong>Code size.</strong>
             The <span class="text-dark">SYSTEM</span> measures the size of the executable and determines the fraction
-            \[f_{\text{size}} = \frac{\text{code size}}{20 \text{ MB} }\;.\]
+            \[f_{\text{size}} = \frac{\text{code size}}{ {{ challenge_max_binary_size_in_mb }} \text{ MB} }\;.\]
           </p>
           <p>
             <strong>RAM usage.</strong>
             The <span class="text-dark">SYSTEM</span> measures the average RAM consumption of the executable and determines the fraction
-            \[f_{\text{memory}} = \frac{\text{average RAM}}{20 \text{ MB} }\;.\]
+            \[f_{\text{memory}} = \frac{\text{average RAM}}{ {{ challenge_max_mem_execution_in_mb }} \text{ MB} }\;.\]
           </p>
           <p>
             The performance score of the challenge is evaluated as
@@ -482,27 +488,31 @@
           </p>
 
           <h5 class="text-primary">Cash prizes</h5>
-          <p>A 2000$ cash prize will be shared between the winners, as follows:</p>
+          <p>A TBD cash prize will be shared between the winners, as follows:</p>
           <ul>
             <li>
               Designers' podium:
               <ul>
-                <li>500$ for the strawberry winner</li>
-                <li>200$ for the second highest strawberry score</li>
-                <li>100$ for the third highest strawberry score</li>
+                <li>1/4 of TBD for the strawberry winner</li>
+                <li>1/10 of TBD for the second highest strawberry score</li>
+                <li>1/20 of TBD for the third highest strawberry score</li>
               </ul>
             </li>
             <li>
               Attackers' podium:
-              <li>500$ for the banana winner</li>
-              <li>200$ for the second highest banana score</li>
-              <li>100$ for the third highest banana score</li>
+              <ul>
+                <li>1/4 of TBD for the banana winner</li>
+                <li>1/10 of TBD for the second highest banana score</li>
+                <li>1/20 of TBD for the third highest banana score</li>
+              </ul>
             </li>
             <li>
-              Bonus for the designers' **or** attackers' podium
-              <li>250$ for the winner</li>
-              <li>100$ for the second</li>
-              <li>50$ for the third</li>
+              Bonus for the designers' **or** attackers' podium:
+              <ul>
+                <li>1/8 of TBD for the winner</li>
+                <li>1/20 of TBD for the second</li>
+                <li>1/40 of TBD for the third</li>
+              </ul>
             </li>
           </ul>
 
@@ -563,9 +573,9 @@
             <div class="table-responsive">
               <table class="table table-striped table-bordered">
                 <tbody>
-                  <tr><td class="text-dark">STARTING DATE</td><td>May 17, 2021 @ 00:00 UTC</td></tr>
-                  <tr><td class="text-dark">POSTING DEADLINE</td><td>August 22, 2021 @ 00:00 UTC</td></tr>
-                  <tr><td class="text-dark">FINAL DEADLINE</td><td>September 11, 2021 @ 12:00 UTC (the days before CHES 2021)</td></tr>
+                  <tr><td class="text-dark">STARTING DATE</td><td>{{ starting_date }}</td></tr>
+                  <tr><td class="text-dark">POSTING DEADLINE</td><td>{{ posting_deadline }}</td></tr>
+                  <tr><td class="text-dark">FINAL DEADLINE</td><td>{{ final_deadline }} (few days before CHES 2024)</td></tr>
                 </tbody>
               </table>
             </div>
@@ -573,12 +583,12 @@
             <div class="table-responsive">
               <table class="table table-striped table-bordered">
                 <tbody>
-                  <tr><td class="text-dark">SYSTEM</td><td>Server comprising the competition website and tools for compiling and testing challenge programs. The compilation environment is fully described in <a href="https://github.com/CryptoExperts/wb_contest_submission_server/blob/master/services/compile_and_test/Dockerfile">this dockerfile</a>.</td></tr>
+                  <tr><td class="text-dark">SYSTEM</td><td>Server comprising the competition website and tools for compiling and testing challenge programs. The compilation environment is fully described in <a href="https://github.com/CryptoExperts/wb_contest_submission_server/blob/whibox2024/services/compile_and_test/Dockerfile">this dockerfile</a>.</td></tr>
                   <tr>
                     <td class="text-dark">REFERENCE COMPILER</td>
-                    <td><code>gcc</code> version 8.2.0</td>
+                    <td><code>gcc</code> version 13.2.1</td>
                   </tr>
-                  <tr><td class="text-dark">REFERENCE IMPLEMENTATION</td><td><code>dECDSA.c</code> file available from <a href="https://github.com/whibox/whibox-contest-2021_supplementary-materials">this GitHub repository</a>.</td></tr>
+                  <tr><td class="text-dark">REFERENCE IMPLEMENTATION</td><td><code>dECDSA.c</code> file available from <a href="https://github.com/whibox/whibox-contest-supplementary-materials">this GitHub repository</a>.</td></tr>
                   <tr>
                     <td><span class="text-dark">BROKEN</span> (challenge)</td>
                     <td> At least one contestant has been able to provide the <span class="text-dark">SYSTEM</span> with the private ECDSA key that passes the key verification procedure.

@@ -12,11 +12,7 @@ import traceback
 import urllib.request
 from urllib.parse import urljoin
 from statistics import mean
-
-# logging
-FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-logging.basicConfig(stream=sys.stdout, level=logging.INFO, format=FORMAT)
-logger = logging.getLogger()
+from time import time
 
 CODE_SUCCESS = 0
 ERR_CODE_CONTAININT_FORBIDDEN_STRING = 1
@@ -27,10 +23,13 @@ ERR_CODE_EXECUTION_FAILED = 5
 ERR_CODE_EXECUTION_EXCEED_RAM_LIMIT = 6
 ERR_CODE_EXECUTION_EXCEED_TIME_LIMIT = 7
 
+# NOTE: the constructors and destructors related stuff are forbidden
 forbidden_strings = [b'#include', b'extern', b'_FILE__', b'__DATE__',
-                     b'__TIME', b'__STDC_', b'__asm__', b'syscall']
-forbidden_pattern = [re.compile(p) for p in [b'\sasm\W', ]]
+                     b'__TIME', b'__STDC_', b'__asm__', b'syscall', b'.init', b'.fini', b'.init_array', b'.fini_array', b'.ctors', b'.dtors']
+forbidden_pattern = [re.compile(p) for p in [b'\sasm\W', b'#\s*include']]
 
+### Logging
+logger = None
 
 def exit_after_notifying_launcher(code, post_data=None):
     url_to_ping_back = os.environ['URL_TO_PING_BACK']
@@ -131,7 +130,7 @@ def compile(basename, source, obj):
 
 def link(basename, obj, executable):
     try:
-        cmd_list = ['gcc', '/main.o', obj, '-lgmp', '-o', executable]
+        cmd_list = ['gcc', '/main.o', obj, '-lgmp', '-lseccomp', '-o', executable]
         subprocess.run(cmd_list, check=True)
     except:
         logger.error(f"The link of the file with basename {basename} failed.")
@@ -153,8 +152,22 @@ def performance_measure(executable,
         current_message = messages[
             current_test_index*32: (current_test_index+1)*32]
         current_message_as_text = binascii.hexlify(current_message).decode()
-        cmd = (f'/execute.py {executable} {current_message_as_text} '
+        # Set some ulimits on execution to avoid DoS (with margins)
+        # NOTE: the RAM limit should be (somehow) enforced by the compilation Docker
+        # resources (set to max compilation and execution limit), but better safe than sorry!
+        max_exec_ram = 2 * ram_limit
+        max_exec_cpu_time = 2 * cpu_time_limit # some margins
+        cmd_ulimit_exec_ram = f'ulimit -v {max_exec_ram}'
+        cmd_ulimit_exec_cpu_time = f'ulimit -t {max_exec_cpu_time}'
+
+        cmd = (f'{cmd_ulimit_exec_ram}; {cmd_ulimit_exec_cpu_time}; '
+               f'/execute.py {executable} {current_message_as_text} '
                f'{current_test_index}')
+
+        logger.info(f"Execution CMD: {cmd}")
+
+        # Get current time to check for CPU ulimit exceed
+        start_time = time()
         try:
             ps = subprocess.run(cmd, check=True, stdout=subprocess.PIPE,
                                 shell=True)
@@ -166,14 +179,14 @@ def performance_measure(executable,
 
             # check whether we reach the limitation
             if cpu_time > cpu_time_limit:
-                logger.warning("Execution reaches CPU time limit: "
+                logger.error("Execution failed: it reaches CPU time limit: "
                                f"{cpu_time:.2f}s was used!")
                 post_data = {"cpu_time": cpu_time}
                 exit_after_notifying_launcher(
                     ERR_CODE_EXECUTION_EXCEED_TIME_LIMIT,
                     post_data=post_data)
             if ram > ram_limit:
-                logger.warning("Execution reaches memory limit: "
+                logger.error("Execution failed: it reaches memory limit: "
                                f"{ram/1024:.2f}MB")
                 post_data = {"ram": ram/1024.}
                 exit_after_notifying_launcher(
@@ -184,6 +197,16 @@ def performance_measure(executable,
             all_max_ram.append(ram)
             current_test_index += 1
         except Exception as e:
+            # Check if this is a timeout
+            elapsed_time = time() - start_time
+            if elapsed_time >= max_exec_cpu_time:
+                logger.error("Execution failed: it reaches CPU time limit set by ulimit: "
+                              f"{max_exec_cpu_time:.2f}s was used!")
+                post_data = {"cpu_time": max_exec_cpu_time}
+                exit_after_notifying_launcher(
+                    ERR_CODE_EXECUTION_EXCEED_TIME_LIMIT,
+                    post_data=post_data)
+            # Fallthrough to all the uncaught exceptions during the subprocess execution
             logger.error(f"Execution failed: {cmd}")
             traceback.print_exc()
             logger.error("===========")
@@ -200,15 +223,31 @@ def performance_measure(executable,
 
 
 def main():
-    logger.info("Start compilation and test")
-
     # Compile
     upload_folder = os.environ['UPLOAD_FOLDER']
+    try:
+        log_folder = os.environ['LOG_FOLDER']
+    except:
+        log_folder = None
     basename = os.environ['FILE_BASENAME']
     source_file = basename + '.c'
     object_file = basename + '.o'
     path_to_source = os.path.join(upload_folder, source_file)
     path_to_object = os.path.join('/tmp', object_file)
+
+    ##### Logging
+    global logger
+    FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    if log_folder is not None:
+        # Redirect the logs to output logging folder as specified in the environment
+        logging.basicConfig(filename=log_folder+'/compile_and_tests.logs', filemode='a', level=logging.INFO, format=FORMAT)
+        logger = logging.getLogger()
+    else:
+        # No logging folder specified, log to stdout
+        logging.basicConfig(stream=sys.stdout, level=logging.INFO, format=FORMAT)
+        logger = logging.getLogger()
+
+    logger.info(f"Start compilation and test of {basename}")
 
     # check forbidden string and pattern
     logger.info("***** Preprocess the code *****")
@@ -236,7 +275,7 @@ def main():
     logger.info("***** Sign messages, and measure performances *****")
     number_of_tests = int(os.environ['CHALLENGE_NUMBER_OF_TEST_VECTORS']) + \
         int(os.environ['CHALLENGE_NUMBER_OF_TEST_EDGE_CASES'])
-    logger.info("Number of tests: {number_of_tests}")
+    logger.info(f"Number of tests: {number_of_tests}")
     cpu_time_limit = int(os.environ['CHALLENGE_MAX_TIME_EXECUTION_IN_SECS'])
     ram_limit = 2**10 * int(os.environ['CHALLENGE_MAX_MEM_EXECUTION_IN_MB'])
     signatures, average_cpu_time, average_max_ram = performance_measure(

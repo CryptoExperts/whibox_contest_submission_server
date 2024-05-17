@@ -2,7 +2,7 @@ import time
 
 from datetime import datetime
 from traceback import print_exc
-from feedwerk.atom import AtomFeed
+from werkzeug.contrib.atom import AtomFeed
 from flask import render_template, url_for, request, request_started
 from flask_login import current_user
 
@@ -10,7 +10,7 @@ from app import app, db, login_manager
 from app.models.user import User
 from app.models.program import Program
 from app.models.whiteboxbreak import WhiteboxBreak
-from app.utils import crx_flash, redirect
+from app.utils import crx_flash, format_timestamp, redirect
 
 from . import user, submit, challenge, breaks  # noqa
 
@@ -104,13 +104,16 @@ def rules():
         challenge_max_binary_size_in_mb=app.config['CHALLENGE_MAX_BINARY_SIZE_IN_MB'],
         challenge_max_mem_execution_in_mb=app.config['CHALLENGE_MAX_MEM_EXECUTION_IN_MB'],
         challenge_max_time_execution_in_secs=app.config['CHALLENGE_MAX_TIME_EXECUTION_IN_SECS'],
+        starting_date=format_timestamp(app.config['STARTING_DATE'], textual=True),
+        posting_deadline=format_timestamp(app.config['POSTING_DEADLINE'], textual=True),
+        final_deadline=format_timestamp(app.config['FINAL_DEADLINE'], textual=True),
         use_math=True,
     )
 
 
 @app.route('/rss.xml', methods=['GET'])
 def recent_feed():
-    feed = AtomFeed('WhibOx Contest 3nd Edition -- CHES 2021 Challenge',
+    feed = AtomFeed('WhibOx Contest 4th Edition -- CHES 2024 Challenge',
                     feed_url=request.url, url=request.url_root,
                     author="WhibOx organizing committee",
                     subtitle="Submitted challenged order by published date descending"

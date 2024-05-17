@@ -16,29 +16,36 @@ machines-start:
 	/bin/bash scripts/start_machines.sh
 
 machines-stop:
-	-docker stack rm dev 1>/dev/null 2>&1
-	-docker stack rm prod 1>/dev/null 2>&1
-	docker-machine stop node-manager
-	docker-machine stop node-sandbox
+	-/bin/bash scripts/on_node-manager.sh docker stack rm dev 1>/dev/null 2>&1
+	-/bin/bash scripts/on_node-manager.sh docker stack rm prod 1>/dev/null 2>&1
+	docker-machine stop node-manager-ecdsa || true
+	VBoxManage startvm node-manager-ecdsa --type emergencystop || true
+	docker-machine stop node-sandbox-ecdsa || true
+	VBoxManage startvm node-sandbox-ecdsa --type emergencystop || true
 
 clean-machines:
-	-docker-machine rm -y --force node-sandbox
-	-docker-machine rm -y --force node-manager
+	-docker-machine rm -y --force node-sandbox-ecdsa
+	-docker-machine rm -y --force node-manager-ecdsa
 
 
 # For the rest:
-# eval $(docker-machine env node-manager)
+# eval $(docker-machine env node-manager-ecdsa)
 # or
-# eval $(docker-machine env node-sandbox)
+# eval $(docker-machine env node-sandbox-ecdsa)
 
 #################
 # Volumes targets
 #################
 
 clean-volumes:
-	cd volumes; rm -rf database; mkdir database
+	mkdir -p volumes; cd volumes; rm -rf database; mkdir database
 	cd volumes; rm -rf whitebox_program_uploads; mkdir whitebox_program_uploads
 	cd volumes; cd whitebox_program_uploads; mkdir compilations
+
+clean-node-volumes:
+	docker-machine ssh node-manager-ecdsa rm -rf /volumes/databases/*
+	docker-machine ssh node-manager-ecdsa rm -rf /volumes/whitebox_program_uploads/compilations/*
+	
 
 #############
 # Dev targets
@@ -50,6 +57,10 @@ define copy-single-vendors-file-dev
 	@cp $(1) $(2)
 	@chmod 444 $(2)
 endef
+
+# Regenerate the minified CSS files
+regen-vendors:
+	cleancss vendors/startbootstrap-sb-admin-2-gh-pages/css/sb-admin-2.css > vendors/startbootstrap-sb-admin-2-gh-pages/css/sb-admin-2.min.css
 
 copy-vendors-files-dev:
 # copy fonts
@@ -86,7 +97,7 @@ copy-vendors-files-dev:
 	# cp vendors/datatables-responsive/dataTables.responsive.js services/web-dev/static/js/dataTables.responsive.js
 
 update_submodule:
-	git submodule init && git submodule update
+	git submodule init && git submodule update --remote --merge
 
 copy-common-app-dev-files: update_submodule
 	-chmod 644 services/launcher-dev/app/models/program.py
@@ -103,28 +114,27 @@ copy-common-app-dev-files: update_submodule
 	chmod 400 services/launcher-dev/app/funny_name_generator.py
 
 build-dev: copy-vendors-files-dev copy-common-app-dev-files
-	docker build -t crx/web-dev services/web-dev/dockerfile/
-	docker build -t crx/launcher-dev services/launcher-dev/dockerfile/
+	/bin/bash scripts/on_node-manager.sh docker build -t crx/web-dev services/web-dev/dockerfile/
+	/bin/bash scripts/on_node-manager.sh docker build -t crx/launcher-dev services/launcher-dev/dockerfile/
 	/bin/bash scripts/on_node-sandbox.sh docker build -t crx/alpine_with_compilers services/alpine_with_compilers/
 	/bin/bash scripts/on_node-sandbox.sh docker build -t crx/compile_and_test services/compile_and_test/
 
 build-dev-no-cache: copy-vendors-files-dev copy-common-app-dev-files
-	docker build --no-cache -t crx/nginx services/nginx/
-	docker build --no-cache -t crx/web-dev services/web-dev/dockerfile/
-	docker build --no-cache -t crx/launcher-dev services/launcher-dev/dockerfile/
+	/bin/bash scripts/on_node-manager.sh docker build --no-cache -t crx/web-dev services/web-dev/dockerfile/
+	/bin/bash scripts/on_node-manager.sh docker build --no-cache -t crx/launcher-dev services/launcher-dev/dockerfile/
 	/bin/bash scripts/on_node-sandbox.sh docker build --no-cache -t crx/alpine_with_compilers services/alpine_with_compilers/
 	/bin/bash scripts/on_node-sandbox.sh docker build --no-cache -t crx/compile_and_test services/compile_and_test/
 
 stack-deploy-dev: copy-vendors-files-dev copy-common-app-dev-files
-	docker stack deploy -c docker-stack-dev.yml dev
+	/bin/bash scripts/on_node-manager.sh docker stack deploy -c docker-stack-dev.yml dev
 
 stack-rm-dev:
-	docker stack rm dev
+	/bin/bash scripts/on_node-manager.sh docker stack rm dev
 
 stack-reload-dev: copy-vendors-files-dev copy-common-app-dev-files
-	-docker stack rm dev
-	/bin/bash scripts/wait_for_empty_docker_ps.sh
-	docker stack deploy -c docker-stack-dev.yml dev
+	-/bin/bash scripts/on_node-manager.sh docker stack rm dev
+	/bin/bash scripts/on_node-manager.sh /bin/bash scripts/wait_for_empty_docker_ps.sh
+	/bin/bash scripts/on_node-manager.sh docker stack deploy -c docker-stack-dev.yml dev
 
 ##############
 # Prod targets
@@ -147,37 +157,94 @@ copy-files-from-dev-to-prod: clean clean-prod copy-vendors-files-dev copy-common
 	find services/launcher-prod/app -type f -exec chmod 444 {} +
 
 build-prod: copy-files-from-dev-to-prod
-	docker build -t crx/web-prod services/web-prod/
-	docker build -t crx/launcher-prod services/launcher-prod/
+	/bin/bash scripts/on_node-manager.sh docker build -t crx/web-prod services/web-prod/
+	/bin/bash scripts/on_node-manager.sh docker build -t crx/launcher-prod services/launcher-prod/
 	/bin/bash scripts/on_node-sandbox.sh docker build -t crx/alpine_with_compilers services/alpine_with_compilers/
 	/bin/bash scripts/on_node-sandbox.sh docker build -t crx/compile_and_test services/compile_and_test/
 
 backup-images:
-	docker save crx/web-dev > backups/images/web-dev.backup
-	docker save crx/web-prod > backups/images/web-prod.backup
-	docker save crx/launcher-dev > backups/images/launcher-dev.backup
-	docker save crx/launcher-prod > backups/images/launcher-prod.backup
+	/bin/bash scripts/on_node-manager.sh docker save crx/web-dev > backups/images/web-dev.backup
+	/bin/bash scripts/on_node-manager.sh docker save crx/web-prod > backups/images/web-prod.backup
+	/bin/bash scripts/on_node-manager.sh docker save crx/launcher-dev > backups/images/launcher-dev.backup
+	/bin/bash scripts/on_node-manager.sh docker save crx/launcher-prod > backups/images/launcher-prod.backup
 
 restore-images:
-	docker load -i backups/images/web-dev.backup
-	docker load -i backups/images/web-prod.backup
-	docker load -i backups/images/launcher-dev.backup
-	docker load -i backups/images/launcher-prod.backup
+	/bin/bash scripts/on_node-manager.sh docker load -i backups/images/web-dev.backup
+	/bin/bash scripts/on_node-manager.sh docker load -i backups/images/web-prod.backup
+	/bin/bash scripts/on_node-manager.sh docker load -i backups/images/launcher-dev.backup
+	/bin/bash scripts/on_node-manager.sh docker load -i backups/images/launcher-prod.backup
 
 
 build-prod-no-cache: copy-files-from-dev-to-prod
-	docker build --no-cache -t crx/web-prod services/web-prod/
-	docker build --no-cache -t crx/launcher-prod services/launcher-prod/
+	/bin/bash scripts/on_node-manager.sh docker build --no-cache -t crx/web-prod services/web-prod/
+	/bin/bash scripts/on_node-manager.sh docker build --no-cache -t crx/launcher-prod services/launcher-prod/
 	/bin/bash scripts/on_node-sandbox.sh docker build --no-cache -t crx/alpine_with_compilers services/alpine_with_compilers/
 	/bin/bash scripts/on_node-sandbox.sh docker build --no-cache -t crx/compile_and_test services/compile_and_test/
 
 stack-deploy-prod:
-	docker stack deploy -c docker-stack-prod.yml prod
+	/bin/bash scripts/on_node-manager.sh docker stack deploy -c docker-stack-prod.yml prod
 
 stack-rm-prod:
-	docker stack rm prod
+	/bin/bash scripts/on_node-manager.sh docker stack rm prod
 
 stack-reload-prod:
-	-docker stack rm prod
-	/bin/bash scripts/wait_for_empty_docker_ps.sh
-	docker stack deploy -c docker-stack-prod.yml prod
+	-/bin/bash scripts/on_node-manager.sh docker stack rm prod
+	/bin/bash scripts/on_node-manager.sh /bin/bash scripts/wait_for_empty_docker_ps.sh
+	/bin/bash scripts/on_node-manager.sh docker stack deploy -c docker-stack-prod.yml prod
+
+#### For logging
+dev-web-logs:
+	/bin/bash scripts/on_node-manager.sh docker service logs -f dev_web
+
+dev-launcher-logs:
+	/bin/bash scripts/on_node-manager.sh docker service logs -f dev_launcher
+
+dev-db-logs:
+	/bin/bash scripts/on_node-manager.sh docker service logs -f dev_mysql
+
+prod-web-logs:
+	/bin/bash scripts/on_node-manager.sh docker service logs -f prod_web
+
+prod-launcher-logs:
+	/bin/bash scripts/on_node-manager.sh docker service logs -f prod_launcher
+
+prod-db-logs:
+	/bin/bash scripts/on_node-manager.sh docker service logs -f prod_mysql
+
+compiler-logs:
+	cat volumes/whitebox_program_uploads/compilations/logs/*/*.logs
+
+## Interactions with the MySQL database:
+# Get a shell
+db-shell:
+	scripts/on_node-manager.sh scripts/db-shell.sh
+
+# Remove a specific program by its id
+db-remove-program:
+ifneq ($(PROGRAM_TO_DELETE),)
+	@echo -n "You asked to remove program $(PROGRAM_TO_DELETE): this is DANGEROUS, are you sure? [y/N] " && read ans && [ $${ans:-N} = y ]
+	@echo -n "You asked to remove program $(PROGRAM_TO_DELETE): this is DANGEROUS, are you REALLY sure? [y/N] " && read ans && [ $${ans:-N} = y ]
+	scripts/on_node-manager.sh scripts/db-shell.sh "DELETE from program WHERE _id=$(PROGRAM_TO_DELETE);"
+else
+	@echo "Please export the program to deleted: 'PROGRAM_TO_DELETE=XXX make db-remove-program'"
+endif
+
+# Remove all the programs
+db-remove-program-all:
+	@echo -n "You asked to remove all the programs: this is DANGEROUS, are you sure? [y/N] " && read ans && [ $${ans:-N} = y ]
+	@echo -n "You asked to remove all the programs: this is DANGEROUS, are you REALLY sure? [y/N] " && read ans && [ $${ans:-N} = y ]
+	scripts/on_node-manager.sh scripts/db-shell.sh "DELETE from program;"
+
+# Save (dump) the database
+db-backup:
+	BACKUP_FILE=backup_wb_db_`date +%s`.sql && scripts/on_node-manager.sh scripts/db-backup.sh $$BACKUP_FILE && echo "[+] Saved DB to $$BACKUP_FILE"
+
+# Restore the database
+db-restore:
+ifneq ($(DB_TO_RESTORE),)
+	@echo -n "You asked to restore the database $(DB_TO_RESTORE): this is DANGEROUS, are you sure? [y/N] " && read ans && [ $${ans:-N} = y ]
+	@echo -n "You asked to restore the database $(DB_TO_RESTORE): this is DANGEROUS, are you REALLY sure? [y/N] " && read ans && [ $${ans:-N} = y ]
+	scripts/on_node-manager.sh scripts/db-restore.sh $(DB_TO_RESTORE)
+else
+	@echo "Please export the SQL database file to be restored: 'DB_TO_RESTORE=XXX.sql make db-restore'"
+endif

@@ -18,10 +18,13 @@ def is_safe_url(request, target):
         ref_url.netloc == test_url.netloc
 
 
-def format_timestamp(timestamp):
+def format_timestamp(timestamp, textual=False):
     if timestamp is None:
         return None
-    return time.strftime('%Y-%m-%d %H:%M UTC', time.gmtime(timestamp))
+    if textual is True:
+        return time.strftime('%B %d, %Y @ %H:%M UTC', time.gmtime(timestamp))
+    else:
+        return time.strftime('%Y-%m-%d %H:%M UTC', time.gmtime(timestamp))
 
 
 def crx_flash(text_and_category_key, *args):

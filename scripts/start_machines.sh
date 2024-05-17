@@ -53,19 +53,19 @@ function mount_point {
 }
 
 ########################
-# Start the node-manager
+# Start the node-manager-ecdsa
 ########################
 
-echo "$GREEN""Starting the node-manager VM $DEFAULT"
+echo "$GREEN""Starting the node-manager-ecdsa VM $DEFAULT"
 
-compute_vm_vals "node-manager"
+compute_vm_vals "node-manager-ecdsa"
 
 # Start the VM, if necessary
 
 if [ -z "$VM_VALS" ]; then
-    echo "$RED""Could not find a VM called node-manager. Skipping this VM.$DEFAULT"
+    echo "$RED""Could not find a VM called node-manager-ecdsa. Skipping this VM.$DEFAULT"
 else
-    echo "The node-manager VM was found."
+    echo "The node-manager-ecdsa VM was found."
 
     echo "The ${VM_VALS[0]} VM state is: ${VM_VALS[3]}"
 
@@ -73,25 +73,25 @@ else
 	echo "Starting the ${VM_VALS[0]} VM."
 	VBoxManage startvm ${VM_VALS[0]} --type headless 1>/dev/null
 	wait_for_vm_to_really_start ${VM_VALS[0]}
-	compute_vm_vals "node-manager"
+	compute_vm_vals "node-manager-ecdsa"
 	echo "The ${VM_VALS[0]} VM state is: ${VM_VALS[3]}"
     fi
 fi
 
 ########################
-# Start the node-sandbox
+# Start the node-sandbox-ecdsa
 ########################
 
-echo "$GREEN""Starting the node-sandbox VM $DEFAULT"
+echo "$GREEN""Starting the node-sandbox-ecdsa VM $DEFAULT"
 
-compute_vm_vals "node-sandbox"
+compute_vm_vals "node-sandbox-ecdsa"
 
 # Start the VM, if necessary
 
 if [ -z "$VM_VALS" ]; then
-    echo "$RED""Could not find a VM called node-sandbox. Skipping this VM.$DEFAULT"
+    echo "$RED""Could not find a VM called node-sandbox-ecdsa. Skipping this VM.$DEFAULT"
 else
-    echo "The node-sandbox VM was found."
+    echo "The node-sandbox-ecdsa VM was found."
 
     echo "The ${VM_VALS[0]} VM state is: ${VM_VALS[3]}"
 
@@ -99,7 +99,7 @@ else
 	echo "Starting the ${VM_VALS[0]} VM."
 	VBoxManage startvm ${VM_VALS[0]} --type headless 1>/dev/null
 	wait_for_vm_to_really_start ${VM_VALS[0]}
-	compute_vm_vals "node-sandbox"
+	compute_vm_vals "node-sandbox-ecdsa"
 	echo "The ${VM_VALS[0]} VM state is: ${VM_VALS[3]}"
     fi
 fi

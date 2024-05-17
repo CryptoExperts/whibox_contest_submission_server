@@ -5,7 +5,7 @@ from flask_login import LoginManager
 app = Flask(__name__)
 app.config.from_object('app.config')
 
-db = SQLAlchemy(app)
+db = SQLAlchemy(app, engine_options={ 'pool_pre_ping': True })
 
 login_manager = LoginManager()
 login_manager.session_protection = 'strong'

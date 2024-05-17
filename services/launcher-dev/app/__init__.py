@@ -7,7 +7,7 @@ app = Flask(__name__)
 app.config.from_object('app.config')
 app.url_map.converters['basename'] = BasenameConverter
 
-db = SQLAlchemy(app)
+db = SQLAlchemy(app, engine_options={ 'pool_pre_ping': True })
 
 login_manager = LoginManager()
 

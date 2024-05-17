@@ -3,17 +3,17 @@ FROM nginx:1.19-alpine
 RUN apk update && apk upgrade
 
 RUN apk add build-base curl
-RUN apk add mysql-client~=10.5.9
+RUN apk add mysql-client~=10.5.17
 
 RUN apk add python3~=3.8 python3-dev~=3.8 py3-pip
 RUN apk add py3-crypto~=3.9.9
 
 RUN pip install --upgrade pip
-RUN pip install Flask==1.1.2 Flask-SQLAlchemy==2.5.1 Flask-Login==0.5.0
+RUN pip install Flask==1.1.3 Flask-SQLAlchemy==2.5.0 SQLAlchemy==1.4.35 Flask-Login==0.5.0 MarkupSafe==2.0.1
 RUN pip install passlib==1.7.4 PyMySQL==1.0.2
 RUN pip install docker==5.0.0 click==7.1.2
 
-RUN apk add uwsgi~=2.0.19.1 uwsgi-python3~=2.0.19.1
+RUN apk add uwsgi~=2.0.19.1-r1 uwsgi-python3~=2.0.19.1-r1
 
 COPY config/docker-entrypoint.sh /usr/local/bin/
 RUN chmod 755 /usr/local/bin/docker-entrypoint.sh

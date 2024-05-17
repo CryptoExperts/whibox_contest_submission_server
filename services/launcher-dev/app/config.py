@@ -45,11 +45,10 @@ STARTING_DATE = int(os.environ['STARTING_DATE'])
 POSTING_DEADLINE = int(os.environ['POSTING_DEADLINE'])
 FINAL_DEADLINE = int(os.environ['FINAL_DEADLINE'])
 
-CHALLENGE_TEST_EDGE_CASES = [
-    0,
-    2**256 - 1,
-    0xffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632551,  # n
-]
+if 'CHALLENGE_TEST_EDGE_CASES' in os.environ:
+    CHALLENGE_TEST_EDGE_CASES = eval(os.environ['CHALLENGE_TEST_EDGE_CASES'])
+else:
+    CHALLENGE_TEST_EDGE_CASES = []
 
 #############
 # Other stuff

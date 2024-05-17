@@ -102,7 +102,7 @@ def compile_and_test():
         return ""
 
     if not check_public_key(Q):
-        error_message = "The public key is not invalid"
+        error_message = "The public key is invalid"
         utils.console(error_message)
         program_to_compile_and_test.set_status_to_test_failed(
             error_message=error_message)
@@ -149,6 +149,7 @@ def compile_and_test():
     networks = [app.config['COMPILE_AND_TEST_SERVICE_NETWORK']]
     env = [
         'UPLOAD_FOLDER=/uploads',
+        'LOG_FOLDER=/logs',
         f'FILE_BASENAME={basename}',
         f'URL_TO_PING_BACK=http://launcher:5000/compile_and_test_result/{basename}/{nonce}/',
         f'URL_FOR_FETCHING_MESSAGES=http://launcher:5000/get_messages/{basename}/{nonce}',
@@ -166,6 +167,10 @@ def compile_and_test():
     path_for_compilations = os.path.join('/compilations', dir_for_compilation)
     if not os.path.exists(path_for_compilations):
         os.makedirs(path_for_compilations)
+    path_for_logs = os.path.join('/compilations/logs/', dir_for_compilation)
+    if not os.path.exists(path_for_logs):
+        os.makedirs(path_for_logs)
+    #
     source_name = basename + '.c'
     path_to_uploaded_source = os.path.join('/uploads', source_name)
     path_to_source_for_compilation = os.path.join(
@@ -175,13 +180,14 @@ def compile_and_test():
 
     # We configure and launch the compile_and_test docker
     mounts = [
-        '/whitebox_program_uploads/compilations/%s:/uploads:ro' % dir_for_compilation
+        '/whitebox_program_uploads/compilations/%s:/uploads:ro' % dir_for_compilation,
+        '/whitebox_program_uploads/compilations/logs/%s:/logs:rw' % dir_for_compilation,
     ]
     service = client.services.create(
         image='crx/compile_and_test',
         mounts=mounts,
         env=env,
-        constraints=['node.labels.vm == node-sandbox'],
+        constraints=['node.labels.vm == node-sandbox-ecdsa'],
         name=app.config['NAME_OF_COMPILE_AND_TEST_SERVICE'],
         restart_policy=restart_policy,
         labels={'basename': str(basename)},
@@ -279,7 +285,11 @@ def process_compile_and_test_ret(program, request, basename, ret):
         utils.console("Code execution reach time limit for file with "
                       f"basename {basename}")
     elif ret == ERR_CODE_EXECUTION_FAILED:
-        program.set_status_to_execution_failed()
+        program.set_status_to_execution_failed(
+          "Your program failed during its execution. This can be due to either a runtime error (e.g. SIGSEGV),\n "
+          "or a violation of the SECCOMP filtering rules leading to killing it\n"
+          "(i.e. using a system call other than read to stdin, write to stdout and malloc/free related ones)."
+        )
         utils.console(
             f'Code execution failed for file with basename {basename}')
     elif ret == CODE_SUCCESS:
