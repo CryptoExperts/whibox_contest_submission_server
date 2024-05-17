@@ -366,14 +366,14 @@ prod_web.1.xuk8l6pkym05@node-manager-ecdsa    | spawned uWSGI worker 4 (pid: 24,
 ~~~
 
 Once the `web` service has started, it is possible to fire up a browser and connect to `https://192.168.99.100:5000`.
-You can run the following command to get exact IP address of the `node-manager`:
+You can run the following command to get exact IP address of the `node-manager-ecdsa`:
 
 ~~~bash
-$ docker-machine env node-manager | grep HOST
+$ docker-machine env node-manager-ecdsa | grep HOST
 export DOCKER_HOST="tcp://192.168.99.100:2376"
 ~~~
 
-Note that connecting to the IP address of the `node-sandbox` would also work (thanks to Docker swarm).
+Note that connecting to the IP address of the `node-sandbox-ecdsa` would also work (thanks to Docker swarm).
 
 ![Server index page screenshot](images/index_screenshot.png)
 
