@@ -4,9 +4,9 @@ Source code of the [WhibOx Contest][whibox-contest] Submission Server
 
 ## About
 
-This repository contains the full source code of the server managing the WhibOx Contest (Edition 3) initiated and developed by [CryptoExperts][crx] and hosted on [Google Cloud][google-cloud] by [Stefan Kölbl][stefan].
+This repository contains the full source code of the server managing the WhibOx Contest (Edition 4) initiated, developed and hosted by [CryptoExperts][crx].
 
-For more information about the WhibOx Contest Edition 3, please visit the [WhibOx Contest (Edition 3) official website][contest].
+For more information about the WhibOx Contest Edition 4, please visit the [WhibOx Contest (Edition 4) official website][contest].
 
 ## Disclaimer
 
@@ -52,7 +52,7 @@ This software was tested on [macOS Big Sur][bigsur].
 
 There are two ways this server can be deployed:
 
-* In **development** mode, for testing, updating the code on the fly and immediately seing the result;
+* In **development** mode, for testing, updating the code on the fly and immediately seeing the result;
 * In **production** mode.
 
 ### Running the server in Production mode
@@ -126,15 +126,15 @@ This node joined a swarm as a worker.
 node-sandbox
 ~~~
 
-This will create 2 VirtualBox VMs, called `node-manager` and `node-sandbox`, and unite them into a Docker swarm.
+This will create 2 VirtualBox VMs, called `node-manager-ecdsa` and `node-sandbox-ecdsa`, and unite them into a Docker swarm.
 This takes a few minutes.
 One can check that the two VMs were successfully created:
 
 ~~~bash
 $ docker-machine ls
-NAME           ACTIVE   DRIVER       STATE     URL                         SWARM   DOCKER      ERRORS
-node-manager   -        virtualbox   Running   tcp://192.168.99.106:2376           v19.03.12
-node-sandbox   -        virtualbox   Running   tcp://192.168.99.107:2376           v19.03.12
+NAME               ACTIVE   DRIVER       STATE     URL                         SWARM   DOCKER      ERRORS
+node-manager-ecdsa   -        virtualbox   Running   tcp://192.168.99.106:2376           v19.03.12
+node-sandbox-ecdsa   -        virtualbox   Running   tcp://192.168.99.107:2376           v19.03.12
 ~~~
 
 To stop both VMs:
@@ -145,17 +145,17 @@ docker stack rm dev 1>/dev/null 2>&1
 make: [machines-stop] Error 1 (ignored)
 docker stack rm prod 1>/dev/null 2>&1
 make: [machines-stop] Error 1 (ignored)
-docker-machine stop node-manager
+docker-machine stop node-manager-ecdsa
 Stopping "node-manager"...
 Machine "node-manager" was stopped.
-docker-machine stop node-sandbox
+docker-machine stop node-sandbox-ecdsa
 Stopping "node-sandbox"...
 Machine "node-sandbox" was stopped.
 
 $ docker-machine ls
-NAME           ACTIVE   DRIVER       STATE     URL   SWARM   DOCKER    ERRORS
-node-manager   -        virtualbox   Stopped                 Unknown
-node-sandbox   -        virtualbox   Stopped                 Unknown
+NAME               ACTIVE   DRIVER       STATE     URL   SWARM   DOCKER    ERRORS
+node-manager-ecdsa   -        virtualbox   Stopped                 Unknown
+node-sandbox-ecdsa   -        virtualbox   Stopped                 Unknown
 ~~~
 
 To turn them back on:
@@ -166,16 +166,16 @@ $ make machines-start
 
 #### Step 2: Change the Docker commands target
 
-Instead of SSH-ing to the `node-manager` VM, it is more convenient to set a few environment variables to automatically send the docker commands to the Docker daemon running on the `node-manager`.
+Instead of SSH-ing to the `node-manager-ecdsa` VM, it is more convenient to set a few environment variables to automatically send the docker commands to the Docker daemon running on the `node-manager-ecdsa`.
 This can be done by running:
 
 ~~~bash
-$ eval $(docker-machine env node-manager)
+$ eval $(docker-machine env node-manager-ecdsa)
 ~~~
 
 #### Step 3 (option 1): Configure an SSL reverse proxy
 
-Unless you are "in the dark ages of manual SSL management" (TM @hashbreaker), it is now time to configure an SSL reverse proxy, that redirects all the `https` traffic it receives to the port `5000` of the `node-manager` (in `http`).
+Unless you are "in the dark ages of manual SSL management" (TM @hashbreaker), it is now time to configure an SSL reverse proxy, that redirects all the `https` traffic it receives to the port `5000` of the `node-manager-ecdsa` (in `http`).
 This means you need to configure another web server instance (such as Nginx) or use a commercial alternative (such as Cloudflare or CloudFront). Describing the procedure is beyond the scope of this howto.
 
 #### Step 3 (option 2): Create SSL certificates and configure nginx
@@ -280,7 +280,7 @@ Creating service prod_web
 Creating service prod_launcher
 ~~~
 
-One can check that the `web`, `mysql`, and `launcher` services run on the `node-manager`:
+One can check that the `web`, `mysql`, and `launcher` services run on the `node-manager-ecdsa`:
 
 ~~~bash
 $ docker service ls
@@ -320,49 +320,49 @@ CONTAINER ID        IMAGE                       COMMAND                  CREATED
 744e9573955b        crx/mysql:8.0.15-1debian9   "docker-entrypoint.s…"   2 minutes ago       Up 2 minutes        3306/tcp            prod_mysql.1.6p3nmq5draj0h6gjvhxr3d7j8
 
 $ docker service logs prod_web                                         16:31:30
-prod_web.1.xuk8l6pkym05@node-manager    | Mysql is unavailable yet - sleeping
-prod_web.1.xuk8l6pkym05@node-manager    | Mysql is unavailable yet - sleeping
-prod_web.1.xuk8l6pkym05@node-manager    | Mysql is unavailable yet - sleeping
-prod_web.1.xuk8l6pkym05@node-manager    | Mysql is up !
-prod_web.1.xuk8l6pkym05@node-manager    | [uWSGI] getting INI configuration from /etc/uwsgi.ini
-prod_web.1.xuk8l6pkym05@node-manager    | *** Starting uWSGI 2.0.19.1 (64bit) on [Tue May  4 14:29:46 2021] ***
-prod_web.1.xuk8l6pkym05@node-manager    | compiled with version: 10.2.1 20201203 on 09 January 2021 08:06:39
-prod_web.1.xuk8l6pkym05@node-manager    | os: Linux-4.19.130-boot2docker #1 SMP Mon Jun 29 23:52:55 UTC 2020
-prod_web.1.xuk8l6pkym05@node-manager    | nodename: 332105359cb3
-prod_web.1.xuk8l6pkym05@node-manager    | machine: x86_64
-prod_web.1.xuk8l6pkym05@node-manager    | clock source: unix
-prod_web.1.xuk8l6pkym05@node-manager    | pcre jit disabled
-prod_web.1.xuk8l6pkym05@node-manager    | detected number of CPU cores: 1
-prod_web.1.xuk8l6pkym05@node-manager    | current working directory: /
-prod_web.1.xuk8l6pkym05@node-manager    | detected binary path: /usr/sbin/uwsgi
-prod_web.1.xuk8l6pkym05@node-manager    | uWSGI running as root, you can use --uid/--gid/--chroot options
-prod_web.1.xuk8l6pkym05@node-manager    | *** WARNING: you are running uWSGI as root !!! (use the --uid flag) ***
-prod_web.1.xuk8l6pkym05@node-manager    | chdir() to /etc/..
-prod_web.1.xuk8l6pkym05@node-manager    | your memory page size is 4096 bytes
-prod_web.1.xuk8l6pkym05@node-manager    | detected max file descriptor number: 1048576
-prod_web.1.xuk8l6pkym05@node-manager    | lock engine: pthread robust mutexes
-prod_web.1.xuk8l6pkym05@node-manager    | thunder lock: disabled (you can enable it with --thunder-lock)
-prod_web.1.xuk8l6pkym05@node-manager    | uwsgi socket 0 bound to UNIX address /tmp/uwsgi.sock fd 3
-prod_web.1.xuk8l6pkym05@node-manager    | uWSGI running as root, you can use --uid/--gid/--chroot options
-prod_web.1.xuk8l6pkym05@node-manager    | *** WARNING: you are running uWSGI as root !!! (use the --uid flag) ***
-prod_web.1.xuk8l6pkym05@node-manager    | Python version: 3.8.8 (default, Mar 15 2021, 13:10:14)  [GCC 10.2.1 20201203]
-prod_web.1.xuk8l6pkym05@node-manager    | *** Python threads support is disabled. You can enable it with --enable-threads ***
-prod_web.1.xuk8l6pkym05@node-manager    | Python main interpreter initialized at 0x7f679def56c0
-prod_web.1.xuk8l6pkym05@node-manager    | uWSGI running as root, you can use --uid/--gid/--chroot options
-prod_web.1.xuk8l6pkym05@node-manager    | *** WARNING: you are running uWSGI as root !!! (use the --uid flag) ***
-prod_web.1.xuk8l6pkym05@node-manager    | your server socket listen backlog is limited to 100 connections
-prod_web.1.xuk8l6pkym05@node-manager    | your mercy for graceful operations on workers is 60 seconds
-prod_web.1.xuk8l6pkym05@node-manager    | mapped 364600 bytes (356 KB) for 4 cores
-prod_web.1.xuk8l6pkym05@node-manager    | *** Operational MODE: preforking ***
-prod_web.1.xuk8l6pkym05@node-manager    | WSGI app 0 (mountpoint='') ready in 1 seconds on interpreter 0x7f679def56c0 pid: 1 (default app)
-prod_web.1.xuk8l6pkym05@node-manager    | uWSGI running as root, you can use --uid/--gid/--chroot options
-prod_web.1.xuk8l6pkym05@node-manager    | *** WARNING: you are running uWSGI as root !!! (use the --uid flag) ***
-prod_web.1.xuk8l6pkym05@node-manager    | *** uWSGI is running in multiple interpreter mode ***
-prod_web.1.xuk8l6pkym05@node-manager    | spawned uWSGI master process (pid: 1)
-prod_web.1.xuk8l6pkym05@node-manager    | spawned uWSGI worker 1 (pid: 21, cores: 1)
-prod_web.1.xuk8l6pkym05@node-manager    | spawned uWSGI worker 2 (pid: 22, cores: 1)
-prod_web.1.xuk8l6pkym05@node-manager    | spawned uWSGI worker 3 (pid: 23, cores: 1)
-prod_web.1.xuk8l6pkym05@node-manager    | spawned uWSGI worker 4 (pid: 24, cores: 1)
+prod_web.1.xuk8l6pkym05@node-manager-ecdsa    | Mysql is unavailable yet - sleeping
+prod_web.1.xuk8l6pkym05@node-manager-ecdsa    | Mysql is unavailable yet - sleeping
+prod_web.1.xuk8l6pkym05@node-manager-ecdsa    | Mysql is unavailable yet - sleeping
+prod_web.1.xuk8l6pkym05@node-manager-ecdsa    | Mysql is up !
+prod_web.1.xuk8l6pkym05@node-manager-ecdsa    | [uWSGI] getting INI configuration from /etc/uwsgi.ini
+prod_web.1.xuk8l6pkym05@node-manager-ecdsa    | *** Starting uWSGI 2.0.19.1 (64bit) on [Tue May  4 14:29:46 2021] ***
+prod_web.1.xuk8l6pkym05@node-manager-ecdsa    | compiled with version: 10.2.1 20201203 on 09 January 2021 08:06:39
+prod_web.1.xuk8l6pkym05@node-manager-ecdsa    | os: Linux-4.19.130-boot2docker #1 SMP Mon Jun 29 23:52:55 UTC 2020
+prod_web.1.xuk8l6pkym05@node-manager-ecdsa    | nodename: 332105359cb3
+prod_web.1.xuk8l6pkym05@node-manager-ecdsa    | machine: x86_64
+prod_web.1.xuk8l6pkym05@node-manager-ecdsa    | clock source: unix
+prod_web.1.xuk8l6pkym05@node-manager-ecdsa    | pcre jit disabled
+prod_web.1.xuk8l6pkym05@node-manager-ecdsa    | detected number of CPU cores: 1
+prod_web.1.xuk8l6pkym05@node-manager-ecdsa    | current working directory: /
+prod_web.1.xuk8l6pkym05@node-manager-ecdsa    | detected binary path: /usr/sbin/uwsgi
+prod_web.1.xuk8l6pkym05@node-manager-ecdsa    | uWSGI running as root, you can use --uid/--gid/--chroot options
+prod_web.1.xuk8l6pkym05@node-manager-ecdsa    | *** WARNING: you are running uWSGI as root !!! (use the --uid flag) ***
+prod_web.1.xuk8l6pkym05@node-manager-ecdsa    | chdir() to /etc/..
+prod_web.1.xuk8l6pkym05@node-manager-ecdsa    | your memory page size is 4096 bytes
+prod_web.1.xuk8l6pkym05@node-manager-ecdsa    | detected max file descriptor number: 1048576
+prod_web.1.xuk8l6pkym05@node-manager-ecdsa    | lock engine: pthread robust mutexes
+prod_web.1.xuk8l6pkym05@node-manager-ecdsa    | thunder lock: disabled (you can enable it with --thunder-lock)
+prod_web.1.xuk8l6pkym05@node-manager-ecdsa    | uwsgi socket 0 bound to UNIX address /tmp/uwsgi.sock fd 3
+prod_web.1.xuk8l6pkym05@node-manager-ecdsa    | uWSGI running as root, you can use --uid/--gid/--chroot options
+prod_web.1.xuk8l6pkym05@node-manager-ecdsa    | *** WARNING: you are running uWSGI as root !!! (use the --uid flag) ***
+prod_web.1.xuk8l6pkym05@node-manager-ecdsa    | Python version: 3.8.8 (default, Mar 15 2021, 13:10:14)  [GCC 10.2.1 20201203]
+prod_web.1.xuk8l6pkym05@node-manager-ecdsa    | *** Python threads support is disabled. You can enable it with --enable-threads ***
+prod_web.1.xuk8l6pkym05@node-manager-ecdsa    | Python main interpreter initialized at 0x7f679def56c0
+prod_web.1.xuk8l6pkym05@node-manager-ecdsa    | uWSGI running as root, you can use --uid/--gid/--chroot options
+prod_web.1.xuk8l6pkym05@node-manager-ecdsa    | *** WARNING: you are running uWSGI as root !!! (use the --uid flag) ***
+prod_web.1.xuk8l6pkym05@node-manager-ecdsa    | your server socket listen backlog is limited to 100 connections
+prod_web.1.xuk8l6pkym05@node-manager-ecdsa    | your mercy for graceful operations on workers is 60 seconds
+prod_web.1.xuk8l6pkym05@node-manager-ecdsa    | mapped 364600 bytes (356 KB) for 4 cores
+prod_web.1.xuk8l6pkym05@node-manager-ecdsa    | *** Operational MODE: preforking ***
+prod_web.1.xuk8l6pkym05@node-manager-ecdsa    | WSGI app 0 (mountpoint='') ready in 1 seconds on interpreter 0x7f679def56c0 pid: 1 (default app)
+prod_web.1.xuk8l6pkym05@node-manager-ecdsa    | uWSGI running as root, you can use --uid/--gid/--chroot options
+prod_web.1.xuk8l6pkym05@node-manager-ecdsa    | *** WARNING: you are running uWSGI as root !!! (use the --uid flag) ***
+prod_web.1.xuk8l6pkym05@node-manager-ecdsa    | *** uWSGI is running in multiple interpreter mode ***
+prod_web.1.xuk8l6pkym05@node-manager-ecdsa    | spawned uWSGI master process (pid: 1)
+prod_web.1.xuk8l6pkym05@node-manager-ecdsa    | spawned uWSGI worker 1 (pid: 21, cores: 1)
+prod_web.1.xuk8l6pkym05@node-manager-ecdsa    | spawned uWSGI worker 2 (pid: 22, cores: 1)
+prod_web.1.xuk8l6pkym05@node-manager-ecdsa    | spawned uWSGI worker 3 (pid: 23, cores: 1)
+prod_web.1.xuk8l6pkym05@node-manager-ecdsa    | spawned uWSGI worker 4 (pid: 24, cores: 1)
 ~~~
 
 Once the `web` service has started, it is possible to fire up a browser and connect to `https://192.168.99.100:5000`.
@@ -386,8 +386,8 @@ Here is how to do it:
 
 ~~~bash
 $ make machines-stop
-$ VBoxManage modifyvm "node-manager" --natpf1 "tcp-port5000,tcp,,5000,,5000";
-$ VBoxManage modifyvm "node-manager" --natpf1 "tcp-port5443,tcp,,5443,,5443";
+$ VBoxManage modifyvm "node-manager-ecdsa" --natpf1 "tcp-port5000,tcp,,5000,,5000";
+$ VBoxManage modifyvm "node-manager-ecdsa" --natpf1 "tcp-port5443,tcp,,5443,,5443";
 $ make machines-start
 $ make stack-deploy-prod
 ~~~
@@ -426,23 +426,23 @@ Once the services have shutdown, one can shutdown the VMs:
 $ make machines-stop
 docker stack rm dev 1>/dev/null 2>&1
 docker stack rm prod 1>/dev/null 2>&1
-docker-machine stop node-manager
+docker-machine stop node-manager-ecdsa
 Stopping "node-manager"...
 Machine "node-manager" was stopped.
-docker-machine stop node-sandbox
+docker-machine stop node-sandbox-ecdsa
 Stopping "node-sandbox"...
 Machine "node-sandbox" was stopped.
 
 $ docker-machine ls
-node-manager   -        virtualbox   Stopped                 Unknown
-node-sandbox   -        virtualbox   Stopped                 Unknown
+node-manager-ecdsa   -        virtualbox   Stopped                 Unknown
+node-sandbox-ecdsa   -        virtualbox   Stopped                 Unknown
 ~~~
 
 ### Running the server in Production mode (TLDR version)
 
 ~~~bash
 $ make machines-and-swarm
-$ eval $(docker-machine env node-manager)
+$ eval $(docker-machine env node-manager-ecdsa)
 $ # Create SSL certificates and configure nginx
 $ make build-prod
 $ # Edit the docker-stack-prod.yml file
@@ -456,7 +456,7 @@ $ # If this does not work, try the section on port forwarding
 
 ~~~bash
 $ make machines-and-swarm
-$ eval $(docker-machine env node-manager)
+$ eval $(docker-machine env node-manager-ecdsa)
 $ make build-dev
 $ # Edit the docker-stack-dev.yml file
 $ make stack-deploy-dev
@@ -468,8 +468,7 @@ Note: in development mode, the server runs under https with a self-signed certif
 The private key being included in this git repo, you must **not** use the development mode in production.
 
 [crx]: https://www.cryptoexperts.com/  "CryptoExperts website"
-[google-cloud]: https://cloud.google.com/
-[contest]: https://whibox.io/contests/2021/
+[contest]: https://whibox.io/contests/2024/
 [flask]: http://flask.pocoo.org "Flask website"
 [mysql]: https://www.mysql.com "MySQL website"
 [docker]: https://www.docker.com "Docker website"
@@ -481,4 +480,3 @@ The private key being included in this git repo, you must **not** use the develo
 [docker_for_mac]: https://docs.docker.com/docker-for-mac/ "Docker for Mac"
 [letsencrypt]: https://letsencrypt.org
 [whibox-contest]: https://whibox.io/contests/
-[stefan]: https://kste.dk/
