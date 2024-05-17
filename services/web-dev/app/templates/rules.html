@@ -45,7 +45,7 @@
             The website is public in the sense that anyone can freely browse it (including downloading challenges) but logging in is required to post or break challenges.
           </p>
           <p>
-            The competition website is referred to as the <span class="text-dark">SYSTEM</span>.
+            The competition website is referred to as the <span class="text-dark">SYSTEM</span>. This is a cloud server instance with an Intel Xeon-E2136 CPU (6 cores / 12 threads @ 3.3 GHz/4.5 GHz) with 32GB of RAM.
           </p>
         </div>
       </div>
@@ -119,6 +119,9 @@
             <li>The source code must be no bigger than <strong>{{ challenge_max_source_size_in_mb }}MB</strong>.</li>
             <li>The <span class="text-dark">REFERENCE COMPILERS</span> must use at most <strong>{{ challenge_max_mem_for_compilation_in_mb }}MB</strong> of RAM to complete compilation.</li>
             <li>The compilation must not exceed <strong>{{ challenge_max_time_for_compilation_in_secs }} seconds</strong>.</li>
+            <li>The executable must be <strong>{{ challenge_max_binary_size_in_mb }}MB</strong> in size or less,</li>
+            <li>The executable must use <strong>{{ challenge_max_mem_execution_in_mb }}MB</strong> of RAM or less (this includes the stack and all global variables, at the exclusion of the code itself),</li>
+            <li>The executable must run in <strong>{{ challenge_max_time_execution_in_secs }} seconds</strong> or less per function call. This is not absolute time but CPU time, measured within a VirtualBox VM by the SYSTEM. Contestants may check that their challenges comply with this limitation by using the utility <code>ulimit</code> with the <code>&minus;t</code> option.</li>
             <li>The following character strings are forbidden in the source code:
               <ul>
                 <li><code>"#(wsp*)include"</code>, except <code>#include &lt;gmp.h&gt;</code></li>
@@ -134,9 +137,6 @@
               </ul>
               where <code>"(wsp)"</code> indicates a white space, <code>"(wsp*)"</code> indicates zero or more white spaces, and <code>"(nan)"</code> indicates any non-alphanumeric character.
               An occurence of either of these strings will lead to a rejection of the challenge program, even if they are embedded in (arbitrarily nested) quoted strings. </li>
-            <li>The executable must be <strong>{{ challenge_max_binary_size_in_mb }}MB</strong> in size or less,</li>
-            <li>The executable must use <strong>{{ challenge_max_mem_execution_in_mb }}MB</strong> of RAM or less (this includes the stack and all global variables, at the exclusion of the code itself),</li>
-            <li>The executable must run in <strong>{{ challenge_max_time_execution_in_secs }} seconds</strong> or less per function call. This is not absolute time but CPU time, measured within a VirtualBox VM by the SYSTEM. Contestants may check that their challenges comply with this limitation by using the utility <code>ulimit</code> with the <code>&minus;t</code> option.</li>
             <li>The executable is <strong>not allowed</strong> to perform any system call beyond reading from <code>stdin</code>, writing to <code>stdout</code>, and performing allocations through <code>malloc</code> and <code>free</code> (which should be enough for using the <code>gmp</code> API). Any forbidden system call will kill the process as <code>SECCOMP</code> filters are used to enforce this. You can debug your program before submitting it using whatever system calls you want, but remember to remove the forbidden ones when submitting your challenge.
 The <code>SECCOMP</code> filters setup can be found <a href="https://github.com/whibox/whibox-contest-supplementary-materials">here</a> in the <code>main.c</code> file.
             <li>The public key of the ECDSA implementation must not be one of the ones from the <a href=https://whibox.io/contests/2021/dashboard>previous 2021 edition</a> accepted candidates as they are <strong>blacklisted</strong>.
@@ -204,7 +204,7 @@ The <code>SECCOMP</code> filters setup can be found <a href="https://github.com/
       <div class="collapse show" id="cardPosting">
         <div class="card-body scrollable">
           <p>
-            A contestant who posts a new challenge must submit the corresponding public key to the <span class="text-dark">SYSTEM</span> (an Intel Xeon-E 2136 - 6 cores / 12 threads @ 3.3 GHz/4.5 GHz - with 32GB of RAM) for the purpose of verifying the consistency of the challenge program.
+            A contestant who posts a new challenge must submit the corresponding public key to the <span class="text-dark">SYSTEM</span> for the purpose of verifying the consistency of the challenge program.
             This is done as follows.
           </p>
           <p><strong>Challenge-key verification procedure</strong></p>
@@ -488,38 +488,25 @@ The <code>SECCOMP</code> filters setup can be found <a href="https://github.com/
           </p>
 
           <h5 class="text-primary">Cash prizes</h5>
-          <p>A TBD cash prize will be shared between the winners, as follows:</p>
+          <p>A 2000$ cash prize will be shared between the winners, as follows:</p>
           <ul>
             <li>
               Designers' podium:
               <ul>
-                <li>1/4 of TBD for the strawberry winner</li>
-                <li>1/10 of TBD for the second highest strawberry score</li>
-                <li>1/20 of TBD for the third highest strawberry score</li>
+                <li>600$ for the strawberry winner</li>
+                <li>300$ for the second highest strawberry score</li>
+                <li>100$ for the third highest strawberry score</li>
               </ul>
             </li>
             <li>
               Attackers' podium:
               <ul>
-                <li>1/4 of TBD for the banana winner</li>
-                <li>1/10 of TBD for the second highest banana score</li>
-                <li>1/20 of TBD for the third highest banana score</li>
-              </ul>
-            </li>
-            <li>
-              Bonus for the designers' **or** attackers' podium:
-              <ul>
-                <li>1/8 of TBD for the winner</li>
-                <li>1/20 of TBD for the second</li>
-                <li>1/40 of TBD for the third</li>
+                <li>600$ for the banana winner</li>
+                <li>300$ for the second highest banana score</li>
+                <li>100$ for the third highest banana score</li>
               </ul>
             </li>
           </ul>
-
-          <p>
-            The bonus cash prizes go to the designers' podium if there is at least one <span class="text-dark">STANDING</span> challenge at the <span class="text-dark">FINAL DEADLINE</span>.
-            The bonus cash prizes go to the attackers' podium if all the challenges are <span class="text-dark">BROKEN</span> at the <span class="text-dark">FINAL DEADLINE</span>.
-          </p>
         </div>
       </div>
     </div>
@@ -573,9 +560,9 @@ The <code>SECCOMP</code> filters setup can be found <a href="https://github.com/
             <div class="table-responsive">
               <table class="table table-striped table-bordered">
                 <tbody>
-                  <tr><td class="text-dark">STARTING DATE</td><td>{{ starting_date }}</td></tr>
-                  <tr><td class="text-dark">POSTING DEADLINE</td><td>{{ posting_deadline }}</td></tr>
-                  <tr><td class="text-dark">FINAL DEADLINE</td><td>{{ final_deadline }} (few days before CHES 2024)</td></tr>
+                  <tr><td class="text-dark">STARTING DATE</td><td>{{ aoe_starting_date }} ({{ starting_date }})</td></tr>
+                  <tr><td class="text-dark">POSTING DEADLINE</td><td>{{ aoe_posting_deadline }} ({{ posting_deadline }})</td></tr>
+                  <tr><td class="text-dark">FINAL DEADLINE</td><td>{{ aoe_final_deadline }} ({{ final_deadline }}, few days before CHES 2024)</td></tr>
                 </tbody>
               </table>
             </div>

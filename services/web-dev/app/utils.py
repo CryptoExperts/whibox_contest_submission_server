@@ -18,13 +18,20 @@ def is_safe_url(request, target):
         ref_url.netloc == test_url.netloc
 
 
-def format_timestamp(timestamp, textual=False):
+def format_timestamp(timestamp, textual=False, aoe=False):
     if timestamp is None:
         return None
-    if textual is True:
-        return time.strftime('%B %d, %Y @ %H:%M UTC', time.gmtime(timestamp))
+    # Convert to AoE time
+    if aoe is True:
+        # AoE time is 12 hours behind UTC, so retrieve them
+        timestamp = (timestamp - (12 * 60 * 60))
+        suffix = 'AoE'
     else:
-        return time.strftime('%Y-%m-%d %H:%M UTC', time.gmtime(timestamp))
+        suffix = 'UTC'
+    if textual is True:
+        return time.strftime('%B %d, %Y @ %H:%M '+suffix, time.gmtime(timestamp))
+    else:
+        return time.strftime('%Y-%m-%d %H:%M '+suffix, time.gmtime(timestamp))
 
 
 def crx_flash(text_and_category_key, *args):

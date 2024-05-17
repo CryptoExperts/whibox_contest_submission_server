@@ -107,6 +107,9 @@ def rules():
         starting_date=format_timestamp(app.config['STARTING_DATE'], textual=True),
         posting_deadline=format_timestamp(app.config['POSTING_DEADLINE'], textual=True),
         final_deadline=format_timestamp(app.config['FINAL_DEADLINE'], textual=True),
+        aoe_starting_date=format_timestamp(app.config['STARTING_DATE'], textual=True, aoe=True),
+        aoe_posting_deadline=format_timestamp(app.config['POSTING_DEADLINE'], textual=True, aoe=True),
+        aoe_final_deadline=format_timestamp(app.config['FINAL_DEADLINE'], textual=True, aoe=True),
         use_math=True,
     )
 
