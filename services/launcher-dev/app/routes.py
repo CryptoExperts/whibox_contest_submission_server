@@ -288,7 +288,7 @@ def process_compile_and_test_ret(program, request, basename, ret):
         program.set_status_to_execution_failed(
           "Your program failed during its execution. This can be due to either a runtime error (e.g. SIGSEGV),\n "
           "or a violation of the SECCOMP filtering rules leading to killing it\n"
-          "(i.e. using a system call other than read to stdin, write to stdout and malloc/free related ones)."
+          "(i.e. using a system call other than read to stdin, write to stdout and mmap/munmap, brk, exit and rt_sigreturn related ones)."
         )
         utils.console(
             f'Code execution failed for file with basename {basename}')
