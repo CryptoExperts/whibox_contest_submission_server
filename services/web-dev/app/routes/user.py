@@ -53,7 +53,7 @@ def user_register():
         nickname = form.nickname.data
         password = form.password1.data
         email = form.email1.data
-        print(username, nickname, password, email, flush=True)
+        #print(username, nickname, password, email, flush=True)
         try:
             User.create(username=username, nickname=nickname,
                         password=password, email=email)
