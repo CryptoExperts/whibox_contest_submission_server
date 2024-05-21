@@ -72,16 +72,15 @@
             It implements an ECDSA signature algorithm on the <a href="https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.186-4.pdf">NIST P-256 curve</a> under some private key embedded into the code.
             The function <code>ECDSA_256_sign</code> takes two arguments:
             <ul>
-              <li><code>hash</code> : a pointer to the 32-byte hash of the message to be signed (the hash function is excluded from the implementation),</li>
-              <li><code>sig</code> : the address for the output 64-byte signature.</li>
+              <li><code>hash</code>: a pointer to the 32-byte hash of the message to be signed (the hash function is excluded from the implementation),</li>
+              <li><code>sig</code>: the address for the output 64-byte signature.</li>
             </ul>
           </p>
           <p>
-            The C language is the one accepted by GCC 13.2.1 with NO additional language dialect options.
-            The source code must be completely portable and re-compilable towards any target architecture.
-            In other words, it must be made only of generic C which in particular, excludes the use of inline assembly.
-            Note that there is no restriction to a 32-bit architecture as in the first edition of the WhibOx contest.
-            Native 64-bit operations are supported by default and contestants may use them as they see fit.
+            The C language is the one accepted by GCC <span class="text-dark">>=</span> 10.1 with NO additional language dialect options.
+            The source code must be made of generic C (which in particular excludes the use of inline assembly), and it should be re-compilable and properly
+            executable on any <span class="text-dark">x86_64</span> CPU using any GCC compiler of version <span class="text-dark">>=</span> 10.1 with any optimization level (i.e.
+            still provide the expected ECDSA signature algorithm in these conditions).
           </p>
           <p>
             The source file is allowed to include the GMP library (version 6.3.0) through <code>#include &lt;gmp.h&gt;</code>.
@@ -121,7 +120,7 @@
             <li>The compilation must not exceed <strong>{{ challenge_max_time_for_compilation_in_secs }} seconds</strong>.</li>
             <li>The executable must be <strong>{{ challenge_max_binary_size_in_mb }}MB</strong> in size or less,</li>
             <li>The executable must use <strong>{{ challenge_max_mem_execution_in_mb }}MB</strong> of RAM or less (this includes the stack and all global variables, at the exclusion of the code itself),</li>
-            <li>The executable must run in <strong>{{ challenge_max_time_execution_in_secs }} seconds</strong> or less per function call. This is not absolute time but CPU time, measured within a VirtualBox VM by the SYSTEM. Contestants may check that their challenges comply with this limitation by using the utility <code>ulimit</code> with the <code>&minus;t</code> option.</li>
+            <li>The executable must run in <strong>{{ challenge_max_time_execution_in_secs }} seconds</strong> or less per function call. This is not absolute time but CPU time, measured within a VirtualBox VM by the <span class="text-dark">SYSTEM</span>. Contestants may check that their challenges comply with this limitation by using the utility <code>ulimit</code> with the <code>&minus;t</code> option.</li>
             <li>The following character strings are forbidden in the source code:
               <ul>
                 <li><code>"#(wsp*)include"</code>, except <code>#include &lt;gmp.h&gt;</code></li>
@@ -137,8 +136,8 @@
               </ul>
               where <code>"(wsp)"</code> indicates a white space, <code>"(wsp*)"</code> indicates zero or more white spaces, and <code>"(nan)"</code> indicates any non-alphanumeric character.
               An occurence of either of these strings will lead to a rejection of the challenge program, even if they are embedded in (arbitrarily nested) quoted strings. </li>
-            <li>The executable is <strong>not allowed</strong> to perform any system call beyond reading from <code>stdin</code>, writing to <code>stdout</code>, and performing allocations through <code>malloc</code> and <code>free</code> (which should be enough for using the <code>gmp</code> API). Any forbidden system call will kill the process as <code>SECCOMP</code> filters are used to enforce this. You can debug your program before submitting it using whatever system calls you want, but remember to remove the forbidden ones when submitting your challenge.
-The <code>SECCOMP</code> filters setup can be found <a href="https://github.com/whibox/whibox-contest-supplementary-materials">here</a> in the <code>main.c</code> file.
+            <li>The executable is <strong>not allowed</strong> to perform any system call beyond reading from <code>stdin</code>, writing to <code>stdout</code>, performing allocations through <code>brk</code>, <code>mmap</code> and <code>munmap</code> (with some restrictions, that should be enough for using the <code>gmp</code> API), <code>exit(_group)</code> and <code>rt_sigreturn</code>. Any forbidden system call will kill the process as <code>SECCOMP</code> filters are used to enforce this. You can debug your program before submitting it using whatever system calls you want, but remember to remove the forbidden ones when submitting your challenge to the <span class="text-dark">SYSTEM</span> (under Linux, you can trace the system calls of a binary with e.g. the <code>strace</code> utility).
+The <code>SECCOMP</code> filters setup can be found <a href="https://github.com/whibox/whibox-contest-supplementary-materials/blob/main/main.c">here</a> in the <code>main.c</code> file, and dedicated explanations <a href="https://github.com/whibox/whibox-contest-supplementary-materials?tab=readme-ov-file#seccomp-and-system-calls-filtering">here</a>. Please also beware that any <code>warning: implicit declaration of function</code> compiler warning will be caught by the <span class="text-dark">SYSTEM</span> and this will reject your program during compilation.
             <li>The public key of the ECDSA implementation must not be one of the ones from the <a href=https://whibox.io/contests/2021/dashboard>previous 2021 edition</a> accepted candidates as they are <strong>blacklisted</strong>.
           </ul>
           <p>The <span class="text-dark">SYSTEM</span> will reject a program that does not comply with these requirements.</p>
@@ -493,17 +492,17 @@ The <code>SECCOMP</code> filters setup can be found <a href="https://github.com/
             <li>
               Designers' podium:
               <ul>
-                <li>600$ for the strawberry winner</li>
-                <li>300$ for the second highest strawberry score</li>
-                <li>100$ for the third highest strawberry score</li>
+                <li>TBA for the strawberry winner</li>
+                <li>TBA for the second highest strawberry score</li>
+                <li>TBA for the third highest strawberry score</li>
               </ul>
             </li>
             <li>
               Attackers' podium:
               <ul>
-                <li>600$ for the banana winner</li>
-                <li>300$ for the second highest banana score</li>
-                <li>100$ for the third highest banana score</li>
+                <li>TBA for the banana winner</li>
+                <li>TBA for the second highest banana score</li>
+                <li>TBA for the third highest banana score</li>
               </ul>
             </li>
           </ul>
