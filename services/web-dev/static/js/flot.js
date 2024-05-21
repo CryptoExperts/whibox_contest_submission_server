@@ -15,7 +15,7 @@ $(function() {
 
     function getData() {
         var now = Math.floor(Date.now() / 1000);
-        var deadline = Math.floor(new Date('2025-08-21T12:00:00Z').getTime() / 1000);
+        var deadline = Math.floor(new Date('2024-09-02T11:59:00Z').getTime() / 1000);
         now = Math.min(now, deadline);
         var strawberries = [];
         programs.forEach(function(p) {
