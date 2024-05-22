@@ -1,5 +1,7 @@
 $(function() {
     var programs = getProgramsToPlot();
+    var starting_date = getStartingDate();
+    var final_deadline = getFinalDeadline();
 
     function dataGrowth(start, end, factor) {
         var minutes = Math.floor((end-start)/60);
@@ -15,7 +17,7 @@ $(function() {
 
     function getData() {
         var now = Math.floor(Date.now() / 1000);
-        var deadline = Math.floor(new Date('2024-09-02T11:59:00Z').getTime() / 1000);
+        var deadline = Math.floor(new Date(final_deadline).getTime() / 1000);
         now = Math.min(now, deadline);
         var strawberries = [];
         programs.forEach(function(p) {

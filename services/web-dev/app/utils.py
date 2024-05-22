@@ -18,7 +18,7 @@ def is_safe_url(request, target):
         ref_url.netloc == test_url.netloc
 
 
-def format_timestamp(timestamp, textual=False, aoe=False):
+def format_timestamp(timestamp, textual=False, aoe=False, js=False):
     if timestamp is None:
         return None
     # Convert to AoE time
@@ -31,7 +31,11 @@ def format_timestamp(timestamp, textual=False, aoe=False):
     if textual is True:
         return time.strftime('%B %d, %Y @ %H:%M '+suffix, time.gmtime(timestamp))
     else:
-        return time.strftime('%Y-%m-%d %H:%M '+suffix, time.gmtime(timestamp))
+        if js is True:
+            # Javascript format
+            return time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime(timestamp))
+        else:
+            return time.strftime('%Y-%m-%d %H:%M '+suffix, time.gmtime(timestamp))
 
 
 def crx_flash(text_and_category_key, *args):

@@ -88,7 +88,9 @@ def index():
         broken_ratio=broken_ratio,
         programs_to_plot=programs_to_plot,
         total_breaks_by_user=total_breaks_by_user,
-        total_breaks_by_program=total_breaks_by_program
+        total_breaks_by_program=total_breaks_by_program,
+        starting_date=format_timestamp(app.config['STARTING_DATE'], js=True), # Javascript formatting for flot.js
+        final_deadline=format_timestamp(app.config['FINAL_DEADLINE'], js=True), # Javascript formatting for flot.js
     )
 
 

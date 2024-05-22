@@ -130,6 +130,14 @@
    var programs = [{% if programs_to_plot %} {% for program in programs_to_plot %}{id:{{ program._id }},name:"{{ program._funny_name }}",ts_publish:{{program._timestamp_published}},ts_break:{{program._timestamp_first_break or -1}},performance:{{ program._performance_factor }},color:"{{ program.hsl_color }}"}, {% endfor %} {% endif %}];
    return programs;
  }
+ function getStartingDate() {
+   var starting_date = "{{ starting_date }}";
+   return starting_date;
+ }
+ function getFinalDeadline() {
+   var final_deadline = "{{ final_deadline }}";
+   return final_deadline;
+ }
 </script>
 
 
