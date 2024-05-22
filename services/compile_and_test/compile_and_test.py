@@ -105,7 +105,9 @@ def compile(basename, source, obj):
         max_cpu_time = int(os.environ['CHALLENGE_MAX_TIME_COMPILATION_IN_SECS']) + 10  # noqa
         cmd_ulimit_ram = f'ulimit -v {max_ram}'
         cmd_ulimit_cpu_time = f'ulimit -t {max_cpu_time}'
-        cmd_compile = f'gcc -c {source} -o {obj}'
+        # NOTE: -fPIC and -fPIE are here to ensure position independence, so that no
+        # fixed values depending on the compiled binary are used.
+        cmd_compile = f'gcc -fPIC -fPIE -c {source} -o {obj}'
 
         cmd_all = f'{cmd_ulimit_ram}; {cmd_ulimit_cpu_time}; {cmd_compile}'
         logger.info(f"Compilation CMD: {cmd_all}")
@@ -130,12 +132,15 @@ def compile(basename, source, obj):
 
 def link(basename, obj, executable):
     try:
-        cmd_list = ['gcc', '/main.o', obj, '-lgmp', '-lseccomp', '-o', executable]
+        # NOTE: -pie is here to ensure position independence, so that no
+        # fixed values depending on the compiled binary are used.
+        cmd_list = ['gcc', '/main.o', obj, '-lgmp', '-lseccomp', '-pie', '-o', executable]
+        logger.info(f"Linking CMD: {cmd_list}")
         subprocess.run(cmd_list, check=True)
     except:
-        logger.error(f"The link of the file with basename {basename} failed.")
+        logger.error(f"The linking of the file with basename {basename} failed.")
         exit_after_notifying_launcher(ERR_CODE_LINK_FAILED)
-    logger.info(f"The link of the file with basename {basename} succeeded.")
+    logger.info(f"The linking of the file with basename {basename} succeeded.")
 
 
 def performance_measure(executable,

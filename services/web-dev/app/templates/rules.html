@@ -80,7 +80,7 @@
             The C language is the one accepted by GCC <span class="text-dark">>=</span> 10.1 with NO additional language dialect options.
             The source code must be made of generic C (which in particular excludes the use of inline assembly), and it should be re-compilable and properly
             executable on any <span class="text-dark">x86_64</span> CPU using any GCC compiler of version <span class="text-dark">>=</span> 10.1 with any optimization level (i.e.
-            still provide the expected ECDSA signature algorithm in these conditions).
+            still provide the expected ECDSA signature algorithm in these conditions), and with position independent code related flags (<code>-fPIC</code>, <code>-fPIE</code> and <code>-pie</code>).
           </p>
           <p>
             The source file is allowed to include the GMP library (version 6.3.0) through <code>#include &lt;gmp.h&gt;</code>.
