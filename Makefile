@@ -221,7 +221,7 @@ db-shell:
 
 # Print all the programs important information
 db-dump-programs:
-	scripts/on_node-manager.sh scripts/db-shell.sh "select _id, _funny_name, _basename, _user_id, _timestamp_submitted, _timestamp_published, _timestamp_first_break, _status, _task_id, _timestamp_compilation_start, _timestamp_compilation_finished, _error_message from program;"
+	scripts/on_node-manager.sh scripts/db-shell.sh "select _id, _funny_name, _basename, _user_id, _timestamp_submitted, _timestamp_published, _timestamp_first_break, _status, _task_id, _timestamp_compilation_start, _timestamp_compilation_finished, _error_message, _pubkey, _proof_of_knowledge from program;"
 
 # Remove a specific program by its id
 db-remove-program:
