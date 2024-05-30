@@ -35,14 +35,23 @@ When running in [Production mode](#running-the-server-in-production-mode), the o
 
 ## Installation procedure
 
+## Deployment environment
+
+The server has been developed and tested on **x86_64** machines, under Linux based and Mac OS environments.
+Although this should be portable across machines that support the prerequesites (see below), this has no been tested and is left as a future work.
+More specifically, Apple Silicon ARM64 machines have not been tested.
+
+A typical platform where the server has been deployed is an Intel Xeon-E2136 CPU (6 cores / 12 threads @ 3.3 GHz/4.5 GHz)
+with 32GB of RAM.
+
 ## Prerequisites
 
 In order to run this server, you need to install the following softwares first:
 
-* [VirtualBox][virtualbox] (tested on versions 6.1.22)
-* Docker Engine (tested on Docker version 20.10.5)
+* [VirtualBox][virtualbox] (tested on version 6.1.22 under Mac OS, and version 7.0.18 under Linux)
+* Docker Engine (tested on Docker version 20.10.5 under Mac OS, and version 20.10.25 under Linux)
 * Docker Machine (tested on version 0.16.1)
-* Make (tested on versions 3.81)
+* Make (tested on version 3.81 under Mac OS, and 4.3.4 under Linux)
 
 For Mac users, note that Docker Machine is included by default when installing [Docker for Mac][docker_for_mac].
 
