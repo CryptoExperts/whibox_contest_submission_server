@@ -267,4 +267,10 @@ endif
 
 # Print all users ID, names and nickames
 db-dump-users:
-	scripts/on_node-manager.sh scripts/db-shell.sh "select _id, _username, _nickname from user;"
+	scripts/on_node-manager.sh scripts/db-shell.sh "select _id, _username, _nickname, _email from user;"
+
+db-mysqlcheck:
+	scripts/on_node-manager.sh scripts/db-mysqlcheck.sh
+
+db-mysqlrepair:
+	scripts/on_node-manager.sh scripts/db-mysqlrepair.sh
