@@ -208,7 +208,7 @@ server {
     ssl_certificate     /etc/ssl/foobar.crt; # Update this (do not change the /etc/ssl/ part, just change the file name)
     ssl_certificate_key /etc/ssl/foobar.key; # Update this (do not change the /etc/ssl/ part, just change the file name)
 
-    client_max_body_size 50M;
+    client_max_body_size 100M;
 
     location /static {
       alias /static;
